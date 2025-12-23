@@ -2,6 +2,7 @@
     "recommendations": [
         "charliermarsh.ruff",
         "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "ms-vscode.makefile-tools"
     ]
 }

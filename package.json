@@ -1,0 +1,9 @@
+{
+  "name": "stridetrack",
+  "module": "index.ts",
+  "dependencies": {
+    "supabase": "^2.68.1"
+  },
+  "private": true,
+  "type": "module"
+}

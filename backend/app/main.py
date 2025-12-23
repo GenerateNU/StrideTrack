@@ -1,34 +1,39 @@
-import os
 from contextlib import asynccontextmanager
 
-from app.core.seed_data import seed_database
-from app.core.supabase import get_async_supabase
-from app.utils.preprocess.preprocessing_queue import init_queue
-from app.utils.supabase_check import wait_for_supabase
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import api_router
+from app.core.exception_handlers import (
+    not_found_exception_handler,
+    value_error_exception_handler,
+)
+from app.core.exceptions import NotFoundException
+from app.core.observability import setup_observability
+
+# Setup observability before creating FastAPI app
+FastAPIInstrumentor, HTTPXInstrumentor = setup_observability()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print("LIFESPAN STARTING", flush=True)
-    supabase = await get_async_supabase()
-
-    await wait_for_supabase(supabase)
-
-    await init_queue(supabase)
-
-    if os.getenv("ENVIRONMENT") == "development":
-        await seed_database(supabase)
 
     yield
     # Shutdown (if needed)
 
 
-app = FastAPI(title="StrideTrack API", lifespan=lifespan)
+app = FastAPI(
+    title="StrideTrack API",
+    lifespan=lifespan,
+    swagger_ui_parameters={
+        "syntaxHighlight.theme": "monokai",
+        "tryItOutEnabled": True,
+    },
+)
+
+# Instrument FastAPI for automatic request tracing
+FastAPIInstrumentor.instrument_app(app)
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,6 +42,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_exception_handler(NotFoundException, not_found_exception_handler)
+app.add_exception_handler(ValueError, value_error_exception_handler)
 
 app.include_router(api_router)
 

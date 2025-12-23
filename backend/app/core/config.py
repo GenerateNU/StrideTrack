@@ -20,13 +20,18 @@ class Settings(BaseSettings):
 
     # App
     app_name: str = "StrideTrack API"
-    debug: bool = False
+    environment: str = "production"
     allowed_origins: list[str] = Field(
         default_factory=lambda: ["http://localhost:3000"]
     )
 
     # OpenTelemetry
     otel_endpoint: str | None = Field(default=None, description="OTLP endpoint")
+
+    @property
+    def debug(self) -> bool:
+        """Debug mode enabled when environment is development."""
+        return self.environment == "development"
 
 
 settings = Settings()
