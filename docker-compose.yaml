@@ -14,20 +14,20 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile.dev
-  #   container_name: stridetrack-frontend
-  #   ports:
-  #     - "5173:5173"
-  #   env_file:
-  #     - ./frontend/.env
-  #   volumes:
-  #     - ./frontend:/app
-  #     - /app/node_modules
-  #   depends_on:
-  #     - backend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: stridetrack-frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
 
 volumes:
   backend-venv:
