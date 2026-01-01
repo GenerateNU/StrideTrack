@@ -34,5 +34,5 @@ volumes:
 
 networks:
   default:
-    name: stridetrack-network
+    name: supabase_network_StrideTrack
     external: true
