@@ -25,12 +25,13 @@ services:
       - ./frontend/.env
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - frontend-node-modules:/app/node_modules
     depends_on:
       - backend
 
 volumes:
   backend-venv:
+  frontend-node-modules:
 
 networks:
   default:
