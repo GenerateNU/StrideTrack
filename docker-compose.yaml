@@ -33,6 +33,7 @@ volumes:
   backend-venv:
   frontend-node-modules:
 
+
 networks:
   default:
     name: supabase_network_StrideTrack
