@@ -16,7 +16,7 @@ else
 endif
 .SHELLFLAGS := -euo pipefail -c
 
-.PHONY: help check-deps init-env init-bun x supabase db-reset db-migrate up down restart build rebuild logs clean
+.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create
 
 # Colors for output
 GREEN := \033[0;32m
