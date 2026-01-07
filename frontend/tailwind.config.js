@@ -13,6 +13,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
+        /* These map CSS variables from index.css to Tailwind utility classes for the colors*/
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
