@@ -1,8 +1,3 @@
-/**
- * Training Run Form Component
- * Reusable form for creating and editing training runs
- */
-
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';

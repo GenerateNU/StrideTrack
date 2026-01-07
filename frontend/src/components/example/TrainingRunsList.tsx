@@ -1,9 +1,3 @@
-/**
- * Training Runs List Component
- * Mirrors: backend/app/routes/example_routes.py
- * UI component that displays and manages training runs
- */
-
 import { useState } from 'react';
 import {
   useGetAllTrainingRuns,
@@ -23,12 +17,13 @@ import {
 } from '@/components/ui/dialog';
 import { TrainingRunForm } from './TrainingRunForm';
 import type { TrainingRunCreate, TrainingRunResponse } from '@/types/example_types';
+import { formatDuration, formatDistance } from '@/utils/format';
 
 export function TrainingRunsList() {
-  const { runs, loading, error, refetch } = useGetAllTrainingRuns();
-  const { create, loading: creating } = useCreateTrainingRun();
-  const { update, loading: updating } = useUpdateTrainingRun();
-  const { remove, loading: deleting } = useDeleteTrainingRun();
+  const { data: runs = [], isLoading, error, refetch } = useGetAllTrainingRuns();
+  const createMutation = useCreateTrainingRun();
+  const updateMutation = useUpdateTrainingRun();
+  const deleteMutation = useDeleteTrainingRun();
 
   const [showForm, setShowForm] = useState(false);
   const [editingRun, setEditingRun] = useState<TrainingRunResponse | null>(null);
@@ -36,16 +31,15 @@ export function TrainingRunsList() {
   const [runToDelete, setRunToDelete] = useState<string | null>(null);
 
   const handleCreate = async (data: TrainingRunCreate) => {
-    await create(data);
+    await createMutation.mutateAsync(data);
     setShowForm(false);
-    refetch();
   };
 
   const handleUpdate = async (data: TrainingRunCreate) => {
     if (editingRun) {
-      await update(editingRun.id, data);
+      await updateMutation.mutateAsync({ id: editingRun.id, data });
       setEditingRun(null);
-      refetch();
+      setShowForm(false);
     }
   };
 
@@ -56,10 +50,9 @@ export function TrainingRunsList() {
 
   const handleDeleteConfirm = async () => {
     if (runToDelete) {
-      await remove(runToDelete);
+      await deleteMutation.mutateAsync(runToDelete);
       setRunToDelete(null);
       setDeleteDialogOpen(false);
-      refetch();
     }
   };
 
@@ -68,20 +61,7 @@ export function TrainingRunsList() {
     setShowForm(true);
   };
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const formatDistance = (meters: number) => {
-    if (meters >= 1000) {
-      return `${(meters / 1000).toFixed(2)} km`;
-    }
-    return `${meters} m`;
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-8">
         <p className="text-muted-foreground">Loading training runs...</p>
@@ -92,8 +72,8 @@ export function TrainingRunsList() {
   if (error) {
     return (
       <div className="p-8 space-y-4">
-        <p className="text-destructive">Error: {error}</p>
-        <Button onClick={refetch} variant="outline">
+        <p className="text-destructive">Error: {error.message}</p>
+        <Button onClick={() => refetch()} variant="outline">
           Retry
         </Button>
       </div>
@@ -129,7 +109,7 @@ export function TrainingRunsList() {
                 setShowForm(false);
                 setEditingRun(null);
               }}
-              isLoading={creating || updating}
+              isLoading={createMutation.isPending || updateMutation.isPending}
               submitLabel={editingRun ? 'Update' : 'Create'}
             />
           </CardContent>
@@ -170,7 +150,7 @@ export function TrainingRunsList() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(run)}
-                      disabled={updating || deleting}
+                      disabled={updateMutation.isPending || deleteMutation.isPending}
                     >
                       Edit
                     </Button>
@@ -178,7 +158,7 @@ export function TrainingRunsList() {
                       variant="destructive"
                       size="sm"
                       onClick={() => handleDeleteClick(run.id)}
-                      disabled={deleting}
+                      disabled={deleteMutation.isPending}
                     >
                       Delete
                     </Button>
@@ -209,9 +189,9 @@ export function TrainingRunsList() {
             <Button
               variant="destructive"
               onClick={handleDeleteConfirm}
-              disabled={deleting}
+              disabled={deleteMutation.isPending}
             >
-              {deleting ? 'Deleting...' : 'Delete'}
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogFooter>
         </DialogContent>
