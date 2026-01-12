@@ -16,7 +16,7 @@ else
 endif
 .SHELLFLAGS := -euo pipefail -c
 
-.PHONY: help check-deps init-env init-supabase db-reset db-migrate up down restart build rebuild logs clean
+.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create
 
 # Colors for output
 GREEN := \033[0;32m
@@ -54,9 +54,9 @@ check-deps: ## Check if all required dependencies are installed
 	@command -v bun >/dev/null 2>&1 && \
 		printf "  $(GREEN)$(CHECKMARK)$(NC) Bun:         $$(bun --version)\n" || \
 		printf "  $(RED)$(CROSSMARK)$(NC) Bun:         Not found (install: curl -fsSL https://bun.sh/install | bash)\n"
-	@bun supabase --version >/dev/null 2>&1 && \
-		printf "  $(GREEN)$(CHECKMARK)$(NC) Supabase:    $$(bun supabase --version)\n" || \
-		printf "  $(RED)$(CROSSMARK)$(NC) Supabase:    Not found (run: bun install)\n"
+	@bun x supabase --version >/dev/null 2>&1 && \
+		printf "  $(GREEN)$(CHECKMARK)$(NC) bun x supabase:    $$(bun x supabase --version)\n" || \
+		printf "  $(RED)$(CROSSMARK)$(NC) bun x supabase:    Not found (run: bun install)\n"
 	@command -v docker >/dev/null 2>&1 && \
 		printf "  $(GREEN)$(CHECKMARK)$(NC) Docker:      $$(docker --version 2>/dev/null)\n" || \
 		printf "  $(RED)$(CROSSMARK)$(NC) Docker:      Not found\n"
@@ -93,13 +93,13 @@ db-migrate: ## Create a new database migration (usage: make db-migrate NAME="des
 		exit 1; \
 	fi
 	@printf "$(BLUE)Creating migration: $(NAME)\n$(NC)"
-	@bun supabase migration new $(NAME)
+	@bun x supabase migration new $(NAME)
 	@printf "  $(GREEN)$(CHECKMARK)$(NC) Migration created\n"
 	@printf "\n"
 
 db-reset: ## Reset database with all migrations and seed data
 	@printf "$(BLUE)Resetting database...\n$(NC)"
-	@bun supabase db reset
+	@bun x supabase db reset
 	@printf "  $(GREEN)$(CHECKMARK)$(NC) Database reset complete\n"
 	@printf "\n"
 
@@ -112,15 +112,15 @@ network-create: ## Create Docker network for services
 		(MSYS_NO_PATHCONV=1 docker network create $(NETWORK_NAME) && \
 		printf "  $(GREEN)$(CHECKMARK)$(NC) Network $(NETWORK_NAME) created\n")
 
-up: network-create ## Start all services (Supabase + App + SigNoz)
-	@printf "$(BLUE)Starting Supabase...\n$(NC)"
-	@bun supabase start --exclude vector
+up: network-create ## Start all services (bun x supabase + App + SigNoz)
+	@printf "$(BLUE)Starting bun x supabase...\n$(NC)"
+	@bun x supabase start --exclude vector
 	@printf "\n"
 	@printf "$(BLUE)Starting application services...\n$(NC)"
 	@docker compose up -d
 	@printf "\n"
 	@printf "$(GREEN)$(CHECKMARK) All services started!\n$(NC)"
-	@printf "  $(CYAN)Supabase Studio:$(NC) http://localhost:54323\n"
+	@printf "  $(CYAN)bun x supabase Studio:$(NC) http://localhost:54323\n"
 	@printf "  $(CYAN)API:$(NC) http://localhost:8000\n"
 	@printf "  $(CYAN)Frontend:$(NC) http://localhost:5173\n"
 	@printf "\n"
@@ -128,7 +128,7 @@ up: network-create ## Start all services (Supabase + App + SigNoz)
 down: ## Stop all services
 	@printf "$(BLUE)Stopping services...\n$(NC)"
 	@docker compose down
-	@bun supabase stop
+	@bun x supabase stop
 	@printf "  $(GREEN)$(CHECKMARK)$(NC) All services stopped\n"
 	@printf "\n"
 
@@ -166,7 +166,7 @@ logs: ## View logs (usage: make logs SERVICE=backend)
 clean: ## Remove all containers, networks, and volumes
 	@printf "$(YELLOW)Cleaning up...\n$(NC)"
 	@docker compose down -v
-	@bun supabase stop --no-backup
+	@bun x supabase stop --no-backup
 	@docker network rm $(NETWORK_NAME) 2>/dev/null || true
 	@printf "  $(GREEN)$(CHECKMARK)$(NC) Cleanup complete\n"
 	@printf "\n"

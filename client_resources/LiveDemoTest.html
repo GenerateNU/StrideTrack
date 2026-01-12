@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StrideTrack - Coach App</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 700px;
+            background: #000;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #0a0a0a;
+            border-radius: 30px;
+            overflow: visible;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: #0a0a0a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .app-container {
+            height: calc(100% - 44px);
+            background: #0a0a0a;
+            display: none;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            padding-bottom: 140px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .app-container.active {
+            display: block;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #fb8b24, #f77f00);
+            padding: 15px 20px;
+            color: #0a0a0a;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 5px;
+        }
+
+        .athlete-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .athlete-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .connection-status {
+            background: rgba(0,0,0,0.2);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .connection-status.connected {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(255, 59, 48, 0.3);
+            color: #ff3b30;
+        }
+
+        .chart-container {
+            height: 310px;
+            margin: 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 20px 10px 30px 10px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .chart-title {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 380px;
+        }
+
+        .stats-summary {
+            background: linear-gradient(135deg, rgba(251, 139, 36, 0.1), rgba(247, 127, 0, 0.05));
+            border: 1px solid #fb8b24;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 15px;
+        }
+
+        .stat-value {
+            color: #fb8b24;
+            font-weight: 700;
+            font-size: 17px;
+            font-family: 'SF Mono', monospace;
+        }
+
+        .navigation {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #1a1a1a;
+            border-radius: 20px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .nav-item {
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #666;
+            font-size: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-item span {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item.active {
+            background: rgba(251, 139, 36, 0.2);
+            color: #fb8b24;
+        }
+
+        .record-button {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #fb8b24, #f77f00);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #0a0a0a;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .save-button {
+            position: absolute;
+            bottom: 100px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .save-button:hover {
+            transform: scale(1.05);
+        }
+
+        .upload-button {
+            position: absolute;
+            bottom: 100px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .upload-button:hover {
+            transform: scale(1.05);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .record-button.recording {
+            background: linear-gradient(135deg, #ff3b30, #ff6b5d);
+            animation: recordPulse 1s infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.1); }
+        }
+
+        .improvement-indicator {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 2px 8px;
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 10px;
+            font-size: 11px;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <div id="currentTime">9:41 AM</div>
+                <div>📶 WiFi</div>
+            </div>
+
+            <!-- Screen 1: Raw Sensor Data -->
+            <div class="app-container active" id="screen1">
+                <div class="header">
+                    <h1>StrideTrack</h1>
+                    <div class="athlete-info">
+                        <div class="athlete-name">Live Sensor</div>
+                        <div class="connection-status disconnected" id="connectionStatus">● DISCONNECTED</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Real-Time Sensor Data (0-4500)</div>
+                    <canvas class="chart-canvas" id="rawChart"></canvas>
+                </div>
+
+                <div class="stats-summary">
+                    <div class="stat-row">
+                        <div class="stat-label">Current Value</div>
+                        <div class="stat-value" id="currentValue">0</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Max Value</div>
+                        <div class="stat-value" id="maxValue">0</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Data Points</div>
+                        <div class="stat-value" id="dataPoints">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 2: Ground Contact Time -->
+            <div class="app-container" id="screen2">
+                <div class="header">
+                    <h1>StrideTrack</h1>
+                    <div class="athlete-info">
+                        <div class="athlete-name">Contact Time</div>
+                        <div class="connection-status disconnected" id="connectionStatus2">● DISCONNECTED</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Ground Contact Time (ms)</div>
+                    <canvas class="chart-canvas" id="contactChart"></canvas>
+                </div>
+
+                <div class="stats-summary">
+                    <div class="stat-row">
+                        <div class="stat-label">Average Contact</div>
+                        <div class="stat-value" id="avgContact">0 ms</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Last Contact</div>
+                        <div class="stat-value" id="lastContact">0 ms</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Total Steps</div>
+                        <div class="stat-value" id="totalSteps">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 3: Flight Time -->
+            <div class="app-container" id="screen3">
+                <div class="header">
+                    <h1>StrideTrack</h1>
+                    <div class="athlete-info">
+                        <div class="athlete-name">Flight Time</div>
+                        <div class="connection-status disconnected" id="connectionStatus3">● DISCONNECTED</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Flight Time (ms)</div>
+                    <canvas class="chart-canvas" id="flightChart"></canvas>
+                </div>
+
+                <div class="stats-summary">
+                    <div class="stat-row">
+                        <div class="stat-label">Average Flight</div>
+                        <div class="stat-value" id="avgFlight">0 ms</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Last Flight</div>
+                        <div class="stat-value" id="lastFlight">0 ms</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Contact/Flight Ratio</div>
+                        <div class="stat-value" id="contactFlightRatio">0.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 4: Step Counting Between Hurdles -->
+            <div class="app-container" id="screen4">
+                <div class="header">
+                    <h1>StrideTrack</h1>
+                    <div class="athlete-info">
+                        <div class="athlete-name">Step Pattern</div>
+                        <div class="connection-status disconnected" id="connectionStatus4">● DISCONNECTED</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Steps Between Hurdles</div>
+                    <canvas class="chart-canvas" id="stepChart"></canvas>
+                </div>
+
+                <div class="stats-summary">
+                    <div class="stat-row">
+                        <div class="stat-label">Total Hurdles</div>
+                        <div class="stat-value" id="totalHurdles">0</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Average Steps</div>
+                        <div class="stat-value" id="avgSteps">0</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Pattern Consistency</div>
+                        <div class="stat-value" id="stepConsistency">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 5: Inter-Hurdle Time -->
+            <div class="app-container" id="screen5">
+                <div class="header">
+                    <h1>StrideTrack</h1>
+                    <div class="athlete-info">
+                        <div class="athlete-name">Hurdle Splits</div>
+                        <div class="connection-status disconnected" id="connectionStatus5">● DISCONNECTED</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Inter-Hurdle Time (seconds)</div>
+                    <canvas class="chart-canvas" id="hurdleTimeChart"></canvas>
+                </div>
+
+                <div class="stats-summary">
+                    <div class="stat-row">
+                        <div class="stat-label">Average Split</div>
+                        <div class="stat-value" id="avgHurdleTime">0.00 s</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Best Split</div>
+                        <div class="stat-value" id="bestHurdleTime">0.00 s</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Last Split</div>
+                        <div class="stat-value" id="lastHurdleTime">0.00 s</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="record-button" id="recordBtn">▶</div>
+            <div class="save-button" id="saveBtn" title="Save Data">💾</div>
+            <div class="upload-button" id="uploadBtn" title="Upload Data">📁</div>
+            <input type="file" id="fileInput" accept=".csv">
+
+            <div class="navigation">
+                <div class="nav-item active" onclick="showScreen(1)">
+                    📊
+                    <span>Raw</span>
+                </div>
+                <div class="nav-item" onclick="showScreen(2)">
+                    👟
+                    <span>Contact</span>
+                </div>
+                <div class="nav-item" onclick="showScreen(3)">
+                    ✈️
+                    <span>Fly</span>
+                </div>
+                <div class="nav-item" onclick="showScreen(4)">
+                    🔢
+                    <span>Steps</span>
+                </div>
+                <div class="nav-item" onclick="showScreen(5)">
+                    ⏱
+                    <span>Splits</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const esp32Ip = "http://192.168.4.1";
+        const GROUND_THRESHOLD = 3000; // Values > 3000 = on ground
+        const HURDLE_FLIGHT_THRESHOLD = 1000; // Flight > 1000ms = hurdle
+        
+        let isRecording = false;
+        let pollInterval;
+        let rawDataPoints = [];
+        let dataBuffer = []; // Store all sensor data for CSV export
+        let contactTimes = [];
+        let flightTimes = [];
+        let hurdles = []; // Array of hurdle objects: {timestamp, flightTime, takeoffTime}
+        let stepsBetweenHurdles = []; // Array of step counts between hurdles
+        let interHurdleTimes = []; // Array of times between hurdles (takeoff to takeoff)
+        let isFirstHurdle = true;
+        let stepsSinceLastHurdle = 0;
+        let lastHurdleTakeoffTime = null; // Track takeoff time instead of landing time
+        let currentState = 'air'; // 'ground' or 'air'
+        let stateStartTime = null;
+        let stateStartValue = null;
+        
+        // Charts
+        let rawChart, contactChart, flightChart, stepChart, hurdleTimeChart;
+        
+        // Initialize charts
+        function initCharts() {
+            const chartConfig = {
+                type: 'line',
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        x: { display: false },
+                        y: {
+                            grid: { color: '#2a2a2a' },
+                            ticks: { color: '#666' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            };
+            
+            // Raw data chart
+            rawChart = new Chart(document.getElementById('rawChart'), {
+                ...chartConfig,
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: '#fb8b24',
+                        backgroundColor: 'rgba(251, 139, 36, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    ...chartConfig.options,
+                    scales: {
+                        ...chartConfig.options.scales,
+                        y: {
+                            ...chartConfig.options.scales.y,
+                            min: 0,
+                            max: 4500
+                        }
+                    }
+                }
+            });
+            
+            // Contact time chart
+            contactChart = new Chart(document.getElementById('contactChart'), {
+                ...chartConfig,
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: '#4CAF50',
+                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#4CAF50'
+                    }]
+                },
+                options: {
+                    ...chartConfig.options,
+                    scales: {
+                        ...chartConfig.options.scales,
+                        y: {
+                            ...chartConfig.options.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Time (ms)',
+                                color: '#666'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Flight time chart
+            flightChart = new Chart(document.getElementById('flightChart'), {
+                ...chartConfig,
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: '#2196F3',
+                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#2196F3'
+                    }]
+                },
+                options: {
+                    ...chartConfig.options,
+                    scales: {
+                        ...chartConfig.options.scales,
+                        y: {
+                            ...chartConfig.options.scales.y,
+                            title: {
+                                display: true,
+                                text: 'Time (ms)',
+                                color: '#666'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Step count chart (bar chart)
+            stepChart = new Chart(document.getElementById('stepChart'), {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: '#fb8b24',
+                        borderColor: '#f77f00',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        x: {
+                            grid: { color: '#2a2a2a' },
+                            ticks: { color: '#666' }
+                        },
+                        y: {
+                            grid: { color: '#2a2a2a' },
+                            ticks: { 
+                                color: '#666',
+                                stepSize: 1
+                            },
+                            title: {
+                                display: true,
+                                text: 'Steps',
+                                color: '#666'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+            
+            // Inter-hurdle time chart
+            hurdleTimeChart = new Chart(document.getElementById('hurdleTimeChart'), {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        borderColor: '#f77f00',
+                        backgroundColor: 'rgba(247, 127, 0, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#fb8b24',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        x: {
+                            grid: { color: '#2a2a2a' },
+                            ticks: { color: '#666' }
+                        },
+                        y: {
+                            grid: { color: '#2a2a2a' },
+                            ticks: { color: '#666' },
+                            title: {
+                                display: true,
+                                text: 'Time (s)',
+                                color: '#666'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+        
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const statuses = ['connectionStatus', 'connectionStatus2', 'connectionStatus3', 'connectionStatus4', 'connectionStatus5'];
+            statuses.forEach(id => {
+                const elem = document.getElementById(id);
+                if (elem) {
+                    if (connected) {
+                        elem.classList.remove('disconnected');
+                        elem.classList.add('connected');
+                        elem.textContent = '● CONNECTED';
+                    } else {
+                        elem.classList.remove('connected');
+                        elem.classList.add('disconnected');
+                        elem.textContent = '● DISCONNECTED';
+                    }
+                }
+            });
+        }
+        
+        // Start recording
+        let eventSource;
+
+        async function startRecording() {
+            try {
+                const response = await fetch(`${esp32Ip}/start`);  // Fixed: () not ``
+                if (!response.ok) throw new Error('Failed to start');
+                
+                isRecording = true;
+                updateConnectionStatus(true);
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('recordBtn').textContent = '◼';
+                
+                // Reset data
+                rawDataPoints = [];
+                dataBuffer = []; // Reset dataBuffer for new recording session
+                contactTimes = [];
+                flightTimes = [];
+                hurdles = [];
+                stepsBetweenHurdles = [];
+                interHurdleTimes = [];
+                stepsSinceLastHurdle = 0;
+                lastHurdleTakeoffTime = null;
+                currentState = 'air';
+                stateStartTime = null;
+                isFirstHurdle = true;
+                
+                // Start SSE stream
+                eventSource = new EventSource(`${esp32Ip}/stream`);  // Fixed: () not ``
+                
+                eventSource.onopen = () => {
+                    console.log('SSE connection opened');
+                };
+                
+                eventSource.onmessage = (event) => {
+                    console.log('Received:', event.data);
+                    processDataPoint(event.data);
+                };
+                
+                eventSource.onerror = (error) => {
+                    console.error('SSE error:', error);
+                    console.error('ReadyState:', eventSource.readyState);
+                    stopRecording();
+                };
+                
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                alert('Failed to connect to ESP32. Make sure you are connected to ESP32-AccessPoint WiFi.');
+            }
+        }
+
+        // Stop recording
+        async function stopRecording() {
+            try {
+                await fetch(`${esp32Ip}/stop`); 
+            } catch (error) {
+                console.error('Error stopping recording:', error);
+            }
+            
+            if (eventSource) {
+                eventSource.close(); 
+            }
+            
+            isRecording = false;
+            updateConnectionStatus(false);
+            document.getElementById('recordBtn').classList.remove('recording');
+            document.getElementById('recordBtn').textContent = '▶';
+        }
+                
+        // Fetch streaming data
+        async function fetchStreamData() {
+            if (!isRecording) return;
+            
+            try {
+                const response = await fetch(`${esp32Ip}/data`);
+                if (!response.ok) return;
+                
+                const text = await response.text();
+                if (!text.trim()) return;
+                
+                const lines = text.trim().split('\n');
+                for (const line of lines) {
+                    if (line.trim() && line.includes(',')) {
+                        processDataPoint(line.trim());
+                    }
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        }
+        
+        // Process incoming data point
+        function processDataPoint(line) {
+            const [timestamp, value] = line.split(',').map(Number);
+            
+            rawDataPoints.push({ timestamp, value });
+            dataBuffer.push({ timestamp, value }); // Also store in dataBuffer for CSV export
+            
+            // Update raw chart (keep last 100 points)
+            const displayData = rawDataPoints.slice(-100);
+            rawChart.data.labels = displayData.map((_, i) => i);
+            rawChart.data.datasets[0].data = displayData.map(d => d.value);
+            rawChart.update('none');
+            
+            // Update stats
+            document.getElementById('currentValue').textContent = value;
+            document.getElementById('dataPoints').textContent = rawDataPoints.length;
+            
+            const maxVal = Math.max(...rawDataPoints.map(d => d.value));
+            document.getElementById('maxValue').textContent = maxVal;
+            
+            // Detect state changes and calculate times
+            detectStateChange(timestamp, value);
+        }
+        
+        // Detect ground/air state changes
+        function detectStateChange(timestamp, value) {
+            const newState = value > GROUND_THRESHOLD ? 'ground' : 'air';
+            
+            if (stateStartTime === null) {
+                // First data point - just initialize, don't process
+                currentState = newState;
+                stateStartTime = timestamp;
+                return;
+            }
+            
+            if (newState !== currentState) {
+                // State changed
+                const duration = timestamp - stateStartTime;
+                
+                if (currentState === 'ground' && duration > 50) {
+                    // Just finished ground contact
+                    contactTimes.push(duration);
+                    updateContactStats();
+                    
+                } else if (currentState === 'air' && duration > 50) {
+                    // Just finished flight - now landing
+                    
+                    // CRITICAL: Skip the first flight detection after start
+                    if (isFirstHurdle && flightTimes.length === 0) {
+                        // This is the very first flight after pressing start - ignore it
+                        console.log(`Ignoring initial flight time: ${duration}ms`);
+                        flightTimes.push(duration);
+                        updateFlightStats();
+                        currentState = newState;
+                        stateStartTime = timestamp;
+                        return; // Don't process this as a step or hurdle
+                    }
+                    
+                    flightTimes.push(duration);
+                    updateFlightStats();
+                    
+                    // Check if this was a hurdle (flight > 1000ms)
+                    if (duration > HURDLE_FLIGHT_THRESHOLD) {
+                        console.log(`HURDLE DETECTED! Flight time: ${duration}ms`);
+                        const takeoffTime = stateStartTime;
+                        detectHurdle(timestamp, duration, takeoffTime);
+                        isFirstHurdle = false;
+                    } else {
+                        // Regular step (not a hurdle) - increment counter
+                        stepsSinceLastHurdle++;
+                        console.log(`Regular step detected, count now: ${stepsSinceLastHurdle}`);
+                    }
+                }
+                
+                currentState = newState;
+                stateStartTime = timestamp;
+            }
+        }
+        
+        // Detect hurdle and update statistics
+        function detectHurdle(landingTime, flightTime, takeoffTime) {
+            // Count the hurdle as a step (it IS a step, just with long flight)
+            stepsSinceLastHurdle++;
+            
+            // Record the hurdle with takeoff time
+            hurdles.push({
+                landingTime: landingTime,
+                takeoffTime: takeoffTime,
+                flightTime: flightTime,
+                stepsBeforeHurdle: stepsSinceLastHurdle
+            });
+            
+            console.log(`Hurdle ${hurdles.length} recorded. Takeoff: ${takeoffTime}ms, Landing: ${landingTime}ms, Steps including this hurdle: ${stepsSinceLastHurdle}`);
+            
+            // Record steps including this hurdle
+            const stepsBetween = stepsSinceLastHurdle;
+            stepsBetweenHurdles.push(stepsBetween);
+            console.log(`Steps to H${hurdles.length}: ${stepsBetween}`);
+            console.log(`All steps: [${stepsBetweenHurdles.join(', ')}]`);
+            updateStepStats();
+            
+            // Calculate inter-hurdle time (only from H2 onwards)
+            if (lastHurdleTakeoffTime !== null) {
+                const interHurdleTime = (takeoffTime - lastHurdleTakeoffTime) / 1000;
+                interHurdleTimes.push(interHurdleTime);
+                console.log(`Inter-hurdle time H${hurdles.length - 1} to H${hurdles.length}: ${interHurdleTime.toFixed(2)}s`);
+                updateHurdleTimeStats();
+            }
+            
+            // Reset step counter for next interval
+            stepsSinceLastHurdle = 0;
+            lastHurdleTakeoffTime = takeoffTime;
+        }
+        
+        // Update step counting statistics
+        function updateStepStats() {
+            if (stepsBetweenHurdles.length === 0) return;
+                
+                const totalHurdles = hurdles.length;
+                const avgSteps = stepsBetweenHurdles.reduce((a, b) => a + b, 0) / stepsBetweenHurdles.length;
+            
+            // Calculate pattern consistency (percentage of intervals with same step count as mode)
+            const stepCounts = [...stepsBetweenHurdles];
+            const mode = stepCounts.sort((a,b) =>
+                stepCounts.filter(v => v===a).length - stepCounts.filter(v => v===b).length
+            ).pop();
+            const consistency = (stepsBetweenHurdles.filter(s => s === mode).length / stepsBetweenHurdles.length) * 100;
+            
+            document.getElementById('totalHurdles').textContent = totalHurdles;
+            document.getElementById('avgSteps').textContent = avgSteps.toFixed(1);
+            document.getElementById('stepConsistency').textContent = `${consistency.toFixed(0)}%`;
+            
+            // Update chart - label first interval as "Start-H1"
+            stepChart.data.labels = stepsBetweenHurdles.map((_, i) => {
+                if (i === 0) return 'Start-H1';
+                return `H${i}-${i + 1}`;
+            });
+            stepChart.data.datasets[0].data = stepsBetweenHurdles;
+            stepChart.data.datasets[0].data = stepsBetweenHurdles;
+            
+            // Color bars: standard step count is orange, different is red
+            const colors = stepsBetweenHurdles.map(steps => steps === mode ? '#fb8b24' : '#ff3b30');
+            stepChart.data.datasets[0].backgroundColor = colors;
+            stepChart.data.datasets[0].borderColor = colors.map(c => c === '#fb8b24' ? '#f77f00' : '#cc0000');
+            
+            stepChart.update('none');
+            
+            console.log(`Step Stats Updated: ${stepsBetweenHurdles.length} intervals, Steps: [${stepsBetweenHurdles.join(', ')}]`);
+        }
+        
+        // Update hurdle time statistics
+        function updateHurdleTimeStats() {
+            if (interHurdleTimes.length === 0) return;
+            
+            const lastTime = interHurdleTimes[interHurdleTimes.length - 1];
+            const avgTime = interHurdleTimes.reduce((a, b) => a + b, 0) / interHurdleTimes.length;
+            const bestTime = Math.min(...interHurdleTimes);
+            
+            document.getElementById('lastHurdleTime').textContent = `${lastTime.toFixed(2)} s`;
+            document.getElementById('avgHurdleTime').textContent = `${avgTime.toFixed(2)} s`;
+            document.getElementById('bestHurdleTime').textContent = `${bestTime.toFixed(2)} s`;
+            
+            // Update chart
+            const displayTimes = interHurdleTimes.slice(-10); // Last 10 intervals
+            hurdleTimeChart.data.labels = displayTimes.map((_, i) => {
+                const hurdleNum = interHurdleTimes.length - displayTimes.length + i + 1;
+                return `H${hurdleNum}-${hurdleNum + 1}`;
+            });
+            hurdleTimeChart.data.datasets[0].data = displayTimes;
+            hurdleTimeChart.update('none');
+        }
+        
+        // Update contact time statistics
+        function updateContactStats() {
+            if (contactTimes.length === 0) return;
+            
+            const lastContact = contactTimes[contactTimes.length - 1];
+            const avgContact = contactTimes.reduce((a, b) => a + b, 0) / contactTimes.length;
+            
+            document.getElementById('lastContact').textContent = `${lastContact.toFixed(0)} ms`;
+            document.getElementById('avgContact').textContent = `${avgContact.toFixed(0)} ms`;
+            document.getElementById('totalSteps').textContent = contactTimes.length;
+            
+            // Update chart (last 20 contacts)
+            const displayContacts = contactTimes.slice(-20);
+            contactChart.data.labels = displayContacts.map((_, i) => `Step ${i + 1}`);
+            contactChart.data.datasets[0].data = displayContacts;
+            contactChart.update('none');
+            
+            updateContactFlightRatio();
+        }
+        
+        // Update flight time statistics
+        function updateFlightStats() {
+            if (flightTimes.length === 0) return;
+            
+            const lastFlight = flightTimes[flightTimes.length - 1];
+            const avgFlight = flightTimes.reduce((a, b) => a + b, 0) / flightTimes.length;
+            
+            document.getElementById('lastFlight').textContent = `${lastFlight.toFixed(0)} ms`;
+            document.getElementById('avgFlight').textContent = `${avgFlight.toFixed(0)} ms`;
+            
+            // Update chart (last 20 flights)
+            const displayFlights = flightTimes.slice(-20);
+            flightChart.data.labels = displayFlights.map((_, i) => `Flight ${i + 1}`);
+            flightChart.data.datasets[0].data = displayFlights;
+            flightChart.update('none');
+            
+            updateContactFlightRatio();
+        }
+        
+        // Update contact/flight ratio
+        function updateContactFlightRatio() {
+            if (contactTimes.length === 0 || flightTimes.length === 0) return;
+            
+            const avgContact = contactTimes.reduce((a, b) => a + b, 0) / contactTimes.length;
+            const avgFlight = flightTimes.reduce((a, b) => a + b, 0) / flightTimes.length;
+            const ratio = avgContact / avgFlight;
+            
+            document.getElementById('contactFlightRatio').textContent = ratio.toFixed(2);
+        }
+        
+        // Show screen
+        function showScreen(screenNumber) {
+            document.querySelectorAll('.app-container').forEach(container => {
+                container.classList.remove('active');
+            });
+            
+            document.getElementById('screen' + screenNumber).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-item')[screenNumber - 1].classList.add('active');
+        }
+        
+        // Record button click
+        document.getElementById('recordBtn').addEventListener('click', function() {
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        });
+        
+        // Save button click - download data as CSV
+        document.getElementById('saveBtn').addEventListener('click', function() {
+            if (dataBuffer.length === 0) {
+                alert('No data to save. Start recording first!');
+                return;
+            }
+            
+            // Create CSV content
+            let csvContent = 'Timestamp,Force\n';
+            dataBuffer.forEach(point => {
+                csvContent += `${point.timestamp},${point.value}\n`;
+            });
+            
+            // Create blob and download
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // Generate filename with current date/time
+            const now = new Date();
+            const filename = `stridetrack_data_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}.csv`;
+            a.download = filename;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            console.log(`Saved ${dataBuffer.length} data points to ${filename}`);
+        });
+        
+        // Upload button click - trigger file input
+        document.getElementById('uploadBtn').addEventListener('click', function() {
+            document.getElementById('fileInput').click();
+        });
+        
+        // File input change - process uploaded CSV
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const csvData = event.target.result;
+                processUploadedCSV(csvData);
+            };
+            reader.readAsText(file);
+        });
+        
+        // Process uploaded CSV data
+        function processUploadedCSV(csvData) {
+            try {
+                const lines = csvData.trim().split('\n');
+                
+                // Skip header row
+                const dataLines = lines.slice(1);
+                
+                if (dataLines.length === 0) {
+                    alert('No data found in CSV file');
+                    return;
+                }
+                
+                // Reset all data arrays
+                rawDataPoints = [];
+                dataBuffer = [];
+                contactTimes = [];
+                flightTimes = [];
+                hurdles = [];
+                stepsBetweenHurdles = [];
+                interHurdleTimes = [];
+                stepsSinceLastHurdle = 0;
+                lastHurdleTakeoffTime = null;
+                currentState = 'air';
+                stateStartTime = null;
+                isFirstHurdle = true;
+                
+                // Parse and process each line
+                dataLines.forEach(line => {
+                    const [timestamp, value] = line.split(',').map(Number);
+                    if (!isNaN(timestamp) && !isNaN(value)) {
+                        rawDataPoints.push({ timestamp, value });
+                        dataBuffer.push({ timestamp, value });
+                        detectStateChange(timestamp, value);
+                    }
+                });
+                
+                // Update all visualizations
+                updateAllCharts();
+                
+                // Update connection status to show it's loaded data
+                updateConnectionStatus(false);
+                document.getElementById('connectionStatus').textContent = '● FILE LOADED';
+                document.getElementById('connectionStatus').classList.remove('connected', 'disconnected');
+                document.getElementById('connectionStatus').style.background = 'rgba(33, 150, 243, 0.3)';
+                document.getElementById('connectionStatus').style.color = '#2196F3';
+                
+                console.log(`Loaded ${dataBuffer.length} data points from CSV`);
+                alert(`Successfully loaded ${dataBuffer.length} data points!`);
+                
+            } catch (error) {
+                console.error('Error processing CSV:', error);
+                alert('Error processing CSV file. Please check the format.');
+            }
+            
+            // Reset file input
+            document.getElementById('fileInput').value = '';
+        }
+        
+        // Update all charts with current data
+        function updateAllCharts() {
+            // Update raw chart
+            const displayData = rawDataPoints.slice(-100);
+            rawChart.data.labels = displayData.map((_, i) => i);
+            rawChart.data.datasets[0].data = displayData.map(d => d.value);
+            rawChart.update('none');
+            
+            // Update stats
+            if (rawDataPoints.length > 0) {
+                const lastValue = rawDataPoints[rawDataPoints.length - 1].value;
+                document.getElementById('currentValue').textContent = lastValue;
+                document.getElementById('dataPoints').textContent = rawDataPoints.length;
+                
+                const maxVal = Math.max(...rawDataPoints.map(d => d.value));
+                document.getElementById('maxValue').textContent = maxVal;
+            }
+            
+            // Update contact/flight stats
+            updateContactStats();
+            updateFlightStats();
+            updateStepStats();
+            updateHurdleTimeStats();
+        }
+        
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours() % 12 || 12;
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = now.getHours() >= 12 ? 'PM' : 'AM';
+            document.getElementById('currentTime').textContent = `${hours}:${minutes} ${ampm}`;
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            initCharts();
+            updateTime();
+            setInterval(updateTime, 60000);
+        });
+    </script>
+</body>
+</html>

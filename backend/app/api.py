@@ -10,7 +10,7 @@ api_router = APIRouter(prefix="/api")
 @api_router.get("/health")
 async def health_check(supabase: AsyncClient = Depends(get_async_supabase)):
     try:
-        await supabase.table("tenants").select("count", count="exact").execute()
+        await supabase.table("training_runs").select("count", count="exact").execute()
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
