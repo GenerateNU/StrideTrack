@@ -18,9 +18,9 @@ jobs:
       - name: Lint
         run: |
           cd backend
-          uv run ruff check
+          uvx ruff check
 
       - name: Format check
         run: |
           cd backend
-          uv run ruff format --check
+          uvx ruff format --check
