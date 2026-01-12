@@ -8,7 +8,7 @@ import {
   type TrainingRunCreate,
   type TrainingRunUpdate,
   type TrainingRunResponse,
-} from "@/types/example_types";
+} from "@/types/example.types";
 import { validateResponse } from "@/utils/validation";
 
 const BASE_PATH = "/api/example/training-runs";

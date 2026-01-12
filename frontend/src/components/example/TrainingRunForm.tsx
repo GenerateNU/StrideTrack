@@ -1,9 +1,9 @@
-import { useState } from 'react';
-import type { FormEvent } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import type { TrainingRunCreate } from '@/types/example_types';
+import { useState } from "react";
+import type { FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import type { TrainingRunCreate } from "@/types/example.types";
 
 interface TrainingRunFormProps {
   initialData?: TrainingRunCreate;
@@ -18,11 +18,11 @@ export function TrainingRunForm({
   onSubmit,
   onCancel,
   isLoading = false,
-  submitLabel = 'Create',
+  submitLabel = "Create",
 }: TrainingRunFormProps) {
   const [formData, setFormData] = useState<TrainingRunCreate>(
     initialData || {
-      athlete_name: '',
+      athlete_name: "",
       distance_meters: 0,
       duration_seconds: 0,
       avg_ground_contact_time_ms: null,
@@ -54,7 +54,7 @@ export function TrainingRunForm({
         <Input
           id="distance_meters"
           type="number"
-          value={formData.distance_meters || ''}
+          value={formData.distance_meters || ""}
           onChange={(e) =>
             setFormData({
               ...formData,
@@ -73,7 +73,7 @@ export function TrainingRunForm({
           id="duration_seconds"
           type="number"
           step="0.1"
-          value={formData.duration_seconds || ''}
+          value={formData.duration_seconds || ""}
           onChange={(e) =>
             setFormData({
               ...formData,
@@ -88,13 +88,14 @@ export function TrainingRunForm({
 
       <div className="space-y-2">
         <Label htmlFor="avg_ground_contact_time_ms">
-          Avg Ground Contact Time (ms) <span className="text-muted-foreground">(optional)</span>
+          Avg Ground Contact Time (ms){" "}
+          <span className="text-muted-foreground">(optional)</span>
         </Label>
         <Input
           id="avg_ground_contact_time_ms"
           type="number"
           step="0.1"
-          value={formData.avg_ground_contact_time_ms || ''}
+          value={formData.avg_ground_contact_time_ms || ""}
           onChange={(e) =>
             setFormData({
               ...formData,
@@ -109,7 +110,7 @@ export function TrainingRunForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Saving...' : submitLabel}
+          {isLoading ? "Saving..." : submitLabel}
         </Button>
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
@@ -118,4 +119,3 @@ export function TrainingRunForm({
     </form>
   );
 }
-

@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   useGetAllTrainingRuns,
   useCreateTrainingRun,
   useUpdateTrainingRun,
   useDeleteTrainingRun,
-} from '@/hooks/exampleTrainingRuns.hooks';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { QueryError } from '@/components/QueryError';
-import { QueryLoading } from '@/components/QueryLoading';
+} from "@/hooks/exampleTrainingRuns.hooks";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/QueryLoading";
 import {
   Dialog,
   DialogContent,
@@ -16,19 +16,32 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { TrainingRunForm } from './TrainingRunForm';
-import type { TrainingRunCreate, TrainingRunResponse } from '@/types/example_types';
-import { formatDuration, formatDistance } from '@/utils/format';
+} from "@/components/ui/dialog";
+import { TrainingRunForm } from "./TrainingRunForm";
+import type {
+  TrainingRunCreate,
+  TrainingRunResponse,
+} from "@/types/example.types";
+import { formatDuration, formatDistance } from "@/utils/format";
 
 export function TrainingRunsList() {
-  const { trainingRuns, trainingRunsIsLoading, trainingRunsError, trainingRunsRefetch } = useGetAllTrainingRuns();
-  const { createTrainingRun, createTrainingRunIsLoading } = useCreateTrainingRun();
-  const { updateTrainingRun, updateTrainingRunIsLoading } = useUpdateTrainingRun();
-  const { deleteTrainingRun, deleteTrainingRunIsLoading } = useDeleteTrainingRun();
+  const {
+    trainingRuns,
+    trainingRunsIsLoading,
+    trainingRunsError,
+    trainingRunsRefetch,
+  } = useGetAllTrainingRuns();
+  const { createTrainingRun, createTrainingRunIsLoading } =
+    useCreateTrainingRun();
+  const { updateTrainingRun, updateTrainingRunIsLoading } =
+    useUpdateTrainingRun();
+  const { deleteTrainingRun, deleteTrainingRunIsLoading } =
+    useDeleteTrainingRun();
 
   const [showForm, setShowForm] = useState(false);
-  const [editingRun, setEditingRun] = useState<TrainingRunResponse | null>(null);
+  const [editingRun, setEditingRun] = useState<TrainingRunResponse | null>(
+    null
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [runToDelete, setRunToDelete] = useState<string | null>(null);
 
@@ -81,7 +94,7 @@ export function TrainingRunsList() {
         <Card>
           <CardHeader>
             <CardTitle>
-              {editingRun ? 'Edit Training Run' : 'Create Training Run'}
+              {editingRun ? "Edit Training Run" : "Create Training Run"}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -92,8 +105,10 @@ export function TrainingRunsList() {
                 setShowForm(false);
                 setEditingRun(null);
               }}
-              isLoading={createTrainingRunIsLoading || updateTrainingRunIsLoading}
-              submitLabel={editingRun ? 'Update' : 'Create'}
+              isLoading={
+                createTrainingRunIsLoading || updateTrainingRunIsLoading
+              }
+              submitLabel={editingRun ? "Update" : "Create"}
             />
           </CardContent>
         </Card>
@@ -126,7 +141,8 @@ export function TrainingRunsList() {
                       <p>Duration: {formatDuration(run.duration_seconds)}</p>
                       {run.avg_ground_contact_time_ms && (
                         <p>
-                          Avg GCT: {run.avg_ground_contact_time_ms.toFixed(1)} ms
+                          Avg GCT: {run.avg_ground_contact_time_ms.toFixed(1)}{" "}
+                          ms
                         </p>
                       )}
                       <p className="text-xs">
@@ -139,7 +155,9 @@ export function TrainingRunsList() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(run)}
-                      disabled={updateTrainingRunIsLoading || deleteTrainingRunIsLoading}
+                      disabled={
+                        updateTrainingRunIsLoading || deleteTrainingRunIsLoading
+                      }
                     >
                       Edit
                     </Button>
@@ -180,7 +198,7 @@ export function TrainingRunsList() {
               onClick={handleDeleteConfirm}
               disabled={deleteTrainingRunIsLoading}
             >
-              {deleteTrainingRunIsLoading ? 'Deleting...' : 'Delete'}
+              {deleteTrainingRunIsLoading ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
