@@ -12,11 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
+
+      - uses: astral-sh/setup-uv@v4
+
       - name: Lint
         run: |
           cd backend
-          pip install ruff
-          ruff check
+          uv run ruff check
+
+      - name: Format check
+        run: |
+          cd backend
+          uv run ruff format --check
