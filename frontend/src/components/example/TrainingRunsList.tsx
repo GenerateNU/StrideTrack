@@ -63,22 +63,6 @@ export function TrainingRunsList() {
     setShowForm(true);
   };
 
-  if (trainingRunsIsLoading) {
-    return (
-      <div className="p-8 h-64">
-        <QueryLoading />
-      </div>
-    );
-  }
-
-  if (trainingRunsError) {
-    return (
-      <div className="p-8">
-        <QueryError error={trainingRunsError} refetch={trainingRunsRefetch} />
-      </div>
-    );
-  }
-
   return (
     <div className="p-8 space-y-6">
       <div className="flex justify-between items-center">
@@ -115,7 +99,13 @@ export function TrainingRunsList() {
         </Card>
       )}
 
-      {trainingRuns.length === 0 ? (
+      {trainingRunsIsLoading ? (
+        <div className="h-64">
+          <QueryLoading />
+        </div>
+      ) : trainingRunsError ? (
+        <QueryError error={trainingRunsError} refetch={trainingRunsRefetch} />
+      ) : trainingRuns.length === 0 ? (
         <Card>
           <CardContent className="pt-6">
             <p className="text-muted-foreground text-center">
