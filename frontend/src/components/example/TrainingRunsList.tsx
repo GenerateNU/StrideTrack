@@ -7,6 +7,8 @@ import {
 } from '@/hooks/exampleTrainingRuns.hooks';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { QueryError } from '@/components/QueryError';
+import { QueryLoading } from '@/components/QueryLoading';
 import {
   Dialog,
   DialogContent,
@@ -63,19 +65,16 @@ export function TrainingRunsList() {
 
   if (trainingRunsIsLoading) {
     return (
-      <div className="p-8">
-        <p className="text-muted-foreground">Loading training runs...</p>
+      <div className="p-8 h-64">
+        <QueryLoading />
       </div>
     );
   }
 
   if (trainingRunsError) {
     return (
-      <div className="p-8 space-y-4">
-        <p className="text-destructive">Error: {trainingRunsError.message}</p>
-        <Button onClick={() => trainingRunsRefetch()} variant="outline">
-          Retry
-        </Button>
+      <div className="p-8">
+        <QueryError error={trainingRunsError} refetch={trainingRunsRefetch} />
       </div>
     );
   }
