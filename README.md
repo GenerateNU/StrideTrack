@@ -17,6 +17,13 @@ This is a 13-week prototype development project with Generate (generatenu.com) t
 - OpenTelemetry (Observability)
 - uv (Package Management)
 
+**Frontend:**
+
+- React 19 + Vite
+- TanStack Query (Server State)
+- Tailwind CSS + shadcn/ui
+- Bun (Package Management)
+
 **Infrastructure:**
 
 - Docker & Docker Compose
@@ -28,25 +35,23 @@ This is a 13-week prototype development project with Generate (generatenu.com) t
 ```
 stridetrack/
 ├── backend/              # FastAPI application (see backend/README.md)
-├── supabase/            # Database migrations and seed data
-│   ├── migrations/      # SQL migrations
-│   ├── seed.sql        # Seed data for local dev
-│   └── config.toml     # Supabase configuration
-├── docker-compose.yml   # Application services
+├── frontend/             # React application (see frontend/README.md)
+├── supabase/             # Database migrations and seed data
+│   ├── migrations/       # SQL migrations
+│   ├── seed.sql          # Seed data for local dev
+│   └── config.toml       # Supabase configuration
+├── docker-compose.yml    # Application services
 ├── otel-collector-config.yaml
-├── Makefile            # Development commands
+├── Makefile              # Development commands
+├── DEPENDENCIES.md       # Installation guide
 └── README.md
 ```
 
 ## Dependencies
 
-**Required:**
+See [DEPENDENCIES.md](DEPENDENCIES.md) for detailed installation instructions.
 
-- Python 3.13.9
-- [uv](https://github.com/astral-sh/uv) - Python package manager
-- [Bun](https://bun.sh) - JavaScript runtime (for Supabase CLI)
-- [Supabase CLI](https://supabase.com/docs/guides/cli) - `bun install -g supabase`
-- [Docker](https://www.docker.com/) & Docker Compose
+**Required:** Docker, Bun, Python 3.13.9, uv, Make
 
 **Verify installation:**
 
@@ -94,9 +99,10 @@ make check-deps
 | `make db-reset`                      | Reset database with migrations                 |
 | `make clean`                         | Remove all containers and volumes              |
 
-## Backend Documentation
+## Documentation
 
-See [backend/README.md](backend/README.md) for detailed architecture and design patterns.
+- **Backend:** See [backend/README.md](backend/README.md) for API architecture and design patterns
+- **Frontend:** See [frontend/README.md](frontend/README.md) for React architecture and hooks patterns
 
 ## Contributing
 
