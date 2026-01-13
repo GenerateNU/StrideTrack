@@ -16,7 +16,7 @@ else
 endif
 .SHELLFLAGS := -euo pipefail -c
 
-.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create
+.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create test
 
 # Colors for output
 GREEN := \033[0;32m
@@ -169,4 +169,18 @@ clean: ## Remove all containers, networks, and volumes
 	@bun x supabase stop --no-backup
 	@docker network rm $(NETWORK_NAME) 2>/dev/null || true
 	@printf "  $(GREEN)$(CHECKMARK)$(NC) Cleanup complete\n"
+	@printf "\n"
+
+test: ## Run backend tests in container
+	@printf "$(BLUE)Building test container...\n$(NC)"
+	@docker build -f backend/Dockerfile.test -t $(PROJECT_NAME)-test backend/
+	@printf "$(BLUE)Running tests...\n$(NC)"
+	$(eval SERVICE_KEY := $(shell bun x supabase status -o json 2>/dev/null | grep -o '"SERVICE_ROLE_KEY": "[^"]*"' | cut -d'"' -f4))
+	@docker run --rm \
+		--network supabase_network_StrideTrack \
+		-e SUPABASE_URL=http://supabase_kong_StrideTrack:8000 \
+		-e SUPABASE_SERVICE_ROLE_KEY="$(SERVICE_KEY)" \
+		-e ENVIRONMENT=test \
+		$(PROJECT_NAME)-test
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Tests complete\n"
 	@printf "\n"
