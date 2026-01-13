@@ -44,7 +44,7 @@ jobs:
         working-directory: ./backend
 
       - name: Run tests
-        run: make test-ci
+        run: uv run pytest --cov=app --cov-report=xml --cov-fail-under=70
         working-directory: ./backend
 
       - name: Upload coverage report
