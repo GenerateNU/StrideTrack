@@ -1,5 +1,7 @@
 # Breakdown of the Turin (Politecnico di Torino) Running Project
 
+[Politecnico di Torino – Running Analysis Thesis (PDF)](https://webthesis.biblio.polito.it/25728/1/tesi.pdf)
+
 ## Project Overview
 
 _More information avaible at (Abstract, p. III)_
