@@ -45,6 +45,8 @@ Head strength and conditioning coach for all teams also participated.
 Coaches have a mean age of 40 years. 77% were male and 84% were caucasian. The coaches had been coaching as well for a mean of 15.1 years.
 
 
+
+Studies:
 Questions: Applicable added!
 
 1) Can you think of specific ways that your team would benefit from knowledge gained from collecting data?
