@@ -15,10 +15,7 @@ def extrapolate_second_foot(
     """
     Extrapolate second foot data and combine with first foot in single DataFrame.
     Added asymmetry and slight variation to simulate real world data. The asymmetry is meant
-    for a non dominant foot if there is one.
-
-    Outputs: Two dataframes, one of which has data with unified time column for both feet whereas
-    the other has separate time columns for each foot.
+    for a non dominant foot if there is one. Returns unifed DataFrame of mocked two foot sensors.
     """
     unified_df = pd.DataFrame({'Time': foot1_data[time_col].values})
     unified_df['Force_Foot1'] = foot1_data[force_col].astype(int).values
