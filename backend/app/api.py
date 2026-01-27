@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
 from app.core.supabase import get_async_supabase
-from app.routes.example_routes import router as example_router
+from app.routes import athletes, coaches, training_runs 
 
 api_router = APIRouter(prefix="/api")
 
@@ -16,4 +16,6 @@ async def health_check(supabase: AsyncClient = Depends(get_async_supabase)):
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
 
 
-api_router.include_router(example_router)
+api_router.include_router(athletes.router)
+api_router.include_router(coaches.router)
+api_router.include_router(training_runs.router)
