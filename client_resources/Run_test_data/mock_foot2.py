@@ -14,6 +14,9 @@ def extrapolate_second_foot(
     Extrapolate second foot data and combine with first foot in single DataFrame.
     Added asymmetry and slight variation to simulate real world data. The asymmetry is meant
     for a non dominant foot if there is one.
+
+    Outputs: Two dataframes, one of which has data with unified time column for both feet whereas
+    the other has separate time columns for each foot.
     """
     # Offset and asymmetry
     foot2_data = foot1_data.copy()
