@@ -5,11 +5,12 @@ from fastapi import APIRouter, Depends, status
 from supabase._async.client import AsyncClient
 
 from app.core.supabase import get_async_supabase
-from app.repositories.all_repositories_repository import AthletesRepo
+from app.repositories.all_repositories import AthletesRepo
 from app.schemas.all_schemas import (
     AthleteCreate,
     AthleteUpdate,
     AthleteResponse,
+    TrainingRunResponse,
 )
 
 from app.services.all_services import AthletesService

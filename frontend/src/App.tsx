@@ -8,12 +8,16 @@ function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       console.log("APP SESSION:", data.session);
+      console.log("token:", data.session?.access_token);
+      console.log("user id:", data.session?.user?.id);
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("APP AUTH EVENT:", event);
         console.log("APP SESSION FROM EVENT:", session);
+        console.log("token:", session?.access_token);
+        console.log("user id:", session?.user?.id);
       },
     );
 

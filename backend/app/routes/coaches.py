@@ -7,8 +7,10 @@ from supabase._async.client import AsyncClient
 from app.core.supabase import get_async_supabase
 from app.repositories.all_repositories import CoachesRepo
 from app.schemas.all_schemas import (
+    AthleteResponse,
     CoachUpdate,
     CoachResponse,
+    TrainingRunResponse,
 )
 
 from app.services.all_services import CoachesService
