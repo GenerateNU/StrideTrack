@@ -1,14 +1,12 @@
-import { BrowserRouter, Routes, Route} from 'react-router-dom';
-import { ExamplePage } from './pages/ExamplePage';
+import { AuthButton } from './components/AuthButton'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<ExamplePage />} />
-      </Routes>
-    </BrowserRouter>
-  );
+    <div>
+      <h1>StrideTrack</h1>
+      <AuthButton />
+    </div>
+  )
 }
 
-export default App;
+export default App
