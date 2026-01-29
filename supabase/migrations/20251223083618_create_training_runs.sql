@@ -60,10 +60,6 @@ CREATE POLICY "Coaches can update own profile"
 ON coaches FOR UPDATE
 USING (auth.uid() = id);
 
-CREATE POLICY "Coaches can create own profile"
-ON coaches FOR INSERT
-WITH CHECK (auth.uid() = id);
-
 CREATE POLICY "Coaches can view their athletes"
 ON athletes FOR SELECT
 USING (coach_id = auth.uid());
