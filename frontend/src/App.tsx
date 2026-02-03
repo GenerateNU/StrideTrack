@@ -1,13 +1,12 @@
 import { useAuth } from './hooks/useAuth'
-import { apiFetch } from './lib/api'
+import api from './lib/api'
 
 function App() {
   const { session, loading, signInWithGoogle, signOut } = useAuth()
 
   const testApi = async () => {
-    const res = await apiFetch('/api/auth/me')
-    const data = await res.json()
-    console.log(data)  // Check browser console
+    const { data } = await api.get('/api/auth/me')
+    console.log(data)
   }
 
   if (loading) return <div>Loading...</div>
