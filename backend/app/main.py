@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,13 +11,14 @@ from app.core.exception_handlers import (
 )
 from app.core.exceptions import NotFoundException
 from app.core.observability import setup_observability
+from app.schemas.health_schemas import RootResponse
 
 # Setup observability before creating FastAPI app
 FastAPIInstrumentor, HTTPXInstrumentor = setup_observability()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Startup
 
     yield
@@ -50,5 +52,5 @@ app.include_router(api_router)
 
 
 @app.get("/")
-def read_root():
-    return {"message": "StrideTrack API"}
+def read_root() -> RootResponse:
+    return RootRes

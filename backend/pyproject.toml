@@ -36,6 +36,7 @@ select = [
     "B",
     "C4",
     "UP",
+    "ANN"
 ]
 ignore = [
     "E501",
