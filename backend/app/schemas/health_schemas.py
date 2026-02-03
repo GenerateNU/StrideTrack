@@ -7,4 +7,4 @@ class HealthResponse(BaseModel):
     error: str | None = Field(None, gt=0)
 
 class RootResponse(BaseModel):
-    message: str = Field(..., gt=0
+    message: str = Field(..., gt=0)
