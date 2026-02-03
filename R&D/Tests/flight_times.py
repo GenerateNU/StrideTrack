@@ -116,7 +116,7 @@ def extract_flight_times_from_unified_csv(
     return out
 
 
-if __name__ == "__main__":
+def main():
     PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
     input_dir = PROJECT_ROOT / "R&D" / "Tests" / "Two_foot" / "Raw_data"
@@ -156,3 +156,7 @@ if __name__ == "__main__":
 
         flight_df.to_csv(output_file, index=False)
         print(f"Wrote: {output_file}")
+
+
+if __name__ == "__main__":
+    main()

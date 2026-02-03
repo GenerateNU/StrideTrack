@@ -46,10 +46,7 @@ def make_two_feet_for_timing(
     return unified_df
 
 
-if __name__ == "__main__":
-    from pathlib import Path
-    import pandas as pd
-
+def main():
     PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
     input_dir = PROJECT_ROOT / "client_resources" / "Run_test_data"
@@ -85,3 +82,7 @@ if __name__ == "__main__":
         unified_data.to_csv(output_path, index=False)
 
         print(f"Wrote: {output_path}")
+
+
+if __name__ == "__main__":
+    main()
