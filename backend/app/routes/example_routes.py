@@ -27,7 +27,8 @@ async def get_example_service(
 
 
 @router.get("/training-runs", response_model=list[ExampleRunResponse])
-async def list_training_runs(service: ExampleService = Depends(get_example_service)
+async def list_training_runs(
+    service: ExampleService = Depends(get_example_service),
 ) -> list[ExampleRunResponse]:
     """Get all training runs."""
     logger.info("Route: GET /training-runs")

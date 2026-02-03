@@ -9,7 +9,9 @@ api_router = APIRouter(prefix="/api")
 
 
 @api_router.get("/health")
-async def health_check(supabase: AsyncClient = Depends(get_async_supabase)) -> HealthResponse:
+async def health_check(
+    supabase: AsyncClient = Depends(get_async_supabase),
+) -> HealthResponse:
     try:
         await supabase.table("training_runs").select("count", count="exact").execute()
         return HealthResponse(status="healthy", database="connected")
