@@ -1,5 +1,5 @@
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -53,4 +53,4 @@ app.include_router(api_router)
 
 @app.get("/")
 def read_root() -> RootResponse:
-    return RootResponse(message="StrideTrack API")
+    retur
