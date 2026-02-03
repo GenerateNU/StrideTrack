@@ -1,18 +1,16 @@
-import { supabase } from "./supabase";
+import axios from 'axios'
+import { supabase } from './supabase'
 
-const API_URL = import.meta.env.VITE_API_URL;
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,
+})
 
-export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+api.interceptors.request.use(async (config) => {
+  const { data: { session } } = await supabase.auth.getSession()
+  if (session?.access_token) {
+    config.headers.Authorization = `Bearer ${session.access_token}`
+  }
+  return config
+})
 
-  return fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      ...options.headers,
-      Authorization: `Bearer ${session?.access_token}`,
-      "Content-Type": "application/json",
-    },
-  });
-}
+export default api
