@@ -19,4 +19,4 @@ async def health_check(
         return HealthResponse(status="unhealthy", database="disconnected", error=str(e))
 
 
-api_router.include_router(example_r
+api_router.include_router(example_router)

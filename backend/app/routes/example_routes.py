@@ -83,4 +83,4 @@ async def delete_training_run(
     """Delete a training run."""
     logger.info(f"Route: DELETE /training-runs/{run_id}")
     await service.delete_run(run_id)
-    logger.info(f"Route: Deleted training run {run_
+    logger.info(f"Route: Deleted training run {run_id}")
