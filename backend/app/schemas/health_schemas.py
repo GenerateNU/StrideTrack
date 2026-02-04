@@ -8,4 +8,4 @@ class HealthResponse(BaseModel):
 
 
 class RootResponse(BaseModel):
-    message: str = Field(..., gt=0)
+    message: str = Field(..., gt=
