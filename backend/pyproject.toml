@@ -42,11 +42,11 @@ ignore = [
     "E501",
     "B008",
     "UP007",
-    "ANN401",
+    "ANN401"
 ]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false
-line-e
+line-ending = "auto"

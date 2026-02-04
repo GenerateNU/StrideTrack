@@ -53,4 +53,4 @@ app.include_router(api_router)
 
 @app.get("/")
 def read_root() -> RootResponse:
-    return RootResponse(message="StrideTrack API")
+    retur

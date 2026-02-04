@@ -85,4 +85,4 @@ class ExampleRepository:
             logger.warning(f"Repository: Training run not found for deletion {run_id}")
             raise NotFoundException("Training run", str(run_id))
 
-        logger.info(f"Repository: Deleted training run {run_id}")
+       
