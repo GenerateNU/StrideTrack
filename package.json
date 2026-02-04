@@ -2,7 +2,6 @@
   "name": "stridetrack",
   "module": "index.ts",
   "dependencies": {
-    "@supabase/supabase-js": "^2.93.2",
     "supabase": "^2.68.1"
   },
   "private": true,

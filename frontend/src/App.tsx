@@ -1,13 +1,9 @@
 import { useAuth } from './hooks/useAuth'
-import api from './lib/api'
+import { useCurrentUser } from './hooks/useCurrentUser'
 
 function App() {
   const { session, loading, signInWithGoogle, signOut } = useAuth()
-
-  const testApi = async () => {
-    const { data } = await api.get('/api/auth/me')
-    console.log(data)
-  }
+  const { user, loading: userLoading } = useCurrentUser()
 
   if (loading) return <div>Loading...</div>
 
@@ -16,7 +12,11 @@ function App() {
       {session ? (
         <>
           <p>Logged in as {session.user.email}</p>
-          <button onClick={testApi}>Test API</button>
+          {userLoading ? (
+            <p>Loading user data...</p>
+          ) : (
+            <p>Backend user ID: {user?.user_id}</p>
+          )}
           <button onClick={signOut}>Sign Out</button>
         </>
       ) : (
