@@ -2,7 +2,7 @@ import logging
 from uuid import UUID
 
 from app.repositories.example_repository import ExampleRepository
-from app.schemas.example_schemas import ExampleRunResponse
+from app.schemas.example_schemas import ExampleRunResponse, ExampleRunCreate, ExampleRunUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +27,14 @@ class ExampleService:
         logger.info(f"Service: Found training run {run_id}")
         return run
 
-    async def create_run(self, data: dict) -> ExampleRunResponse:
+    async def create_run(self, data: ExampleRunCreate) -> ExampleRunResponse:
         """Create a new training run."""
-        logger.info(f"Service: Creating training run for {data.get('athlete_name')}")
+        logger.info(f"Service: Creating training run for {data.athlete_name}")
         run = await self.repository.create(data)
-        logger.info(f"Service: Created training run {run['id']}")
+        logger.info(f"Service: Created training run {run.id}")
         return run
 
-    async def update_run(self, run_id: UUID, data: dict) -> ExampleRunResponse:
+    async def update_run(self, run_id: UUID, data: ExampleRunUpdate) -> ExampleRunResponse:
         """Update a training run."""
         logger.info(f"Service: Updating training run {run_id}")
         run = await self.repository.update(run_id, data)

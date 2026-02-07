@@ -2,10 +2,10 @@ from pydantic import BaseModel, Field
 
 
 class HealthResponse(BaseModel):
-    status: str = Field(..., gt=0)
-    database: str = Field(..., gt=0)
-    error: str | None = Field(None, gt=0)
+    status: str = Field(...)
+    database: str = Field(...)
+    error: str | None = Field(None)
 
 
 class RootResponse(BaseModel):
-    message: str = Field(..., gt=0)
+    message: str = Field(...)

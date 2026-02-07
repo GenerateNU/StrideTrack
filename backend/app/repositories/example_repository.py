@@ -4,7 +4,7 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.example_schemas import ExampleRunResponse
+from app.schemas.example_schemas import ExampleRunResponse, ExampleRunCreate, ExampleRunUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -45,20 +45,23 @@ class ExampleRepository:
         logger.info(f"Repository: Found training run {run_id}")
         return ExampleRunResponse(**response.data[0])
 
-    async def create(self, data: dict) -> ExampleRunResponse:
+    async def create(self, data: ExampleRunCreate) -> ExampleRunResponse:
         """Create a new training run."""
-        logger.info(f"Repository: Creating training run for {data.get('athlete_name')}")
-        response = await self.supabase.table(self.table).insert(data).execute()
+        create_data = data.model_dump(exclude_unset=True)
+        logger.info(f"Repository: Creating training run for {create_data.get('athlete_name')}")
+        response = await self.supabase.table(self.table).insert(create_data).execute()
         created = response.data[0]
         logger.info(f"Repository: Created training run {created['id']}")
         return ExampleRunResponse(**created)
 
-    async def update(self, run_id: UUID, data: dict) -> ExampleRunResponse:
+    async def update(self, run_id: UUID, data: ExampleRunUpdate) -> ExampleRunResponse:
         """Update a training run."""
+        update_data = data.model_dump(exclude_unset=True)
+
         logger.info(f"Repository: Updating training run {run_id}")
         response = (
             await self.supabase.table(self.table)
-            .update(data)
+            .update(update_data)
             .eq("id", str(run_id))
             .execute()
         )
