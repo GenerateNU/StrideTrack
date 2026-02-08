@@ -136,7 +136,7 @@ def _assign_stride_numbers(df: pd.DataFrame) -> pd.DataFrame:
 # Main transformation
 
 def transform_feet_to_stride_cycles(
-    input_csv: Path,
+    df: pd.DataFrame,
     time_col: str = "Time",
     foot1_col: str = "Force_Foot1",
     foot2_col: str = "Force_Foot2",
@@ -149,11 +149,9 @@ def transform_feet_to_stride_cycles(
     Final output columns:
       stride_num, foot, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms
     """
-    df = pd.read_csv(input_csv)
-
     for col in (time_col, foot1_col, foot2_col):
         if col not in df.columns:
-            raise ValueError(f"Missing required column '{col}' in {input_csv.name}")
+            raise ValueError(f"Missing required column '{col}' in uploaded CSV")
 
     time = df[time_col].to_numpy(dtype=np.int64)
     f1 = df[foot1_col].to_numpy(dtype=np.int64)
@@ -179,7 +177,7 @@ def transform_feet_to_stride_cycles(
     stance2 = _extract_stance_intervals(time, contact2.astype(np.int8), threshold=0)
 
     t0_raw = int(time[0])
-
+    
     # Build per-foot stride-cycle rows
     foot1_rows = _build_stride_rows(stance1, foot1_label, t0_raw)
     foot2_rows = _build_stride_rows(stance2, foot2_label, t0_raw)

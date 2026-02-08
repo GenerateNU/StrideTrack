@@ -2,13 +2,13 @@ import logging
 from fastapi import HTTPException
 import pandas as pd
 from app.services.transform_run import transform_feet_to_stride_cycles
-from app.repositories.data_repository import DataRepository
+from app.repositories.csv_repository import CSVRepository
 from app.schemas.csv_schemas import CSVUploadResponse
 
 logger = logging.getLogger(__name__)
 
-class DataService:
-  def __init__(self, repository: DataRepository):
+class CSVService:
+  def __init__(self, repository: CSVRepository):
       self.repository = repository
 
   async def ingest_stride_csv(self, raw_df: pd.DataFrame) -> CSVUploadResponse:
