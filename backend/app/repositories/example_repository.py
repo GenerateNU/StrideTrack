@@ -4,7 +4,11 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.example_schemas import ExampleRunResponse, ExampleRunCreate, ExampleRunUpdate
+from app.schemas.example_schemas import (
+    ExampleRunCreate,
+    ExampleRunResponse,
+    ExampleRunUpdate,
+)
 
 logger = logging.getLogger(__name__)
 

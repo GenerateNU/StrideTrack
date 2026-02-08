@@ -2,7 +2,11 @@ import logging
 from uuid import UUID
 
 from app.repositories.example_repository import ExampleRepository
-from app.schemas.example_schemas import ExampleRunResponse, ExampleRunCreate, ExampleRunUpdate
+from app.schemas.example_schemas import (
+    ExampleRunCreate,
+    ExampleRunResponse,
+    ExampleRunUpdate,
+)
 
 logger = logging.getLogger(__name__)
 
