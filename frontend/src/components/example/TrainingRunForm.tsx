@@ -3,7 +3,7 @@ import type { FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { TrainingRunCreate } from "@/types/example.types";
+import type { ExampleRunCreate as TrainingRunCreate } from "@/types";
 
 interface TrainingRunFormProps {
   initialData?: TrainingRunCreate;
@@ -21,7 +21,7 @@ export function TrainingRunForm({
   submitLabel = "Create",
 }: TrainingRunFormProps) {
   const [formData, setFormData] = useState<TrainingRunCreate>(
-    initialData || {
+    initialData ?? {
       athlete_name: "",
       distance_meters: 0,
       duration_seconds: 0,
@@ -58,7 +58,7 @@ export function TrainingRunForm({
           onChange={(e) =>
             setFormData({
               ...formData,
-              distance_meters: parseInt(e.target.value) || 0,
+              distance_meters: Number(e.target.value) || 0,
             })
           }
           required
@@ -77,7 +77,7 @@ export function TrainingRunForm({
           onChange={(e) =>
             setFormData({
               ...formData,
-              duration_seconds: parseFloat(e.target.value) || 0,
+              duration_seconds: Number(e.target.value) || 0,
             })
           }
           required
@@ -95,12 +95,12 @@ export function TrainingRunForm({
           id="avg_ground_contact_time_ms"
           type="number"
           step="0.1"
-          value={formData.avg_ground_contact_time_ms || ""}
+          value={formData.avg_ground_contact_time_ms ?? ""}
           onChange={(e) =>
             setFormData({
               ...formData,
               avg_ground_contact_time_ms: e.target.value
-                ? parseFloat(e.target.value)
+                ? Number(e.target.value)
                 : null,
             })
           }
