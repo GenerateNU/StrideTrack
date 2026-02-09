@@ -1,16 +1,26 @@
 from io import BytesIO
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-
 import logging
 
 import pandas as pd
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from supabase._async.client import AsyncClient
+
+from app.core.supabase import get_async_supabase
+from app.schemas.csv_schemas import CSVUploadResponse
+from app.services.csv_service import CSVService
+from app.repositories.csv_repository import CSVRepository
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/data", tags=["Data"])
+router = APIRouter(prefix="/csv", tags=["CSV"])
 
-@router.post("/upload-run", response_model=DataUploadResponse, status_code=status.HTTP_201_CREATED)
-async def upload_data_csv(file: UploadFile = File(...), service: *SERVICE NAME* = Depends(get_stride_service),):
+# Dependency injection
+async def get_csv_service() -> CSVService:
+    repository = CSVRepository()
+    return CSVService(repository)
+
+@router.post("/upload-run", response_model=CSVUploadResponse, status_code=status.HTTP_201_CREATED)
+async def upload_data_csv(file: UploadFile = File(...), service: CSVService = Depends(get_csv_service)) -> CSVUploadResponse:
   logger.info(f"Route: POST /upload-run filename={file.filename}")
 
   # Basic file validation
@@ -32,10 +42,5 @@ async def upload_data_csv(file: UploadFile = File(...), service: *SERVICE NAME* 
   except Exception as e:
       logger.exception("Failed to ingest run data frame")
       raise HTTPException(status_code=500, detail=f"Failed to ingest run data frame: {str(e)}")
-
-  logger.info(
-      f"Stride upload complete rows_in={result.rows_in} "
-      f"rows_out={result.rows_out} inserted={result.inserted}"
-  )
 
   return result

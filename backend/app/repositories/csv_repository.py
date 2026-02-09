@@ -4,7 +4,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-class DataRepository:
+class CSVRepository:
     async def insert_transformed_stride_rows(
         self,
         df: pd.DataFrame,
