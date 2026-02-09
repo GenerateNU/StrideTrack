@@ -169,3 +169,23 @@ Hooks return descriptively named properties (e.g., `trainingRunsIsLoading`) for 
 - `*.types.ts` - Zod schemas and TypeScript types
 - `*.service.ts` - API service functions (if separated from hooks)
 - Components use PascalCase: `TrainingRunForm.tsx`
+
+
+## API Type & Hook Generation (Orval)
+
+This project uses **Orval** to automatically generate TypeScript types and TanStack Query hooks from the FastAPI OpenAPI specification. This ensures the frontend stays fully aligned with backend contracts and eliminates manually maintained API types and hooks.
+
+### Prerequisites
+
+- Backend running locally
+- OpenAPI spec available at: ${VITE_API_URL}/openapi.json
+
+
+(Default: `http://localhost:8000/openapi.json`)
+
+### Regenerating API Code
+
+From the `frontend/` directory, run:
+
+```bash
+bun run api:gen
