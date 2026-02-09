@@ -3,7 +3,12 @@
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import (
+    DevUserNotAllowedException,
+    ExpiredTokenException,
+    InvalidTokenException,
+    NotFoundException,
+)
 
 
 async def not_found_exception_handler(
@@ -22,3 +27,15 @@ async def value_error_exception_handler(
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exc)}
     )
+
+
+async def invalid_token_handler(_: Request, __: InvalidTokenException):
+    return JSONResponse(status_code=401, content={"detail": "Invalid token"})
+
+
+async def expired_token_handler(_: Request, __: ExpiredTokenException):
+    return JSONResponse(status_code=401, content={"detail": "Token expired"})
+
+
+async def dev_user_not_allowed_handler(_: Request, __: DevUserNotAllowedException):
+    return JSONResponse(status_code=403, content={"detail": "Dev user not allowed"})
