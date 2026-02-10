@@ -5,15 +5,18 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-api.interceptors.request.use(async (config) => {
-  //dev token first
-  const devToken = localStorage.getItem("dev-token");
-  if (devToken) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${devToken}`;
-    return config;
-  }
+const ENV = import.meta.env.VITE_ENVIRONMENT;
 
+api.interceptors.request.use(async (config) => {
+  if (ENV === "development") {
+    //dev token first
+    const devToken = localStorage.getItem("dev-token");
+    if (devToken) {
+      config.headers = config.headers ?? {};
+      config.headers.Authorization = `Bearer ${devToken}`;
+      return config;
+    }
+  }
   //otherwise supabase session
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
