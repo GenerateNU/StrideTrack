@@ -10,7 +10,3 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def get_me(user: User = Depends(get_current_user)):
     return {"user_id": user.id, "email": user.email}
 
-
-# @router.get("/me")
-# async def get_me(user: CurrentUser = Depends(get_current_user)):
-#     return {"user_id": user.id, "email": user.email}

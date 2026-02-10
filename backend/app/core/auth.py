@@ -1,18 +1,20 @@
 import os
 
 import jwt
-from fastapi import Depends, HTTPException
+from fastapi import Depends  # , HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.core.exceptions import (
     DevUserNotAllowedException,
+    ExpiredTokenException,
+    InvalidTokenException,
 )
 from app.schemas.user_schema import User
 
 security = HTTPBearer()
 
 SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
-ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
 
 
 async def get_current_user(
@@ -45,6 +47,12 @@ async def get_current_user(
         )
 
     except jwt.ExpiredSignatureError as err:
-        raise HTTPException(status_code=401, detail="Token expired") from err
+        raise ExpiredTokenException() from err
+
     except jwt.InvalidTokenError as err:
-        raise HTTPException(status_code=401, detail="Invalid token") from err
+        raise InvalidTokenException() from err
+
+    # except jwt.ExpiredSignatureError as err:
+    #     raise HTTPException(status_code=401, detail="Token expired") from err
+    # except jwt.InvalidTokenError as err:
+    #     raise HTTPException(status_code=401, detail="Invalid token") from err
