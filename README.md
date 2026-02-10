@@ -107,3 +107,16 @@ make check-deps
 ## Contributing
 
 This project is developed as part of Generate NU's 13-week development program. Focus is on software components (dashboard, data pipeline, analytics) with mock data support.
+
+
+## Environment Setup
+
+### Supabase
+Copy `supabase/.env.example` to `supabase/.env` and fill in:
+- `GOOGLE_CLIENT_ID` - From Google Cloud Console OAuth credentials
+- `GOOGLE_CLIENT_SECRET` - From Google Cloud Console OAuth credentials
+
+To get these:
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create OAuth 2.0 credentials
+3. Add redirect URI: `http://127.0.0.1:54321/auth/v1/callback`
