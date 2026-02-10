@@ -28,16 +28,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    //helper to get mode from the state instead of setting it
-    //should i add this?
-    // const computeMode = (user: User | null) => {
-    //   if (localStorage.getItem("dev-token")) return "dev" as const;
-    //   return user ? ("google" as const) : ("none" as const);
-    // };
 
     //if previously clicked Login as Dev, we stored:
     // localStorage["dev-token"] = "dev-token"
-    //so when app loads, we immediently enter dev mode
+    //so when app loads, we immediately  enter dev mode
     const devToken = localStorage.getItem("dev-token");
     if (devToken) {
       setMode("dev");
