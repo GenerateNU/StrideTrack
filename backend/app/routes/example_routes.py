@@ -27,7 +27,9 @@ async def get_example_service(
 
 
 @router.get("/training-runs", response_model=list[ExampleRunResponse])
-async def list_training_runs(service: ExampleService = Depends(get_example_service)):
+async def list_training_runs(
+    service: ExampleService = Depends(get_example_service),
+) -> list[ExampleRunResponse]:
     """Get all training runs."""
     logger.info("Route: GET /training-runs")
     runs = await service.get_all_runs()
@@ -38,7 +40,7 @@ async def list_training_runs(service: ExampleService = Depends(get_example_servi
 @router.get("/training-runs/{run_id}", response_model=ExampleRunResponse)
 async def get_training_run(
     run_id: UUID, service: ExampleService = Depends(get_example_service)
-):
+) -> ExampleRunResponse:
     """Get a training run by ID."""
     logger.info(f"Route: GET /training-runs/{run_id}")
     run = await service.get_run_by_id(run_id)
@@ -53,7 +55,7 @@ async def get_training_run(
 )
 async def create_training_run(
     data: ExampleRunCreate, service: ExampleService = Depends(get_example_service)
-):
+) -> ExampleRunResponse:
     """Create a new training run."""
     logger.info(f"Route: POST /training-runs for athlete {data.athlete_name}")
     run = await service.create_run(data.model_dump(exclude_unset=True))
@@ -66,7 +68,7 @@ async def update_training_run(
     run_id: UUID,
     data: ExampleRunUpdate,
     service: ExampleService = Depends(get_example_service),
-):
+) -> ExampleRunResponse:
     """Update a training run."""
     logger.info(f"Route: PATCH /training-runs/{run_id}")
     run = await service.update_run(run_id, data.model_dump(exclude_unset=True))
@@ -77,7 +79,7 @@ async def update_training_run(
 @router.delete("/training-runs/{run_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_training_run(
     run_id: UUID, service: ExampleService = Depends(get_example_service)
-):
+) -> None:
     """Delete a training run."""
     logger.info(f"Route: DELETE /training-runs/{run_id}")
     await service.delete_run(run_id)
