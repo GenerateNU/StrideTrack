@@ -52,7 +52,9 @@ class ExampleRepository:
     async def create(self, data: ExampleRunCreate) -> ExampleRunResponse:
         """Create a new training run."""
         create_data = data.model_dump(exclude_unset=True)
-        logger.info(f"Repository: Creating training run for {create_data.get('athlete_name')}")
+        logger.info(
+            f"Repository: Creating training run for {create_data.get('athlete_name')}"
+        )
         response = await self.supabase.table(self.table).insert(create_data).execute()
         created = response.data[0]
         logger.info(f"Repository: Created training run {created['id']}")

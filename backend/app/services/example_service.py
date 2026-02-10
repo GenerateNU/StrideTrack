@@ -38,7 +38,9 @@ class ExampleService:
         logger.info(f"Service: Created training run {run.id}")
         return run
 
-    async def update_run(self, run_id: UUID, data: ExampleRunUpdate) -> ExampleRunResponse:
+    async def update_run(
+        self, run_id: UUID, data: ExampleRunUpdate
+    ) -> ExampleRunResponse:
         """Update a training run."""
         logger.info(f"Service: Updating training run {run_id}")
         run = await self.repository.update(run_id, data)
