@@ -5,7 +5,7 @@ from fastapi import HTTPException
 
 from app.repositories.csv_repository import CSVRepository
 from app.schemas.csv_schemas import CSVUploadResponse
-from app.services.transform_run import transform_feet_to_stride_cycles
+from app.utils.transform_run import transform_feet_to_stride_cycles
 
 logger = logging.getLogger(__name__)
 
