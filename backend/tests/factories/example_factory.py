@@ -39,13 +39,13 @@ class ExampleFactory:
         }
 
     @classmethod
-    def create(cls, **overrides: Any) -> dict[str, Any]:
+    def create(cls, **overrides: Any) -> dict[str, Any]:  # noqa: ANN401
         """Create a dict with optional field overrides."""
         instance = cls(**{k: v for k, v in overrides.items() if v is not None})
         return instance.build()
 
     @classmethod
-    def create_minimal(cls, **overrides: Any) -> dict[str, Any]:
+    def create_minimal(cls, **overrides: Any) -> dict[str, Any]:  # noqa: ANN401
         """Create a dict with only required fields + overrides."""
         instance = cls(**{k: v for k, v in overrides.items() if v is not None})
         return instance.build_without_optional()
