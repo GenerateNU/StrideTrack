@@ -29,13 +29,13 @@ async def value_error_exception_handler(
     )
 
 
-async def invalid_token_handler(_: Request, __: InvalidTokenException):
+async def invalid_token_handler(_: Request, __: InvalidTokenException) -> JSONResponse:
     return JSONResponse(status_code=401, content={"detail": "Invalid token"})
 
 
-async def expired_token_handler(_: Request, __: ExpiredTokenException):
+async def expired_token_handler(_: Request, __: ExpiredTokenException) -> JSONResponse:
     return JSONResponse(status_code=401, content={"detail": "Token expired"})
 
 
-async def dev_user_not_allowed_handler(_: Request, __: DevUserNotAllowedException):
+async def dev_user_not_allowed_handler(_: Request, __: DevUserNotAllowedException) -> JSONResponse:
     return JSONResponse(status_code=403, content={"detail": "Dev user not allowed"})
