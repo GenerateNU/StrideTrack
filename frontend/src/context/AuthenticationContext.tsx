@@ -6,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Session, User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
 export type AuthMode = "none" | "dev" | "google";
