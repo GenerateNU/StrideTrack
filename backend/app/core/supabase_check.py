@@ -3,7 +3,7 @@ import asyncio
 from supabase._async.client import AsyncClient
 
 
-async def wait_for_supabase(supabase: AsyncClient):
+async def wait_for_supabase(supabase: AsyncClient) -> None:
     """Wait for Supabase to be ready for the operations we actually need"""
     max_retries = 30
 
