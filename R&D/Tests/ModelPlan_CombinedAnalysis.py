@@ -1,11 +1,11 @@
 import re
 from pathlib import Path
-from typing import Optional, Tuple, Dict, Any
-import numpy as np
+from typing import Optional, Tuple
 import pandas as pd
 import pdfplumber
 import requests
 import tabula
+
 
 class W100H_DEMO:
     def __init__(self) -> None:
@@ -26,7 +26,7 @@ class W100H_DEMO:
             print(f"Error: {e}")
             return False
 
-    def parse_athlete_data(self, lines, start_idx, current_wind, current_event): #type: ignore
+    def parse_athlete_data(self, lines, start_idx, current_wind, current_event):  # type: ignore
         """
         Parse athlete data from 3 consecutive lines
         Returns dict with athlete info and race data
@@ -45,7 +45,9 @@ class W100H_DEMO:
             last_name = name_match.group(1).strip()
             first_name = name_match.group(2).strip()
             country = name_match.group(3)
-            year_text = name_match.group(4)  # Could be "1995" or "199t5im" or "2t0im00e"
+            year_text = name_match.group(
+                4
+            )  # Could be "1995" or "199t5im" or "2t0im00e"
 
             # Extract all digits from year text and take first 4
             digits = "".join(c for c in year_text if c.isdigit())
@@ -56,7 +58,9 @@ class W100H_DEMO:
             athlete_name = f"{first_name} {last_name}"
 
             # Extract times after "time" keyword - handles malformed "time"
-            time_match = re.search(r"t[^\d]*ime?\s*([\d\.\s]+)", name_line, re.IGNORECASE)
+            time_match = re.search(
+                r"t[^\d]*ime?\s*([\d\.\s]+)", name_line, re.IGNORECASE
+            )
 
             # If no time keyword, grab numbers after both parentheses (country and year)
             if not time_match:
@@ -69,7 +73,11 @@ class W100H_DEMO:
                 return None
 
             times_str = time_match.group(1).strip()
-            times = [float(t) for t in times_str.split() if t.replace(".", "").replace("-", "").isdigit()]
+            times = [
+                float(t)
+                for t in times_str.split()
+                if t.replace(".", "").replace("-", "").isdigit()
+            ]
 
             # Gets H1-H10 times + official time
             if len(times) < 11:
@@ -125,7 +133,7 @@ class W100H_DEMO:
         except Exception:
             return None
 
-    def extract_first_page_to_df(self, pdf_path: Path): #type: ignore
+    def extract_first_page_to_df(self, pdf_path: Path):  # type: ignore
         """Extract first page data and return as DataFrame"""
         with pdfplumber.open(pdf_path) as pdf:
             first_page = pdf.pages[0]
@@ -146,12 +154,18 @@ class W100H_DEMO:
                     current_wind = float(wind_match.group(1))
 
                 # Check for event name
-                if "Athlos" in line or "World Athletics" in line or "Championships" in line:
+                if (
+                    "Athlos" in line
+                    or "World Athletics" in line
+                    or "Championships" in line
+                ):
                     current_event = line.strip()
 
                 # Check for athlete data with a flexible pattern for Unicode names
                 if re.match(r"^[A-ZÀ-ž][\w]+,\s+[A-ZÀ-ž]", line, re.UNICODE):
-                    athlete_record = self.parse_athlete_data(lines, i, current_wind, current_event)
+                    athlete_record = self.parse_athlete_data(
+                        lines, i, current_wind, current_event
+                    )
                     if athlete_record:
                         records.append(athlete_record)
                         i += 3
@@ -162,7 +176,14 @@ class W100H_DEMO:
 
     def data(self, path: str) -> Optional[pd.DataFrame]:
         # default is 1 page for read_pdf!
-        table_data = tabula.read_pdf(path, pages=1, multiple_tables=True, pandas_options={'header': None}, force_subprocess=True, encoding='cp1252')
+        table_data = tabula.read_pdf(
+            path,
+            pages=1,
+            multiple_tables=True,
+            pandas_options={"header": None},
+            force_subprocess=True,
+            encoding="cp1252",
+        )
         if not table_data:
             return None
         return pd.concat(table_data, ignore_index=True)
@@ -170,7 +191,7 @@ class W100H_DEMO:
     def clean(self, df: pd.DataFrame, m: float) -> Tuple[pd.DataFrame, pd.DataFrame]:
         df = df.copy()
         df = df.dropna(how="all").drop_duplicates()
-        cols = df.select_dtypes(include='number').columns
+        cols = df.select_dtypes(include="number").columns
         valid = pd.Series(True, index=df.index)
         for col in cols:
             Q1, Q3 = df[col].quantile([0.25, 0.75])
@@ -181,24 +202,24 @@ class W100H_DEMO:
         clean = df[valid].reset_index(drop=True)
         outliers = df[~valid].reset_index(drop=True)
         return clean, outliers
-    
+
     def csv(self, df: pd.DataFrame, path: str) -> None:
         df.to_csv(path, index=False)
 
     def download(self, url: str, path: str) -> str:
         re = requests.get(url)
-        with open(path, 'wb') as pdf:
+        with open(path, "wb") as pdf:
             pdf.write(re.content)
         return path
 
+
 if __name__ == "__main__":
     W100H_DEMO_TEST = W100H_DEMO()
-    url = 'https://www.athletefirst.org/wp-content/uploads/2025/10/20251010-Womens-100m-Hurdles-meeting.pdf'
-    path = W100H_DEMO_TEST.download(url, 'W100H.pdf')
+    url = "https://www.athletefirst.org/wp-content/uploads/2025/10/20251010-Womens-100m-Hurdles-meeting.pdf"
+    path = W100H_DEMO_TEST.download(url, "W100H.pdf")
     df = W100H_DEMO_TEST.extract_first_page_to_df(Path(path))
     if df is not None and not df.empty:
         clean, outliers = W100H_DEMO_TEST.clean(df, m=1.5)
-        W100H_DEMO_TEST.csv(clean, 'W100H_DEMO_PG1_CLEAN.csv')
-        W100H_DEMO_TEST.csv(outliers, 'W100H_DEMO_PG1_OUTLIERS.csv')
+        W100H_DEMO_TEST.csv(clean, "W100H_DEMO_PG1_CLEAN.csv")
+        W100H_DEMO_TEST.csv(outliers, "W100H_DEMO_PG1_OUTLIERS.csv")
         print("Cleaned and exported PDF data to csvs")
-

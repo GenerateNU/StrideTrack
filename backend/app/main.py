@@ -53,4 +53,5 @@ app.add_exception_handler(ValueError, value_error_exception_handler)
 def read_root() -> RootResponse:
     return RootResponse(message="StrideTrack API")
 
+
 app.include_router(api_router)

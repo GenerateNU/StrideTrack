@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 
@@ -13,7 +12,9 @@ def _median_dt_ms(time: np.ndarray) -> float:
     return float(np.median(dt)) if dt.size else 1.0
 
 
-def _fill_short_zero_dropouts_in_contact(contact: np.ndarray, max_hole_len_samples: int) -> np.ndarray:
+def _fill_short_zero_dropouts_in_contact(
+    contact: np.ndarray, max_hole_len_samples: int
+) -> np.ndarray:
     """
     Fill brief False gaps inside the contact signal (bounded by True) so short sensor dropouts don't split one stance
     into multiple stances.
@@ -43,7 +44,9 @@ def _fill_short_zero_dropouts_in_contact(contact: np.ndarray, max_hole_len_sampl
     return x
 
 
-def _extract_stance_intervals(time: np.ndarray, force: np.ndarray, threshold: int) -> pd.DataFrame:
+def _extract_stance_intervals(
+    time: np.ndarray, force: np.ndarray, threshold: int
+) -> pd.DataFrame:
     """
     Identify each continuous ground-contact segment where force stays above the threshold, and return its start (IC)
     and end (TO) indices and timestamps.
@@ -67,36 +70,50 @@ def _extract_stance_intervals(time: np.ndarray, force: np.ndarray, threshold: in
         to_time_raw = int(time[to_idx] if to_idx < n else time[-1])
 
         if to_time_raw > ic_time_raw:
-            rows.append({
-                "ic_idx": ic_idx,
-                "to_idx": to_idx,
-                "ic_time_raw": ic_time_raw,
-                "to_time_raw": to_time_raw
-            })
+            rows.append(
+                {
+                    "ic_idx": ic_idx,
+                    "to_idx": to_idx,
+                    "ic_time_raw": ic_time_raw,
+                    "to_time_raw": to_time_raw,
+                }
+            )
 
     return pd.DataFrame(rows)
 
 
-def _build_stride_rows(stance_df: pd.DataFrame, foot_label: str, t0_raw: int) -> pd.DataFrame:
+def _build_stride_rows(
+    stance_df: pd.DataFrame, foot_label: str, t0_raw: int
+) -> pd.DataFrame:
     """
     Turn one foot's stance intervals into complete stride-cycle rows by pairing each initial contact with its toe-off
     and the next initial contact of the same foot, then computing ground contact time and flight time in milliseconds
     relative to the file start.
     """
     if stance_df.empty:
-        return pd.DataFrame(columns=[
-            "foot", "ic_time", "to_time", "next_ic_time", "gct_ms", "flight_ms", "step_time_ms"
-        ])
+        return pd.DataFrame(
+            columns=[
+                "foot",
+                "ic_time",
+                "to_time",
+                "next_ic_time",
+                "gct_ms",
+                "flight_ms",
+                "step_time_ms",
+            ]
+        )
 
     stance_df = stance_df.sort_values("ic_time_raw").reset_index(drop=True)
     next_ic_raw = stance_df["ic_time_raw"].shift(-1)
 
-    out = pd.DataFrame({
-        "foot": foot_label.lower(),
-        "ic_time": (stance_df["ic_time_raw"] - t0_raw).astype("int64"),
-        "to_time": (stance_df["to_time_raw"] - t0_raw).astype("int64"),
-        "next_ic_time": (next_ic_raw - t0_raw).astype("float64")
-    })
+    out = pd.DataFrame(
+        {
+            "foot": foot_label.lower(),
+            "ic_time": (stance_df["ic_time_raw"] - t0_raw).astype("int64"),
+            "to_time": (stance_df["to_time_raw"] - t0_raw).astype("int64"),
+            "next_ic_time": (next_ic_raw - t0_raw).astype("float64"),
+        }
+    )
 
     out = out.dropna(subset=["next_ic_time"]).copy()
 
@@ -133,7 +150,9 @@ def _assign_stride_numbers(df: pd.DataFrame) -> pd.DataFrame:
     df.insert(0, "stride_num", stride_nums)
     return df
 
+
 # Main transformation
+
 
 def transform_feet_to_stride_cycles(
     df: pd.DataFrame,
@@ -143,7 +162,7 @@ def transform_feet_to_stride_cycles(
     foot1_label: str = "left",
     foot2_label: str = "right",
     force_threshold: int = 0,
-    dropout_fill_ms: int = 20
+    dropout_fill_ms: int = 20,
 ) -> pd.DataFrame:
     """
     Final output columns:
@@ -158,9 +177,18 @@ def transform_feet_to_stride_cycles(
     f2 = df[foot2_col].to_numpy(dtype=np.int64)
 
     if time.size == 0:
-        return pd.DataFrame(columns=[
-            "stride_num", "foot", "ic_time", "to_time", "next_ic_time", "gct_ms", "flight_ms", "step_time_ms"
-        ])
+        return pd.DataFrame(
+            columns=[
+                "stride_num",
+                "foot",
+                "ic_time",
+                "to_time",
+                "next_ic_time",
+                "gct_ms",
+                "flight_ms",
+                "step_time_ms",
+            ]
+        )
 
     # Convert dropout_fill_ms to samples using median dt
     med_dt = _median_dt_ms(time)
@@ -188,8 +216,21 @@ def transform_feet_to_stride_cycles(
     out = _assign_stride_numbers(out)
 
     # Final column order
-    out = out[[
-        "stride_num", "foot", "ic_time", "to_time", "next_ic_time", "gct_ms", "flight_ms", "step_time_ms"
-    ]].sort_values(["stride_num", "foot", "ic_time"]).reset_index(drop=True)
+    out = (
+        out[
+            [
+                "stride_num",
+                "foot",
+                "ic_time",
+                "to_time",
+                "next_ic_time",
+                "gct_ms",
+                "flight_ms",
+                "step_time_ms",
+            ]
+        ]
+        .sort_values(["stride_num", "foot", "ic_time"])
+        .reset_index(drop=True)
+    )
 
     return out

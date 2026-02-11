@@ -5,10 +5,7 @@ from typing import List, Dict
 
 
 def extract_flight_intervals_runs(
-    time: np.ndarray,
-    force: np.ndarray,
-    foot_label: str,
-    drop_incomplete: bool = False
+    time: np.ndarray, force: np.ndarray, foot_label: str, drop_incomplete: bool = False
 ) -> List[Dict]:
     n = len(time)
     if n == 0:
@@ -44,12 +41,14 @@ def extract_flight_intervals_runs(
         if end_t <= start_t:
             continue
 
-        events.append({
-            "start_time": int(start_t),
-            "end_time": int(end_t),
-            "total_time": int(end_t - start_t),
-            "foot": foot_label
-        })
+        events.append(
+            {
+                "start_time": int(start_t),
+                "end_time": int(end_t),
+                "total_time": int(end_t - start_t),
+                "foot": foot_label,
+            }
+        )
 
     return events
 
@@ -77,7 +76,9 @@ def merge_back_to_back_same_foot(events_df: pd.DataFrame) -> pd.DataFrame:
 
     merged_rows.append(cur)
 
-    return pd.DataFrame(merged_rows, columns=["start_time", "end_time", "total_time", "foot"])
+    return pd.DataFrame(
+        merged_rows, columns=["start_time", "end_time", "total_time", "foot"]
+    )
 
 
 def extract_flight_times_from_unified_csv(
@@ -88,7 +89,7 @@ def extract_flight_times_from_unified_csv(
     drop_incomplete: bool = False,
     foot1_label: str = "Left",
     foot2_label: str = "Right",
-    enable_merge_same_foot: bool = True
+    enable_merge_same_foot: bool = True,
 ) -> pd.DataFrame:
     df = pd.read_csv(input_csv)
 
@@ -139,14 +140,16 @@ def main():
         return
 
     for input_file in unified_files:
-        output_file = output_dir / input_file.name.replace("_BothFeet.csv", "_FlightTimes.csv")
+        output_file = output_dir / input_file.name.replace(
+            "_BothFeet.csv", "_FlightTimes.csv"
+        )
 
         flight_df = extract_flight_times_from_unified_csv(
             input_file,
             drop_incomplete=drop_incomplete,
             foot1_label=foot1_label,
             foot2_label=foot2_label,
-            enable_merge_same_foot=enable_merge_same_foot
+            enable_merge_same_foot=enable_merge_same_foot,
         )
 
         flight_df.to_csv(output_file, index=False)
