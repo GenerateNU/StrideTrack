@@ -37,5 +37,7 @@ async def expired_token_handler(_: Request, __: ExpiredTokenException) -> JSONRe
     return JSONResponse(status_code=401, content={"detail": "Token expired"})
 
 
-async def dev_user_not_allowed_handler(_: Request, __: DevUserNotAllowedException) -> JSONResponse:
+async def dev_user_not_allowed_handler(
+    _: Request, __: DevUserNotAllowedException
+) -> JSONResponse:
     return JSONResponse(status_code=403, content={"detail": "Dev user not allowed"})

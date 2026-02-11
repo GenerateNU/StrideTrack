@@ -40,7 +40,7 @@ def make_two_feet_phase_shifted_adaptive(
     force_col: str = "Force",
     buffer_samples: int = 3,
     noise_max: int = 12,
-    adc_max: int = 4095
+    adc_max: int = 4095,
 ) -> pd.DataFrame:
     rng = np.random.default_rng()
 
@@ -57,11 +57,7 @@ def make_two_feet_phase_shifted_adaptive(
     f2 = np.zeros_like(f1)
 
     if not blocks:
-        return pd.DataFrame({
-            "Time": time,
-            "Force_Foot1": f1,
-            "Force_Foot2": f2
-        })
+        return pd.DataFrame({"Time": time, "Force_Foot1": f1, "Force_Foot2": f2})
 
     n = len(f1)
 
@@ -72,8 +68,8 @@ def make_two_feet_phase_shifted_adaptive(
 
         # Shift so Foot2 starts after Foot1 ends + buffer
         shift = duration + buffer_samples
-        new_start = start + shift # equals end + buffer_samples
-        new_end = end + shift # equals end + duration + buffer_samples
+        new_start = start + shift  # equals end + buffer_samples
+        new_end = end + shift  # equals end + duration + buffer_samples
 
         if new_start >= n:
             continue
@@ -93,19 +89,12 @@ def make_two_feet_phase_shifted_adaptive(
         span = new_end - new_start
         src_end = start + span
 
-        f2[new_start:new_end] = np.maximum(
-            f2[new_start:new_end],
-            f1[start:src_end]
-        )
+        f2[new_start:new_end] = np.maximum(f2[new_start:new_end], f1[start:src_end])
 
     # Noise on Foot2 non-zero values
     f2 = add_noise_nonzero(f2, noise_max, adc_max, rng)
 
-    return pd.DataFrame({
-        "Time": time,
-        "Force_Foot1": f1,
-        "Force_Foot2": f2
-    })
+    return pd.DataFrame({"Time": time, "Force_Foot1": f1, "Force_Foot2": f2})
 
 
 def main():
@@ -133,10 +122,7 @@ def main():
         df = pd.read_csv(input_path)
 
         unified = make_two_feet_phase_shifted_adaptive(
-            df,
-            buffer_samples=buffer_samples,
-            noise_max=noise_max,
-            adc_max=adc_max
+            df, buffer_samples=buffer_samples, noise_max=noise_max, adc_max=adc_max
         )
 
         out_path = output_dir / f"{input_path.stem}_BothFeet.csv"

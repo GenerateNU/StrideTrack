@@ -6,11 +6,11 @@ from pathlib import Path
 def dilate_binary(x: np.ndarray, k: int) -> np.ndarray:
     if k <= 0:
         return x
-    
+
     x_int = x.astype(int)
     kernel = np.ones(2 * k + 1, dtype=int)
-    
-    return (np.convolve(x_int, kernel, mode="same") > 0)
+
+    return np.convolve(x_int, kernel, mode="same") > 0
 
 
 def make_two_feet_for_timing(
@@ -19,17 +19,16 @@ def make_two_feet_for_timing(
     force_col: str = "Force",
     contact_threshold: int = 4075,
     overlap_extension: int = 0,
-    adc_max: int = 4095
+    adc_max: int = 4095,
 ) -> pd.DataFrame:
     # Clean readings where force is 0
     cleaned = foot1_data.loc[foot1_data[force_col] != 0, [time_col, force_col]].copy()
     cleaned[force_col] = cleaned[force_col].astype(int)
 
     # Build unified dataframe
-    unified_df = pd.DataFrame({
-        "Time": cleaned[time_col].values,
-        "Force_Foot1": cleaned[force_col].values
-    })
+    unified_df = pd.DataFrame(
+        {"Time": cleaned[time_col].values, "Force_Foot1": cleaned[force_col].values}
+    )
 
     #  Determine Foot1 contact
     foot1_on_ground = unified_df["Force_Foot1"].values >= contact_threshold
@@ -75,7 +74,7 @@ def main():
         unified_data = make_two_feet_for_timing(
             foot1_data,
             contact_threshold=contact_threshold,
-            overlap_extension=overlap_extension
+            overlap_extension=overlap_extension,
         )
 
         output_path = output_dir / filename.replace(".csv", "_BothFeet.csv")

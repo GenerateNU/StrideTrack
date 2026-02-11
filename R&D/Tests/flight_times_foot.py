@@ -9,14 +9,14 @@ def extract_flight_intervals_runs(
     force: np.ndarray,
     foot_label: str,
     contact_threshold: int,
-    drop_incomplete: bool = False
+    drop_incomplete: bool = False,
 ) -> List[Dict]:
     n = len(time)
     if n == 0:
         return []
 
     contact = force >= contact_threshold
-    flight = ~contact # True where the foot is in the air
+    flight = ~contact  # True where the foot is in the air
 
     # Find indices where flight state changes
     changes = np.flatnonzero(flight[1:] != flight[:-1]) + 1
@@ -45,12 +45,14 @@ def extract_flight_intervals_runs(
         if end_t <= start_t:
             continue
 
-        events.append({
-            "start_time": int(start_t),
-            "end_time": int(end_t),
-            "total_time": int(end_t - start_t),
-            "foot": foot_label
-        })
+        events.append(
+            {
+                "start_time": int(start_t),
+                "end_time": int(end_t),
+                "total_time": int(end_t - start_t),
+                "foot": foot_label,
+            }
+        )
 
     return events
 
@@ -78,7 +80,9 @@ def merge_back_to_back_same_foot(events_df: pd.DataFrame) -> pd.DataFrame:
 
     merged_rows.append(cur)
 
-    return pd.DataFrame(merged_rows, columns=["start_time", "end_time", "total_time", "foot"])
+    return pd.DataFrame(
+        merged_rows, columns=["start_time", "end_time", "total_time", "foot"]
+    )
 
 
 def extract_flight_times_from_unified_csv(
@@ -90,7 +94,7 @@ def extract_flight_times_from_unified_csv(
     drop_incomplete: bool = False,
     foot1_label: str = "Left",
     foot2_label: str = "Right",
-    enable_merge_same_foot: bool = True
+    enable_merge_same_foot: bool = True,
 ) -> pd.DataFrame:
     df = pd.read_csv(input_csv)
 
@@ -103,8 +107,12 @@ def extract_flight_times_from_unified_csv(
     f2 = df[foot2_col].to_numpy()
 
     events: List[Dict] = []
-    events += extract_flight_intervals_runs(time, f1, foot1_label, contact_threshold, drop_incomplete)
-    events += extract_flight_intervals_runs(time, f2, foot2_label, contact_threshold, drop_incomplete)
+    events += extract_flight_intervals_runs(
+        time, f1, foot1_label, contact_threshold, drop_incomplete
+    )
+    events += extract_flight_intervals_runs(
+        time, f2, foot2_label, contact_threshold, drop_incomplete
+    )
 
     out = pd.DataFrame(events, columns=["start_time", "end_time", "total_time", "foot"])
     out = out.sort_values(["start_time", "foot"]).reset_index(drop=True)
@@ -123,7 +131,11 @@ def main():
     output_dir = PROJECT_ROOT / "R&D" / "Tests" / "Two_foot" / "Fly_times"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    unified_files = ["SensorSprint1_BothFeet.csv", "SensorSprint2_BothFeet.csv", "SensorSprint3_BothFeet.csv"]
+    unified_files = [
+        "SensorSprint1_BothFeet.csv",
+        "SensorSprint2_BothFeet.csv",
+        "SensorSprint3_BothFeet.csv",
+    ]
 
     contact_threshold = 4075
     drop_incomplete = False
@@ -151,7 +163,7 @@ def main():
             drop_incomplete=drop_incomplete,
             foot1_label=foot1_label,
             foot2_label=foot2_label,
-            enable_merge_same_foot=enable_merge_same_foot
+            enable_merge_same_foot=enable_merge_same_foot,
         )
 
         flight_df.to_csv(output_file, index=False)
