@@ -1,14 +1,12 @@
-from io import BytesIO
 import logging
+from io import BytesIO
 
 import pandas as pd
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from supabase._async.client import AsyncClient
 
-from app.core.supabase import get_async_supabase
+from app.repositories.csv_repository import CSVRepository
 from app.schemas.csv_schemas import CSVUploadResponse
 from app.services.csv_service import CSVService
-from app.repositories.csv_repository import CSVRepository
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +24,14 @@ async def upload_data_csv(file: UploadFile = File(...), service: CSVService = De
   # Basic file validation
   if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(status_code=400, detail="Run data must be in .csv format")
-  
+
   # Read CSV into pandas
   try:
       content = await file.read()
       raw_df = pd.read_csv(BytesIO(content))
   except Exception as e:
       logger.exception("Failed to read run data CSV")
-      raise HTTPException(status_code=400, detail=f"Failed to read run data CSV: {str(e)}")
+      raise HTTPException(status_code=400, detail=f"Failed to read run data CSV: {str(e)}") from e
 
   try:
       result = await service.ingest_stride_csv(raw_df)
@@ -41,6 +39,6 @@ async def upload_data_csv(file: UploadFile = File(...), service: CSVService = De
       raise
   except Exception as e:
       logger.exception("Failed to ingest run data frame")
-      raise HTTPException(status_code=500, detail=f"Failed to ingest run data frame: {str(e)}")
+      raise HTTPException(status_code=500, detail=f"Failed to ingest run data frame: {str(e)}") from e
 
   return result

@@ -1,7 +1,7 @@
-import pandas as pd
+
 import numpy as np
-from pathlib import Path
-from typing import Dict, List, Tuple, Optional
+import pandas as pd
+
 
 def _median_dt_ms(time: np.ndarray) -> float:
     """
@@ -56,8 +56,8 @@ def _extract_stance_intervals(time: np.ndarray, force: np.ndarray, threshold: in
     changes = np.flatnonzero(contact[1:] != contact[:-1]) + 1
     boundaries = np.r_[0, changes, n]
 
-    rows: List[Dict] = []
-    for s, e in zip(boundaries[:-1], boundaries[1:]):
+    rows: list[dict] = []
+    for s, e in zip(boundaries[:-1], boundaries[1:], strict=False):
         if not contact[s]:
             continue
 
@@ -119,7 +119,7 @@ def _assign_stride_numbers(df: pd.DataFrame) -> pd.DataFrame:
 
     df = df.sort_values(["ic_time", "foot"]).reset_index(drop=True).copy()
 
-    stride_nums: List[int] = []
+    stride_nums: list[int] = []
     stride = 1
     seen: set = set()
 
@@ -177,7 +177,7 @@ def transform_feet_to_stride_cycles(
     stance2 = _extract_stance_intervals(time, contact2.astype(np.int8), threshold=0)
 
     t0_raw = int(time[0])
-    
+
     # Build per-foot stride-cycle rows
     foot1_rows = _build_stride_rows(stance1, foot1_label, t0_raw)
     foot2_rows = _build_stride_rows(stance2, foot2_label, t0_raw)

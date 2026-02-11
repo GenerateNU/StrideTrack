@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
 from app.core.supabase import get_async_supabase
+from app.routes.csv_routes import router as csv_router
+
 # from app.routes.auth_routes import router as auth_router
 from app.routes.example_routes import router as example_router
-from app.routes.csv_routes import router as csv_router
 from app.schemas.health_schemas import HealthResponse
 
 api_router = APIRouter(prefix="/api")
