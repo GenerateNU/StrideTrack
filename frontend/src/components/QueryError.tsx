@@ -1,6 +1,6 @@
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface QueryErrorProps {
   error: Error;

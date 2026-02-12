@@ -27,6 +27,11 @@ jobs:
           cd frontend
           bun run lint
 
+      - name: Format
+        run: |
+          cd frontend
+          bun run check-format
+
       - name: Build (TypeScript + Vite)
         run: |
           cd frontend

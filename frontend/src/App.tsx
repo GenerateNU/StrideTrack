@@ -1,11 +1,11 @@
-import { useAuth } from './hooks/useAuth'
-import { useCurrentUser } from './hooks/useCurrentUser'
+import { useAuth } from "./hooks/useAuth";
+import { useCurrentUser } from "./hooks/useCurrentUser";
 
 function App() {
-  const { session, loading, signInWithGoogle, signOut } = useAuth()
-  const { user, loading: userLoading } = useCurrentUser()
+  const { session, loading, signInWithGoogle, signOut } = useAuth();
+  const { user, loading: userLoading } = useCurrentUser();
 
-  if (loading) return <div>Loading...</div>
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div>
@@ -23,7 +23,7 @@ function App() {
         <button onClick={signInWithGoogle}>Sign in with Google</button>
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

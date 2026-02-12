@@ -1,9 +1,9 @@
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from "../hooks/useAuth";
 
 export function AuthButton() {
-  const { session, loading, signInWithGoogle, signOut } = useAuth()
+  const { session, loading, signInWithGoogle, signOut } = useAuth();
 
-  if (loading) return <button disabled>Loading...</button>
+  if (loading) return <button disabled>Loading...</button>;
 
   return session ? (
     <div>
@@ -12,5 +12,5 @@ export function AuthButton() {
     </div>
   ) : (
     <button onClick={signInWithGoogle}>Sign in with Google</button>
-  )
+  );
 }
