@@ -27,12 +27,8 @@ import type {
 import { formatDuration, formatDistance } from "@/utils/format";
 
 export function TrainingRunsList() {
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-  } = useListTrainingRunsApiExampleTrainingRunsGet();
+  const { data, isLoading, error, refetch } =
+    useListTrainingRunsApiExampleTrainingRunsGet();
 
   const {
     mutateAsync: createTrainingRun,
@@ -50,8 +46,9 @@ export function TrainingRunsList() {
   } = useDeleteTrainingRunApiExampleTrainingRunsRunIdDelete();
 
   const [showForm, setShowForm] = useState(false);
-  const [editingRun, setEditingRun] =
-    useState<TrainingRunResponse | null>(null);
+  const [editingRun, setEditingRun] = useState<TrainingRunResponse | null>(
+    null
+  );
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [runToDelete, setRunToDelete] = useState<string | null>(null);
 
@@ -160,13 +157,12 @@ export function TrainingRunsList() {
                       <p>Duration: {formatDuration(run.duration_seconds)}</p>
                       {run.avg_ground_contact_time_ms && (
                         <p>
-                          Avg GCT:{" "}
-                          {run.avg_ground_contact_time_ms.toFixed(1)} ms
+                          Avg GCT: {run.avg_ground_contact_time_ms.toFixed(1)}{" "}
+                          ms
                         </p>
                       )}
                       <p className="text-xs">
-                        Created:{" "}
-                        {new Date(run.created_at).toLocaleString()}
+                        Created: {new Date(run.created_at).toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -176,8 +172,7 @@ export function TrainingRunsList() {
                       size="sm"
                       onClick={() => handleEdit(run)}
                       disabled={
-                        updateTrainingRunIsLoading ||
-                        deleteTrainingRunIsLoading
+                        updateTrainingRunIsLoading || deleteTrainingRunIsLoading
                       }
                     >
                       Edit

@@ -5,8 +5,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export * from './exampleRunCreate';
-export * from './exampleRunResponse';
-export * from './exampleRunUpdate';
-export * from './hTTPValidationError';
-export * from './validationError';
+export * from "./exampleRunCreate";
+export * from "./exampleRunResponse";
+export * from "./exampleRunUpdate";
+export * from "./hTTPValidationError";
+export * from "./validationError";

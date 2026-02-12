@@ -4,10 +4,7 @@
  * StrideTrack API
  * OpenAPI spec version: 0.1.0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -20,520 +17,822 @@ import type {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
 import type {
   ExampleRunCreate,
   ExampleRunResponse,
   ExampleRunUpdate,
-  HTTPValidationError
-} from '../../types';
+  HTTPValidationError,
+} from "../../types";
 
-import { apiClient } from '../../config/axios.config';
-
+import { apiClient } from "../../config/axios.config";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
 
 /**
  * Get all training runs.
  * @summary List Training Runs
  */
 export type listTrainingRunsApiExampleTrainingRunsGetResponse200 = {
-  data: ExampleRunResponse[]
-  status: 200
-}
-    
-export type listTrainingRunsApiExampleTrainingRunsGetResponseSuccess = (listTrainingRunsApiExampleTrainingRunsGetResponse200) & {
-  headers: Headers;
+  data: ExampleRunResponse[];
+  status: 200;
 };
-;
 
-export type listTrainingRunsApiExampleTrainingRunsGetResponse = (listTrainingRunsApiExampleTrainingRunsGetResponseSuccess)
+export type listTrainingRunsApiExampleTrainingRunsGetResponseSuccess =
+  listTrainingRunsApiExampleTrainingRunsGetResponse200 & {
+    headers: Headers;
+  };
+export type listTrainingRunsApiExampleTrainingRunsGetResponse =
+  listTrainingRunsApiExampleTrainingRunsGetResponseSuccess;
 
 export const getListTrainingRunsApiExampleTrainingRunsGetUrl = () => {
+  return `/api/example/training-runs`;
+};
 
-
-  
-
-  return `/api/example/training-runs`
-}
-
-export const listTrainingRunsApiExampleTrainingRunsGet = async ( options?: RequestInit): Promise<listTrainingRunsApiExampleTrainingRunsGetResponse> => {
-  
-  return apiClient<listTrainingRunsApiExampleTrainingRunsGetResponse>(getListTrainingRunsApiExampleTrainingRunsGetUrl(),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
+export const listTrainingRunsApiExampleTrainingRunsGet = async (
+  options?: RequestInit
+): Promise<listTrainingRunsApiExampleTrainingRunsGetResponse> => {
+  return apiClient<listTrainingRunsApiExampleTrainingRunsGetResponse>(
+    getListTrainingRunsApiExampleTrainingRunsGetUrl(),
+    {
+      ...options,
+      method: "GET",
+    }
+  );
+};
 
 export const getListTrainingRunsApiExampleTrainingRunsGetQueryKey = () => {
-    return [
-    `/api/example/training-runs`
-    ] as const;
-    }
+  return [`/api/example/training-runs`] as const;
+};
 
-    
-export const getListTrainingRunsApiExampleTrainingRunsGetQueryOptions = <TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
-) => {
+export const getListTrainingRunsApiExampleTrainingRunsGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ??
+    getListTrainingRunsApiExampleTrainingRunsGetQueryKey();
 
-  const queryKey =  queryOptions?.queryKey ?? getListTrainingRunsApiExampleTrainingRunsGetQueryKey();
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>
+  > = ({ signal }) =>
+    listTrainingRunsApiExampleTrainingRunsGet({ signal, ...requestOptions });
 
-  
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>> = ({ signal }) => listTrainingRunsApiExampleTrainingRunsGet({ signal, ...requestOptions });
+export type ListTrainingRunsApiExampleTrainingRunsGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>
+>;
+export type ListTrainingRunsApiExampleTrainingRunsGetQueryError = unknown;
 
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListTrainingRunsApiExampleTrainingRunsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>>
-export type ListTrainingRunsApiExampleTrainingRunsGetQueryError = unknown
-
-
-export function useListTrainingRunsApiExampleTrainingRunsGet<TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError, TData>> & Pick<
+export function useListTrainingRunsApiExampleTrainingRunsGet<
+  TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
           TError,
           Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListTrainingRunsApiExampleTrainingRunsGet<TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListTrainingRunsApiExampleTrainingRunsGet<
+  TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
           TError,
           Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListTrainingRunsApiExampleTrainingRunsGet<TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListTrainingRunsApiExampleTrainingRunsGet<
+  TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List Training Runs
  */
 
-export function useListTrainingRunsApiExampleTrainingRunsGet<TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useListTrainingRunsApiExampleTrainingRunsGet<
+  TData = Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listTrainingRunsApiExampleTrainingRunsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getListTrainingRunsApiExampleTrainingRunsGetQueryOptions(options);
 
-  const queryOptions = getListTrainingRunsApiExampleTrainingRunsGetQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
-
-
-
 
 /**
  * Create a new training run.
  * @summary Create Training Run
  */
 export type createTrainingRunApiExampleTrainingRunsPostResponse201 = {
-  data: ExampleRunResponse
-  status: 201
-}
+  data: ExampleRunResponse;
+  status: 201;
+};
 
 export type createTrainingRunApiExampleTrainingRunsPostResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type createTrainingRunApiExampleTrainingRunsPostResponseSuccess = (createTrainingRunApiExampleTrainingRunsPostResponse201) & {
-  headers: Headers;
-};
-export type createTrainingRunApiExampleTrainingRunsPostResponseError = (createTrainingRunApiExampleTrainingRunsPostResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type createTrainingRunApiExampleTrainingRunsPostResponse = (createTrainingRunApiExampleTrainingRunsPostResponseSuccess | createTrainingRunApiExampleTrainingRunsPostResponseError)
+export type createTrainingRunApiExampleTrainingRunsPostResponseSuccess =
+  createTrainingRunApiExampleTrainingRunsPostResponse201 & {
+    headers: Headers;
+  };
+export type createTrainingRunApiExampleTrainingRunsPostResponseError =
+  createTrainingRunApiExampleTrainingRunsPostResponse422 & {
+    headers: Headers;
+  };
+
+export type createTrainingRunApiExampleTrainingRunsPostResponse =
+  | createTrainingRunApiExampleTrainingRunsPostResponseSuccess
+  | createTrainingRunApiExampleTrainingRunsPostResponseError;
 
 export const getCreateTrainingRunApiExampleTrainingRunsPostUrl = () => {
+  return `/api/example/training-runs`;
+};
 
+export const createTrainingRunApiExampleTrainingRunsPost = async (
+  exampleRunCreate: ExampleRunCreate,
+  options?: RequestInit
+): Promise<createTrainingRunApiExampleTrainingRunsPostResponse> => {
+  return apiClient<createTrainingRunApiExampleTrainingRunsPostResponse>(
+    getCreateTrainingRunApiExampleTrainingRunsPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(exampleRunCreate),
+    }
+  );
+};
 
-  
+export const getCreateTrainingRunApiExampleTrainingRunsPostMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>,
+    TError,
+    { data: ExampleRunCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>,
+  TError,
+  { data: ExampleRunCreate },
+  TContext
+> => {
+  const mutationKey = ["createTrainingRunApiExampleTrainingRunsPost"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/example/training-runs`
-}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>,
+    { data: ExampleRunCreate }
+  > = (props) => {
+    const { data } = props ?? {};
 
-export const createTrainingRunApiExampleTrainingRunsPost = async (exampleRunCreate: ExampleRunCreate, options?: RequestInit): Promise<createTrainingRunApiExampleTrainingRunsPostResponse> => {
-  
-  return apiClient<createTrainingRunApiExampleTrainingRunsPostResponse>(getCreateTrainingRunApiExampleTrainingRunsPostUrl(),
-  {      
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      exampleRunCreate,)
-  }
-);}
+    return createTrainingRunApiExampleTrainingRunsPost(data, requestOptions);
+  };
 
+  return { mutationFn, ...mutationOptions };
+};
 
+export type CreateTrainingRunApiExampleTrainingRunsPostMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>
+  >;
+export type CreateTrainingRunApiExampleTrainingRunsPostMutationBody =
+  ExampleRunCreate;
+export type CreateTrainingRunApiExampleTrainingRunsPostMutationError =
+  HTTPValidationError;
 
-
-export const getCreateTrainingRunApiExampleTrainingRunsPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>, TError,{data: ExampleRunCreate}, TContext>, request?: SecondParameter<typeof apiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>, TError,{data: ExampleRunCreate}, TContext> => {
-
-const mutationKey = ['createTrainingRunApiExampleTrainingRunsPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>, {data: ExampleRunCreate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createTrainingRunApiExampleTrainingRunsPost(data,requestOptions)
-        }
-
-
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateTrainingRunApiExampleTrainingRunsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>>
-    export type CreateTrainingRunApiExampleTrainingRunsPostMutationBody = ExampleRunCreate
-    export type CreateTrainingRunApiExampleTrainingRunsPostMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Create Training Run
  */
-export const useCreateTrainingRunApiExampleTrainingRunsPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>, TError,{data: ExampleRunCreate}, TContext>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>,
-        TError,
-        {data: ExampleRunCreate},
-        TContext
-      > => {
-      return useMutation(getCreateTrainingRunApiExampleTrainingRunsPostMutationOptions(options), queryClient);
-    }
-    /**
+export const useCreateTrainingRunApiExampleTrainingRunsPost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>,
+      TError,
+      { data: ExampleRunCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof createTrainingRunApiExampleTrainingRunsPost>>,
+  TError,
+  { data: ExampleRunCreate },
+  TContext
+> => {
+  return useMutation(
+    getCreateTrainingRunApiExampleTrainingRunsPostMutationOptions(options),
+    queryClient
+  );
+};
+/**
  * Get a training run by ID.
  * @summary Get Training Run
  */
 export type getTrainingRunApiExampleTrainingRunsRunIdGetResponse200 = {
-  data: ExampleRunResponse
-  status: 200
-}
+  data: ExampleRunResponse;
+  status: 200;
+};
 
 export type getTrainingRunApiExampleTrainingRunsRunIdGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getTrainingRunApiExampleTrainingRunsRunIdGetResponseSuccess = (getTrainingRunApiExampleTrainingRunsRunIdGetResponse200) & {
-  headers: Headers;
-};
-export type getTrainingRunApiExampleTrainingRunsRunIdGetResponseError = (getTrainingRunApiExampleTrainingRunsRunIdGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type getTrainingRunApiExampleTrainingRunsRunIdGetResponse = (getTrainingRunApiExampleTrainingRunsRunIdGetResponseSuccess | getTrainingRunApiExampleTrainingRunsRunIdGetResponseError)
+export type getTrainingRunApiExampleTrainingRunsRunIdGetResponseSuccess =
+  getTrainingRunApiExampleTrainingRunsRunIdGetResponse200 & {
+    headers: Headers;
+  };
+export type getTrainingRunApiExampleTrainingRunsRunIdGetResponseError =
+  getTrainingRunApiExampleTrainingRunsRunIdGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetTrainingRunApiExampleTrainingRunsRunIdGetUrl = (runId: string,) => {
+export type getTrainingRunApiExampleTrainingRunsRunIdGetResponse =
+  | getTrainingRunApiExampleTrainingRunsRunIdGetResponseSuccess
+  | getTrainingRunApiExampleTrainingRunsRunIdGetResponseError;
 
-
-  
-
-  return `/api/example/training-runs/${runId}`
-}
-
-export const getTrainingRunApiExampleTrainingRunsRunIdGet = async (runId: string, options?: RequestInit): Promise<getTrainingRunApiExampleTrainingRunsRunIdGetResponse> => {
-  
-  return apiClient<getTrainingRunApiExampleTrainingRunsRunIdGetResponse>(getGetTrainingRunApiExampleTrainingRunsRunIdGetUrl(runId),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
-
-export const getGetTrainingRunApiExampleTrainingRunsRunIdGetQueryKey = (runId: string,) => {
-    return [
-    `/api/example/training-runs/${runId}`
-    ] as const;
-    }
-
-    
-export const getGetTrainingRunApiExampleTrainingRunsRunIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError = HTTPValidationError>(runId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
+export const getGetTrainingRunApiExampleTrainingRunsRunIdGetUrl = (
+  runId: string
 ) => {
+  return `/api/example/training-runs/${runId}`;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getTrainingRunApiExampleTrainingRunsRunIdGet = async (
+  runId: string,
+  options?: RequestInit
+): Promise<getTrainingRunApiExampleTrainingRunsRunIdGetResponse> => {
+  return apiClient<getTrainingRunApiExampleTrainingRunsRunIdGetResponse>(
+    getGetTrainingRunApiExampleTrainingRunsRunIdGetUrl(runId),
+    {
+      ...options,
+      method: "GET",
+    }
+  );
+};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetTrainingRunApiExampleTrainingRunsRunIdGetQueryKey(runId);
+export const getGetTrainingRunApiExampleTrainingRunsRunIdGetQueryKey = (
+  runId: string
+) => {
+  return [`/api/example/training-runs/${runId}`] as const;
+};
 
-  
+export const getGetTrainingRunApiExampleTrainingRunsRunIdGetQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>> = ({ signal }) => getTrainingRunApiExampleTrainingRunsRunIdGet(runId, { signal, ...requestOptions });
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetTrainingRunApiExampleTrainingRunsRunIdGetQueryKey(runId);
 
-      
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>
+  > = ({ signal }) =>
+    getTrainingRunApiExampleTrainingRunsRunIdGet(runId, {
+      signal,
+      ...requestOptions,
+    });
 
-      
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!runId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-   return  { queryKey, queryFn, enabled: !!(runId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
+export type GetTrainingRunApiExampleTrainingRunsRunIdGetQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>
+  >;
+export type GetTrainingRunApiExampleTrainingRunsRunIdGetQueryError =
+  HTTPValidationError;
 
-export type GetTrainingRunApiExampleTrainingRunsRunIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>>
-export type GetTrainingRunApiExampleTrainingRunsRunIdGetQueryError = HTTPValidationError
-
-
-export function useGetTrainingRunApiExampleTrainingRunsRunIdGet<TData = Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError = HTTPValidationError>(
- runId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError, TData>> & Pick<
+export function useGetTrainingRunApiExampleTrainingRunsRunIdGet<
+  TData = Awaited<
+    ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>,
+          Awaited<
+            ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+          >,
           TError,
-          Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTrainingRunApiExampleTrainingRunsRunIdGet<TData = Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError = HTTPValidationError>(
- runId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTrainingRunApiExampleTrainingRunsRunIdGet<
+  TData = Awaited<
+    ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>,
+          Awaited<
+            ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+          >,
           TError,
-          Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTrainingRunApiExampleTrainingRunsRunIdGet<TData = Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError = HTTPValidationError>(
- runId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTrainingRunApiExampleTrainingRunsRunIdGet<
+  TData = Awaited<
+    ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get Training Run
  */
 
-export function useGetTrainingRunApiExampleTrainingRunsRunIdGet<TData = Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError = HTTPValidationError>(
- runId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetTrainingRunApiExampleTrainingRunsRunIdGet<
+  TData = Awaited<
+    ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  runId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getTrainingRunApiExampleTrainingRunsRunIdGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetTrainingRunApiExampleTrainingRunsRunIdGetQueryOptions(runId, options);
 
-  const queryOptions = getGetTrainingRunApiExampleTrainingRunsRunIdGetQueryOptions(runId,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
-
-
-
 
 /**
  * Update a training run.
  * @summary Update Training Run
  */
 export type updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse200 = {
-  data: ExampleRunResponse
-  status: 200
-}
+  data: ExampleRunResponse;
+  status: 200;
+};
 
 export type updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type updateTrainingRunApiExampleTrainingRunsRunIdPatchResponseSuccess = (updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse200) & {
-  headers: Headers;
-};
-export type updateTrainingRunApiExampleTrainingRunsRunIdPatchResponseError = (updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse = (updateTrainingRunApiExampleTrainingRunsRunIdPatchResponseSuccess | updateTrainingRunApiExampleTrainingRunsRunIdPatchResponseError)
+export type updateTrainingRunApiExampleTrainingRunsRunIdPatchResponseSuccess =
+  updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse200 & {
+    headers: Headers;
+  };
+export type updateTrainingRunApiExampleTrainingRunsRunIdPatchResponseError =
+  updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse422 & {
+    headers: Headers;
+  };
 
-export const getUpdateTrainingRunApiExampleTrainingRunsRunIdPatchUrl = (runId: string,) => {
+export type updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse =
+  | updateTrainingRunApiExampleTrainingRunsRunIdPatchResponseSuccess
+  | updateTrainingRunApiExampleTrainingRunsRunIdPatchResponseError;
 
+export const getUpdateTrainingRunApiExampleTrainingRunsRunIdPatchUrl = (
+  runId: string
+) => {
+  return `/api/example/training-runs/${runId}`;
+};
 
-  
+export const updateTrainingRunApiExampleTrainingRunsRunIdPatch = async (
+  runId: string,
+  exampleRunUpdate: ExampleRunUpdate,
+  options?: RequestInit
+): Promise<updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse> => {
+  return apiClient<updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse>(
+    getUpdateTrainingRunApiExampleTrainingRunsRunIdPatchUrl(runId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(exampleRunUpdate),
+    }
+  );
+};
 
-  return `/api/example/training-runs/${runId}`
-}
+export const getUpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>
+      >,
+      TError,
+      { runId: string; data: ExampleRunUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>
+    >,
+    TError,
+    { runId: string; data: ExampleRunUpdate },
+    TContext
+  > => {
+    const mutationKey = ["updateTrainingRunApiExampleTrainingRunsRunIdPatch"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
 
-export const updateTrainingRunApiExampleTrainingRunsRunIdPatch = async (runId: string,
-    exampleRunUpdate: ExampleRunUpdate, options?: RequestInit): Promise<updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse> => {
-  
-  return apiClient<updateTrainingRunApiExampleTrainingRunsRunIdPatchResponse>(getUpdateTrainingRunApiExampleTrainingRunsRunIdPatchUrl(runId),
-  {      
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      exampleRunUpdate,)
-  }
-);}
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>
+      >,
+      { runId: string; data: ExampleRunUpdate }
+    > = (props) => {
+      const { runId, data } = props ?? {};
 
+      return updateTrainingRunApiExampleTrainingRunsRunIdPatch(
+        runId,
+        data,
+        requestOptions
+      );
+    };
 
+    return { mutationFn, ...mutationOptions };
+  };
 
+export type UpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>
+    >
+  >;
+export type UpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationBody =
+  ExampleRunUpdate;
+export type UpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationError =
+  HTTPValidationError;
 
-export const getUpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>>, TError,{runId: string;data: ExampleRunUpdate}, TContext>, request?: SecondParameter<typeof apiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>>, TError,{runId: string;data: ExampleRunUpdate}, TContext> => {
-
-const mutationKey = ['updateTrainingRunApiExampleTrainingRunsRunIdPatch'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>>, {runId: string;data: ExampleRunUpdate}> = (props) => {
-          const {runId,data} = props ?? {};
-
-          return  updateTrainingRunApiExampleTrainingRunsRunIdPatch(runId,data,requestOptions)
-        }
-
-
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationResult = NonNullable<Awaited<ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>>>
-    export type UpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationBody = ExampleRunUpdate
-    export type UpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Update Training Run
  */
-export const useUpdateTrainingRunApiExampleTrainingRunsRunIdPatch = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>>, TError,{runId: string;data: ExampleRunUpdate}, TContext>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>>,
-        TError,
-        {runId: string;data: ExampleRunUpdate},
-        TContext
-      > => {
-      return useMutation(getUpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationOptions(options), queryClient);
-    }
-    /**
+export const useUpdateTrainingRunApiExampleTrainingRunsRunIdPatch = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>
+      >,
+      TError,
+      { runId: string; data: ExampleRunUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateTrainingRunApiExampleTrainingRunsRunIdPatch>>,
+  TError,
+  { runId: string; data: ExampleRunUpdate },
+  TContext
+> => {
+  return useMutation(
+    getUpdateTrainingRunApiExampleTrainingRunsRunIdPatchMutationOptions(
+      options
+    ),
+    queryClient
+  );
+};
+/**
  * Delete a training run.
  * @summary Delete Training Run
  */
 export type deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse204 = {
-  data: void
-  status: 204
-}
+  data: void;
+  status: 204;
+};
 
 export type deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponseSuccess = (deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse204) & {
-  headers: Headers;
-};
-export type deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponseError = (deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse = (deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponseSuccess | deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponseError)
+export type deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponseSuccess =
+  deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse204 & {
+    headers: Headers;
+  };
+export type deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponseError =
+  deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse422 & {
+    headers: Headers;
+  };
 
-export const getDeleteTrainingRunApiExampleTrainingRunsRunIdDeleteUrl = (runId: string,) => {
+export type deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse =
+  | deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponseSuccess
+  | deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponseError;
 
+export const getDeleteTrainingRunApiExampleTrainingRunsRunIdDeleteUrl = (
+  runId: string
+) => {
+  return `/api/example/training-runs/${runId}`;
+};
 
-  
+export const deleteTrainingRunApiExampleTrainingRunsRunIdDelete = async (
+  runId: string,
+  options?: RequestInit
+): Promise<deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse> => {
+  return apiClient<deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse>(
+    getDeleteTrainingRunApiExampleTrainingRunsRunIdDeleteUrl(runId),
+    {
+      ...options,
+      method: "DELETE",
+    }
+  );
+};
 
-  return `/api/example/training-runs/${runId}`
-}
+export const getDeleteTrainingRunApiExampleTrainingRunsRunIdDeleteMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>
+      >,
+      TError,
+      { runId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>
+    >,
+    TError,
+    { runId: string },
+    TContext
+  > => {
+    const mutationKey = ["deleteTrainingRunApiExampleTrainingRunsRunIdDelete"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
 
-export const deleteTrainingRunApiExampleTrainingRunsRunIdDelete = async (runId: string, options?: RequestInit): Promise<deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse> => {
-  
-  return apiClient<deleteTrainingRunApiExampleTrainingRunsRunIdDeleteResponse>(getDeleteTrainingRunApiExampleTrainingRunsRunIdDeleteUrl(runId),
-  {      
-    ...options,
-    method: 'DELETE'
-    
-    
-  }
-);}
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>
+      >,
+      { runId: string }
+    > = (props) => {
+      const { runId } = props ?? {};
 
+      return deleteTrainingRunApiExampleTrainingRunsRunIdDelete(
+        runId,
+        requestOptions
+      );
+    };
 
+    return { mutationFn, ...mutationOptions };
+  };
 
+export type DeleteTrainingRunApiExampleTrainingRunsRunIdDeleteMutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>
+    >
+  >;
 
-export const getDeleteTrainingRunApiExampleTrainingRunsRunIdDeleteMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>>, TError,{runId: string}, TContext>, request?: SecondParameter<typeof apiClient>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>>, TError,{runId: string}, TContext> => {
+export type DeleteTrainingRunApiExampleTrainingRunsRunIdDeleteMutationError =
+  HTTPValidationError;
 
-const mutationKey = ['deleteTrainingRunApiExampleTrainingRunsRunIdDelete'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>>, {runId: string}> = (props) => {
-          const {runId} = props ?? {};
-
-          return  deleteTrainingRunApiExampleTrainingRunsRunIdDelete(runId,requestOptions)
-        }
-
-
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteTrainingRunApiExampleTrainingRunsRunIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>>>
-    
-    export type DeleteTrainingRunApiExampleTrainingRunsRunIdDeleteMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Delete Training Run
  */
-export const useDeleteTrainingRunApiExampleTrainingRunsRunIdDelete = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>>, TError,{runId: string}, TContext>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>>,
-        TError,
-        {runId: string},
-        TContext
-      > => {
-      return useMutation(getDeleteTrainingRunApiExampleTrainingRunsRunIdDeleteMutationOptions(options), queryClient);
-    }
-    
+export const useDeleteTrainingRunApiExampleTrainingRunsRunIdDelete = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>
+      >,
+      TError,
+      { runId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<
+    ReturnType<typeof deleteTrainingRunApiExampleTrainingRunsRunIdDelete>
+  >,
+  TError,
+  { runId: string },
+  TContext
+> => {
+  return useMutation(
+    getDeleteTrainingRunApiExampleTrainingRunsRunIdDeleteMutationOptions(
+      options
+    ),
+    queryClient
+  );
+};

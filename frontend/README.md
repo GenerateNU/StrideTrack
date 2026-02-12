@@ -93,15 +93,22 @@ Hooks return named properties for cleaner component usage:
 **GET Queries:**
 
 ```typescript
-const { trainingRuns, trainingRunsIsLoading, trainingRunsError, trainingRunsRefetch } =
-  useGetAllTrainingRuns();
+const {
+  trainingRuns,
+  trainingRunsIsLoading,
+  trainingRunsError,
+  trainingRunsRefetch,
+} = useGetAllTrainingRuns();
 ```
 
 **Mutations:**
 
 ```typescript
-const { createTrainingRun, createTrainingRunIsLoading, createTrainingRunError } =
-  useCreateTrainingRun();
+const {
+  createTrainingRun,
+  createTrainingRunIsLoading,
+  createTrainingRunError,
+} = useCreateTrainingRun();
 ```
 
 ## Tech Stack
@@ -128,12 +135,12 @@ bun run dev        # Start dev server (http://localhost:5173)
 
 **Available scripts:**
 
-| Command            | Description              |
-| ------------------ | ------------------------ |
-| `bun run dev`      | Start development server |
-| `bun run build`    | Type-check and build     |
-| `bun run lint`     | Run ESLint               |
-| `bun run preview`  | Preview production build |
+| Command           | Description              |
+| ----------------- | ------------------------ |
+| `bun run dev`     | Start development server |
+| `bun run build`   | Type-check and build     |
+| `bun run lint`    | Run ESLint               |
+| `bun run preview` | Preview production build |
 
 **Add new feature:**
 
@@ -170,7 +177,6 @@ Hooks return descriptively named properties (e.g., `trainingRunsIsLoading`) for 
 - `*.service.ts` - API service functions (if separated from hooks)
 - Components use PascalCase: `TrainingRunForm.tsx`
 
-
 ## API Type & Hook Generation (Orval)
 
 This project uses **Orval** to automatically generate TypeScript types and TanStack Query hooks from the FastAPI OpenAPI specification. This ensures the frontend stays fully aligned with backend contracts and eliminates manually maintained API types and hooks.
@@ -180,7 +186,6 @@ This project uses **Orval** to automatically generate TypeScript types and TanSt
 - Backend running locally
 - OpenAPI spec available at: ${VITE_API_URL}/openapi.json
 
-
 (Default: `http://localhost:8000/openapi.json`)
 
 ### Regenerating API Code
@@ -189,3 +194,4 @@ From the `frontend/` directory, run:
 
 ```bash
 bun run api:gen
+```

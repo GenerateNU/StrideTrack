@@ -4,9 +4,7 @@
  * StrideTrack API
  * OpenAPI spec version: 0.1.0
  */
-import {
-  useQuery
-} from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -16,123 +14,174 @@ import type {
   QueryKey,
   UndefinedInitialDataOptions,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
-import { apiClient } from '../../config/axios.config';
-
+import { apiClient } from "../../config/axios.config";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
 
 /**
  * @summary Get Me
  */
 export type getMeApiAuthMeGetResponse200 = {
-  data: unknown
-  status: 200
-}
-    
-export type getMeApiAuthMeGetResponseSuccess = (getMeApiAuthMeGetResponse200) & {
+  data: unknown;
+  status: 200;
+};
+
+export type getMeApiAuthMeGetResponseSuccess = getMeApiAuthMeGetResponse200 & {
   headers: Headers;
 };
-;
-
-export type getMeApiAuthMeGetResponse = (getMeApiAuthMeGetResponseSuccess)
+export type getMeApiAuthMeGetResponse = getMeApiAuthMeGetResponseSuccess;
 
 export const getGetMeApiAuthMeGetUrl = () => {
+  return `/api/auth/me`;
+};
 
-
-  
-
-  return `/api/auth/me`
-}
-
-export const getMeApiAuthMeGet = async ( options?: RequestInit): Promise<getMeApiAuthMeGetResponse> => {
-  
-  return apiClient<getMeApiAuthMeGetResponse>(getGetMeApiAuthMeGetUrl(),
-  {      
+export const getMeApiAuthMeGet = async (
+  options?: RequestInit
+): Promise<getMeApiAuthMeGetResponse> => {
+  return apiClient<getMeApiAuthMeGetResponse>(getGetMeApiAuthMeGetUrl(), {
     ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
+    method: "GET",
+  });
+};
 
 export const getGetMeApiAuthMeGetQueryKey = () => {
-    return [
-    `/api/auth/me`
-    ] as const;
-    }
+  return [`/api/auth/me`] as const;
+};
 
-    
-export const getGetMeApiAuthMeGetQueryOptions = <TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
-) => {
+export const getGetMeApiAuthMeGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof apiClient>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getGetMeApiAuthMeGetQueryKey();
 
-  const queryKey =  queryOptions?.queryKey ?? getGetMeApiAuthMeGetQueryKey();
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMeApiAuthMeGet>>
+  > = ({ signal }) => getMeApiAuthMeGet({ signal, ...requestOptions });
 
-  
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMeApiAuthMeGet>>> = ({ signal }) => getMeApiAuthMeGet({ signal, ...requestOptions });
+export type GetMeApiAuthMeGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMeApiAuthMeGet>>
+>;
+export type GetMeApiAuthMeGetQueryError = unknown;
 
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetMeApiAuthMeGetQueryResult = NonNullable<Awaited<ReturnType<typeof getMeApiAuthMeGet>>>
-export type GetMeApiAuthMeGetQueryError = unknown
-
-
-export function useGetMeApiAuthMeGet<TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError, TData>> & Pick<
+export function useGetMeApiAuthMeGet<
+  TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
           TError,
           Awaited<ReturnType<typeof getMeApiAuthMeGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMeApiAuthMeGet<TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMeApiAuthMeGet<
+  TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
           TError,
           Awaited<ReturnType<typeof getMeApiAuthMeGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetMeApiAuthMeGet<TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMeApiAuthMeGet<
+  TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get Me
  */
 
-export function useGetMeApiAuthMeGet<TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getMeApiAuthMeGet>>, TError, TData>>, request?: SecondParameter<typeof apiClient>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetMeApiAuthMeGet<
+  TData = Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMeApiAuthMeGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof apiClient>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetMeApiAuthMeGetQueryOptions(options);
 
-  const queryOptions = getGetMeApiAuthMeGetQueryOptions(options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
-
-
-
-
