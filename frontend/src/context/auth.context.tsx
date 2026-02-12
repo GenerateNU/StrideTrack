@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useContext,
@@ -28,7 +29,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
     //if previously clicked Login as Dev, we stored:
     // localStorage["dev-token"] = "dev-token"
     //so when app loads, we immediately  enter dev mode
@@ -95,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginAsDev,
       logout,
     }),
-    [mode, user, loading],
+    [mode, user, loading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

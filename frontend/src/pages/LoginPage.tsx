@@ -1,5 +1,5 @@
 import { QueryLoading } from "@/components/QueryLoading";
-import { useAuth } from "@/context/AuthenticationContext";
+import { useAuth } from "@/context/auth.context";
 
 const ENV = import.meta.env.VITE_ENVIRONMENT;
 
