@@ -6,10 +6,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import api_router
 from app.core.exception_handlers import (
+    dev_user_not_allowed_handler,
+    expired_token_handler,
+    invalid_token_handler,
+    not_a_coach_handler,
     not_found_exception_handler,
     value_error_exception_handler,
 )
-from app.core.exceptions import NotFoundException
+from app.core.exceptions import (
+    DevUserNotAllowedException,
+    ExpiredTokenException,
+    InvalidTokenException,
+    NotACoachException,
+    NotFoundException,
+)
 from app.core.observability import setup_observability
 from app.schemas.health_schemas import RootResponse
 
@@ -47,6 +57,12 @@ app.add_middleware(
 
 app.add_exception_handler(NotFoundException, not_found_exception_handler)
 app.add_exception_handler(ValueError, value_error_exception_handler)
+app.add_exception_handler(InvalidTokenException, invalid_token_handler)
+app.add_exception_handler(ExpiredTokenException, expired_token_handler)
+app.add_exception_handler(DevUserNotAllowedException, dev_user_not_allowed_handler)
+app.add_exception_handler(NotACoachException, not_a_coach_handler)
+
+app.include_router(api_router)
 
 
 @app.get("/")

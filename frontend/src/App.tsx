@@ -1,28 +1,25 @@
-import { useAuth } from "./hooks/useAuth";
-import { useCurrentUser } from "./hooks/useCurrentUser";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import LoginPage from "@/pages/LoginPage";
+import DashboardPage from "@/pages/DashboardPage";
 
 function App() {
-  const { session, loading, signInWithGoogle, signOut } = useAuth();
-  const { user, loading: userLoading } = useCurrentUser();
-
-  if (loading) return <div>Loading...</div>;
-
   return (
-    <div>
-      {session ? (
-        <>
-          <p>Logged in as {session.user.email}</p>
-          {userLoading ? (
-            <p>Loading user data...</p>
-          ) : (
-            <p>Backend user ID: {user?.user_id}</p>
-          )}
-          <button onClick={signOut}>Sign Out</button>
-        </>
-      ) : (
-        <button onClick={signInWithGoogle}>Sign in with Google</button>
-      )}
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="*"
+          element={
+            <ProtectedRoute>
+              <Routes>
+                <Route path="/" element={<DashboardPage />} />
+              </Routes>
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
