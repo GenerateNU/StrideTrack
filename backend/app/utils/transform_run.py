@@ -229,7 +229,7 @@ def transform_feet_to_stride_cycles(
                 "step_time_ms",
             ]
         ]
-        .sort_values(["stride_num", "foot", "ic_time"])
+        .sort_values(["stride_num", "ic_time", "foot"])
         .reset_index(drop=True)
     )
 
