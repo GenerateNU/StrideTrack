@@ -11,9 +11,11 @@ logger = logging.getLogger(__name__)
 class AthleteRepository:
     """Repository for athletes table operations."""
 
+
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
         self.table = "athletes"
+
 
     async def get_all(self) -> list[dict]:
         """Get all athletes."""
@@ -26,6 +28,7 @@ class AthleteRepository:
         )
         logger.info(f"Repository: Found {len(response.data)} athletes")
         return response.data
+
 
     async def get_by_id(self, athlete_id: UUID) -> dict:
         """Get an athlete by ID."""
@@ -47,10 +50,16 @@ class AthleteRepository:
     async def create(self, data: dict) -> dict:
         """Create a new athlete."""
         logger.info(f"Repository: Creating athlete {data.get('name')}")
+
+        # Supabase needs this as a string so we'll handle the conversion here
+        if "coach_id" in data:
+            data["coach_id"] = str(data["coach_id"])
+
         response = await self.supabase.table(self.table).insert(data).execute()
         created = response.data[0]
         logger.info(f"Repository: Created athlete {created['athlete_id']}")
         return created
+
 
     async def update(self, athlete_id: UUID, data: dict) -> dict:
         """Update an athlete."""
@@ -69,6 +78,7 @@ class AthleteRepository:
         updated = response.data[0]
         logger.info(f"Repository: Updated athlete {athlete_id}")
         return updated
+
 
     async def delete(self, athlete_id: UUID) -> None:
         """Delete an athlete."""

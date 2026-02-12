@@ -26,7 +26,7 @@ async def get_athlete_service(
 
 
 @router.get("", response_model=list[AthleteResponse])
-async def list_athletes(service: AthleteService = Depends(get_athlete_service)):
+async def list_athletes(service: AthleteService = Depends(get_athlete_service)) -> list[dict]:
     """Get all athletes."""
     logger.info("Route: GET /athletes")
     athletes = await service.get_all_athletes()
@@ -37,7 +37,7 @@ async def list_athletes(service: AthleteService = Depends(get_athlete_service)):
 @router.get("/{athlete_id}", response_model=AthleteResponse)
 async def get_athlete(
     athlete_id: UUID, service: AthleteService = Depends(get_athlete_service)
-):
+) -> dict:
     """Get an athlete by ID."""
     logger.info(f"Route: GET /athletes/{athlete_id}")
     athlete = await service.get_athlete_by_id(athlete_id)
@@ -52,7 +52,7 @@ async def get_athlete(
 )
 async def create_athlete(
     data: AthleteCreate, service: AthleteService = Depends(get_athlete_service)
-):
+) -> dict:
     """Create a new athlete."""
     logger.info(f"Route: POST /athletes for {data.name}")
     athlete = await service.create_athlete(data.model_dump(exclude_unset=True))
@@ -65,7 +65,7 @@ async def update_athlete(
     athlete_id: UUID,
     data: AthleteUpdate,
     service: AthleteService = Depends(get_athlete_service),
-):
+) -> dict:
     """Update an athlete."""
     logger.info(f"Route: PATCH /athletes/{athlete_id}")
     athlete = await service.update_athlete(
@@ -78,7 +78,7 @@ async def update_athlete(
 @router.delete("/{athlete_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_athlete(
     athlete_id: UUID, service: AthleteService = Depends(get_athlete_service)
-):
+) -> None:
     """Delete an athlete."""
     logger.info(f"Route: DELETE /athletes/{athlete_id}")
     await service.delete_athlete(athlete_id)
