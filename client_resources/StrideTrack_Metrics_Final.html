@@ -1,0 +1,1080 @@
+<h1 id="stridetrack-metrics-reference">StrideTrack Metrics
+Reference</h1>
+<p><strong>Priority Legend:</strong> 🟢 MVP | 🟡 Nice to Have</p>
+<hr />
+<h2 id="universal-metrics-applied-to-all-events">UNIVERSAL METRICS
+(Applied to All Events)</h2>
+<blockquote>
+<p>These metrics are calculated and displayed for <strong>every event
+type</strong>. Event-specific sections below only contain metrics unique
+to that discipline.</p>
+</blockquote>
+<h3 id="core-temporal-metrics">Core Temporal Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Ground Contact Time (GCT)</td>
+<td>Direct measurement (L/R)</td>
+<td>🟢 MVP</td>
+<td>Step-by-step line chart (L/R overlay)</td>
+<td>Time the foot spends on the ground. Shorter GCT at high speeds =
+better reactive strength. Elite sprinters: &lt; 100ms at max
+velocity.</td>
+</tr>
+<tr class="even">
+<td>Flight Time (FT)</td>
+<td>Direct measurement (L/R)</td>
+<td>🟢 MVP</td>
+<td>Step-by-step line chart (L/R overlay)</td>
+<td>Time spent in the air between contacts. Reflects vertical impulse
+generated. Longer FT at same speed = more power.</td>
+</tr>
+<tr class="odd">
+<td>Step Time</td>
+<td>GCT + FT</td>
+<td>🟢 MVP</td>
+<td>Stacked bar (GCT + FT per step)</td>
+<td>Total duration of one step. Inverse of step frequency. Consistent
+values indicate rhythm stability.</td>
+</tr>
+<tr class="even">
+<td>Stride Time</td>
+<td>Step_Time_L + Step_Time_R</td>
+<td>🟡 Nice</td>
+<td>Line chart over strides</td>
+<td>Duration of a full stride (left + right step). Used for analyzing
+overall rhythm and bilateral differences.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="counting-metrics">Counting Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Total Steps</td>
+<td>Count of ground contacts</td>
+<td>🟢 MVP</td>
+<td>Single KPI card</td>
+<td>Basic volume metric.</td>
+</tr>
+<tr class="even">
+<td>Mean GCT</td>
+<td>Σ(GCT) / n</td>
+<td>🟢 MVP</td>
+<td>KPI card + horizontal reference line on charts</td>
+<td>Average ground contact time. Summary metric for overall efficiency.
+Lower is generally better at max velocity.</td>
+</tr>
+<tr class="odd">
+<td>Mean Flight Time</td>
+<td>Σ(FT) / n</td>
+<td>🟢 MVP</td>
+<td>KPI card + horizontal reference line on charts</td>
+<td>Average flight time. Summary metric for overall power output.
+Context-dependent (sprinting vs jumping).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ratio-metrics">Ratio Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Reactive Strength Index (RSI)</td>
+<td>FT / GCT</td>
+<td>🟢 MVP</td>
+<td>Line chart over steps + KPI card for mean</td>
+<td>Key indicator of leg spring stiffness and reactive ability. Higher
+RSI = more “bounce.” Elite sprinters: RSI &gt; 1.0 at max velocity.</td>
+</tr>
+<tr class="even">
+<td>Duty Factor</td>
+<td>GCT / Step_Time</td>
+<td>🟡 Nice</td>
+<td>Line chart over steps</td>
+<td>Proportion of step time on ground. &lt; 0.5 = flight-dominant
+(running). &gt; 0.5 = ground-dominant (walking/fatigue).</td>
+</tr>
+<tr class="odd">
+<td>Contact-Flight Index</td>
+<td>(FT − GCT) / Step_Time</td>
+<td>🟡 Nice</td>
+<td>Line chart over steps</td>
+<td>Balance between flight and contact. Positive = flight-dominant,
+negative = contact-dominant.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="asymmetry-metrics">Asymmetry Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GCT Asymmetry %</td>
+<td>|GCT_L − GCT_R| / ((GCT_L + GCT_R) / 2) × 100</td>
+<td>🟢 MVP</td>
+<td>Gauge (0-15% range) or KPI with color threshold (customizable)</td>
+<td>Percentage difference in GCT between feet. &gt; 10% may indicate
+injury risk or compensation. Target: &lt; 5%.</td>
+</tr>
+<tr class="even">
+<td>FT Asymmetry %</td>
+<td>|FT_L − FT_R| / ((FT_L + FT_R) / 2) × 100</td>
+<td>🟢 MVP</td>
+<td>Gauge or KPI</td>
+<td>Push-off power difference between legs. Often correlates with GCT
+asymmetry.</td>
+</tr>
+<tr class="odd">
+<td>ΔGCT L-R</td>
+<td>GCT_L − GCT_R</td>
+<td>🟡 Nice</td>
+<td>Diverging bar chart (centered at 0)</td>
+<td>Raw difference in ms. Positive = left longer, negative = right
+longer. Shows direction of imbalance.</td>
+</tr>
+<tr class="even">
+<td>ΔFT L-R</td>
+<td>FT_L − FT_R</td>
+<td>🟡 Nice</td>
+<td>Diverging bar chart (centered at 0)</td>
+<td>Raw flight time difference. Shows direction and magnitude of
+push-off asymmetry.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="performance-metrics">Performance Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Step Frequency</td>
+<td>1 / Step_Time (Hz)</td>
+<td>🟢 MVP</td>
+<td>Line chart over steps + KPI for mean</td>
+<td>Steps per second. Key sprint variable. Elite sprinters: 4.5-5.0 Hz
+at max velocity.</td>
+</tr>
+<tr class="even">
+<td>N. Steps in GCT Range</td>
+<td>value1 &lt; count(steps_GCT) &lt; value2</td>
+<td>🟢 MVP</td>
+<td>Pie chart (ranges customizable by user)</td>
+<td>Count of steps meeting target criteria (e.g., “how many steps under
+100ms, over 200ms and in the middle?”).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="session-level-metrics">Session-Level Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Mean RSI</td>
+<td>Σ(RSI) / n</td>
+<td>🟢 MVP</td>
+<td>KPI card</td>
+<td>Average RSI across all steps. Summary of overall reactive ability
+for the session.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="sprinting">SPRINTING</h2>
+<blockquote>
+<p><em>All Universal Metrics above are included. Below are
+sprint-specific visualization notes.</em></p>
+</blockquote>
+<h3 id="sprint-specific-visualization-notes">Sprint-Specific
+Visualization Notes</h3>
+<table>
+<colgroup>
+<col style="width: 17%" />
+<col style="width: 55%" />
+<col style="width: 27%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Visualization Adjustment</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Step Frequency</td>
+<td>Line chart with <strong>acceleration phase highlight</strong></td>
+<td>Highlights the buildup from ~3.5 Hz at start to ~4.8 Hz at max
+velocity.</td>
+</tr>
+<tr class="even">
+<td>GCT Drift %</td>
+<td>KPI with color thresholds (green &lt;5%, yellow 5-10%, red &gt;10%)
+— customizable</td>
+<td>Sprint-specific fatigue tracking. &gt; 10% drift indicates
+significant speed loss.</td>
+</tr>
+<tr class="odd">
+<td>FT Drift %</td>
+<td>KPI with color thresholds — customizable</td>
+<td>Tracks power maintenance through the sprint.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>No additional sprint-specific metrics</strong> — sprinting
+uses the full Universal Metrics set.</p>
+<hr />
+<h2 id="hurdles">HURDLES</h2>
+<blockquote>
+<p><em>All Universal Metrics above are included. Below are
+hurdle-specific metrics.</em></p>
+</blockquote>
+<h3 id="hurdle-specific-metrics">Hurdle-Specific Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Hurdle Split</td>
+<td>Time between consecutive hurdle clearances</td>
+<td>🟢 MVP</td>
+<td>Bar chart (split per hurdle) + KPI for consistency</td>
+<td>Primary performance metric. Consistent splits = rhythm mastery.
+Elite 110mH: ~1.0s splits.</td>
+</tr>
+<tr class="even">
+<td>Steps Between Hurdles</td>
+<td>Count of ground contacts between hurdles</td>
+<td>🟢 MVP</td>
+<td>Integer display per interval (ideal = 3 for 110mH)</td>
+<td>Should be constant (3 for 110mH, 7 for 400mH). Changes indicate
+technical breakdown.</td>
+</tr>
+<tr class="odd">
+<td>Take-off GCT</td>
+<td>GCT of last step before hurdle</td>
+<td>🟢 MVP</td>
+<td>One bar for each hurdle</td>
+<td>Quick take-off (&lt; 100ms) enables aggressive attack. Increasing =
+fatigue.</td>
+</tr>
+<tr class="even">
+<td>Landing GCT</td>
+<td>GCT of first step after hurdle</td>
+<td>🟢 MVP</td>
+<td>One bar for each hurdle</td>
+<td>Always longer than normal (impact absorption). Should stay &lt;
+130ms.</td>
+</tr>
+<tr class="odd">
+<td>Take-off FT</td>
+<td>FT during hurdle clearance</td>
+<td>🟢 MVP</td>
+<td>One bar for each hurdle</td>
+<td>Hurdle flight time. Should be efficient, not excessive
+(~300-350ms).</td>
+</tr>
+<tr class="even">
+<td>GCT Increase Hurdle-to-Hurdle</td>
+<td>(GCT_hurdle_N − GCT_hurdle_1) / GCT_hurdle_1 × 100</td>
+<td>🟡 Nice</td>
+<td>KPI card</td>
+<td>Hurdle-specific fatigue. &gt; 15% increase signals conditioning
+issues.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="group-visualization">Group Visualization</h3>
+<table>
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Visualization</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Hurdle Timeline</td>
+<td>Combined chart with GCT/FT lines, vertical hurdle markers, and split
+times annotated. User can toggle metrics on/off.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="long-jump">LONG JUMP</h2>
+<blockquote>
+<p><em>All Universal Metrics above are included. Below are long
+jump-specific metrics.</em></p>
+</blockquote>
+<h3 id="long-jump-specific-metrics">Long Jump-Specific Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Last Step GCT</td>
+<td>GCT of penultimate step (takeoff prep)</td>
+<td>🟢 MVP</td>
+<td>Highlighted point + KPI card</td>
+<td>Critical for horizontal-to-vertical conversion. Should be short and
+reactive (&lt; 110ms).</td>
+</tr>
+<tr class="even">
+<td>Last Step FT</td>
+<td>FT of final step (takeoff)</td>
+<td>🟢 MVP</td>
+<td>Highlighted point + KPI card</td>
+<td>The actual jump flight. Longer = better (assuming good
+technique).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="group-visualization-1">Group Visualization</h3>
+<table>
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Visualization</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Approach Profile</td>
+<td>Line chart with shaded “final 3 steps” zone, showing GCT decreasing
+into takeoff.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="visualization-notes">Visualization Notes</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Visualization Adjustment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GCT (L/R)</td>
+<td>Line chart with <strong>final steps highlighted</strong></td>
+</tr>
+<tr class="even">
+<td>Flight Time (L/R)</td>
+<td>Line chart with <strong>takeoff emphasis</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="triple-jump">TRIPLE JUMP</h2>
+<blockquote>
+<p><em>All Universal Metrics above are included. Below are triple
+jump-specific metrics.</em></p>
+</blockquote>
+<h3 id="phase-specific-metrics">Phase-Specific Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Phase Ratio (Hop:Step:Jump)</td>
+<td>Hop_FT : Step_FT : Jump_FT</td>
+<td>🟢 MVP</td>
+<td>Stacked horizontal bar (100% = total) or pie chart</td>
+<td>Distribution of flight time. Ideal ratio ~35:30:35. Imbalance
+indicates technique issues.</td>
+</tr>
+<tr class="even">
+<td>Contact Time Efficiency</td>
+<td>Total_FT / Total_GCT</td>
+<td>🟡 Nice</td>
+<td>KPI card</td>
+<td>Overall efficiency. Higher = better energy transfer through all
+phases.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="group-visualization-2">Group Visualization</h3>
+<table>
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Visualization</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Phase Ratio Chart</td>
+<td>Stacked bar or pie showing Hop:Step:Jump distribution (GCT + FT)
+with ratio annotation.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="visualization-notes-1">Visualization Notes</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Visualization Adjustment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GCT (L/R)</td>
+<td>Timeline with <strong>phase labels</strong></td>
+</tr>
+<tr class="even">
+<td>Flight Time (L/R)</td>
+<td>Timeline with <strong>phase labels</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="high-jump">HIGH JUMP</h2>
+<blockquote>
+<p><em>All Universal Metrics above are included. Below are high
+jump-specific metrics.</em></p>
+</blockquote>
+<h3 id="high-jump-specific-metrics">High Jump-Specific Metrics</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+<h3 id="visualization-notes-2">Visualization Notes</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Visualization Adjustment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GCT (L/R)</td>
+<td>Line chart with <strong>last 5 steps highlighted</strong></td>
+</tr>
+<tr class="even">
+<td>Flight Time (L/R)</td>
+<td>Line chart with <strong>last 5 steps highlighted</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="bosco-test-repeated-jumps">BOSCO TEST (Repeated Jumps)</h2>
+<blockquote>
+<p><em>Universal Metrics for GCT, FT, and RSI are included. Below are
+Bosco-specific metrics.</em></p>
+</blockquote>
+<h3 id="jump-height-metrics">Jump Height Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Jump Height</td>
+<td>h = (g × FT²) / 8 = 1.226 × FT² (m, with FT in seconds)</td>
+<td>🟢 MVP</td>
+<td>Bar chart per jump with mean line and peak highlighted</td>
+<td>Primary outcome. Calculated from flight time using physics
+formula.</td>
+</tr>
+<tr class="even">
+<td>Mean Jump Height</td>
+<td>Σ(h) / n</td>
+<td>🟢 MVP</td>
+<td>KPI card + horizontal reference line</td>
+<td>Overall jumping ability for the session.</td>
+</tr>
+<tr class="odd">
+<td>Peak Jump Height</td>
+<td>max(h)</td>
+<td>🟢 MVP</td>
+<td>KPI card (highlighted max bar)</td>
+<td>Best single effort. Gap between peak and mean indicates
+consistency.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="rhythm-power-metrics">Rhythm &amp; Power Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Jump Frequency</td>
+<td>n_jumps / total_time (Hz)</td>
+<td>🟢 MVP</td>
+<td>KPI card</td>
+<td>Reflects rhythm and reactive ability during continuous jumping.</td>
+</tr>
+<tr class="even">
+<td>Contact Time Efficiency</td>
+<td>h / GCT</td>
+<td>🟡 Nice</td>
+<td>Line chart over jumps</td>
+<td>Height per ms of ground contact. Higher = more efficient.</td>
+</tr>
+<tr class="odd">
+<td>Specific Power (W/kg)</td>
+<td>(g² × FT × (FT + GCT)) / (4 × GCT)</td>
+<td>🟡 Nice</td>
+<td>Line chart + KPI for mean</td>
+<td>Power normalized to body mass. Allows comparison across
+athletes.</td>
+</tr>
+<tr class="even">
+<td>Specific Energy (J/kg)</td>
+<td>g × h</td>
+<td>🟡 Nice</td>
+<td>Bar chart per jump</td>
+<td>Work done per kg of body mass.</td>
+</tr>
+<tr class="odd">
+<td>Total Power (W)</td>
+<td>Specific_Power × body_mass</td>
+<td>🟡 Nice</td>
+<td>KPI card</td>
+<td>Absolute power output (requires body mass input).</td>
+</tr>
+<tr class="even">
+<td>Total Energy (J)</td>
+<td>Specific_Energy × body_mass</td>
+<td>🟡 Nice</td>
+<td>KPI card</td>
+<td>Absolute energy per jump (requires body mass input).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bosco-fatigue-metrics">Bosco Fatigue Metrics</h3>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Fatigue Index</td>
+<td>((h_initial − h_final) / h_initial) × 100</td>
+<td>🟢 MVP</td>
+<td>KPI gauge (0-30% typical range)</td>
+<td>Key Bosco outcome. Shows performance maintenance. &lt; 15% is
+good.</td>
+</tr>
+<tr class="even">
+<td>RSI Decay</td>
+<td>(RSI_first_5 − RSI_last_5) / RSI_first_5 × 100</td>
+<td>🟡 Nice</td>
+<td>Before/after comparison bar</td>
+<td>More sensitive fatigue indicator than height alone.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="group-visualization-3">Group Visualization</h3>
+<table>
+<colgroup>
+<col style="width: 53%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Visualization</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Jump Series</td>
+<td>Bar chart of all jump heights with mean line and peak
+highlighted.</td>
+</tr>
+<tr class="even">
+<td>Fatigue Analysis</td>
+<td>Split view: first 2 jumps vs last 2 jumps comparison.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="reaction-time-test">REACTION TIME TEST</h2>
+<blockquote>
+<p><em>Standalone test — does not use Universal Metrics.</em></p>
+</blockquote>
+<table>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 16%" />
+<col style="width: 18%" />
+<col style="width: 27%" />
+<col style="width: 23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Formula</th>
+<th>Priority</th>
+<th>Visualization</th>
+<th>Explanation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Reaction Time</td>
+<td>Time from stimulus to first movement (detected via GCT onset)</td>
+<td>🟢 MVP</td>
+<td>KPI card with color zones (&lt;200ms green, 200-300ms yellow,
+&gt;300ms red) — customizable</td>
+<td>Pure neural response speed. Elite sprinters: &lt; 150ms. False
+start: &lt; 100ms.</td>
+</tr>
+<tr class="even">
+<td>Movement Time</td>
+<td>Time from first movement till foot touches ground</td>
+<td>🟡 Nice</td>
+<td>KPI card</td>
+<td>Motor execution speed after reaction.</td>
+</tr>
+<tr class="odd">
+<td>Total Response Time</td>
+<td>Reaction_Time + Movement_Time</td>
+<td>🟡 Nice</td>
+<td>Stacked bar (RT + MT segments)</td>
+<td>Complete response from stimulus to action completion.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="default-threshold-reference">DEFAULT THRESHOLD REFERENCE</h2>
+<blockquote>
+<p>All thresholds below are customizable in user settings. These are
+recommended starting values.</p>
+</blockquote>
+<h3 id="asymmetry-balance-thresholds">Asymmetry &amp; Balance
+Thresholds</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>🟢 Good</th>
+<th>🟡 Monitor</th>
+<th>🔴 High Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GCT Asymmetry %</td>
+<td>0-5%</td>
+<td>5-10%</td>
+<td>&gt;10%</td>
+</tr>
+<tr class="even">
+<td>FT Asymmetry %</td>
+<td>0-5%</td>
+<td>5-10%</td>
+<td>&gt;10%</td>
+</tr>
+<tr class="odd">
+<td>Symmetry Score</td>
+<td>&gt;95%</td>
+<td>90-95%</td>
+<td>&lt;85%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="fatigue-drift-thresholds">Fatigue &amp; Drift Thresholds</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>🟢 Minimal</th>
+<th>🟡 Moderate</th>
+<th>🔴 Significant</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>GCT Drift %</td>
+<td>&lt;5%</td>
+<td>5-10%</td>
+<td>&gt;10%</td>
+</tr>
+<tr class="even">
+<td>FT Drift %</td>
+<td>&gt;-5%</td>
+<td>-5% to -10%</td>
+<td>&lt;-10%</td>
+</tr>
+<tr class="odd">
+<td>Fatigue Index (Bosco)</td>
+<td>&lt;10%</td>
+<td>10-15%</td>
+<td>&gt;20%</td>
+</tr>
+<tr class="even">
+<td>RSI Decay (Bosco)</td>
+<td>&lt;10%</td>
+<td>10-20%</td>
+<td>&gt;20%</td>
+</tr>
+<tr class="odd">
+<td>GCT Increase Hurdle-to-Hurdle</td>
+<td>&lt;10%</td>
+<td>10-15%</td>
+<td>&gt;15%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gct-range-thresholds-sprinting">GCT Range Thresholds
+(Sprinting)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Range</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt;100ms</td>
+<td>🟢 Elite</td>
+</tr>
+<tr class="even">
+<td>100-110ms</td>
+<td>🟡 Good</td>
+</tr>
+<tr class="odd">
+<td>110-120ms</td>
+<td>🟠 Average</td>
+</tr>
+<tr class="even">
+<td>&gt;120ms</td>
+<td>🔴 Slow</td>
+</tr>
+</tbody>
+</table>
+<h3 id="gct-range-thresholds-hurdles">GCT Range Thresholds
+(Hurdles)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Range</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt;105ms</td>
+<td>🟢 Good</td>
+</tr>
+<tr class="even">
+<td>105-115ms</td>
+<td>🟡 Average</td>
+</tr>
+<tr class="odd">
+<td>&gt;115ms</td>
+<td>🔴 Slow</td>
+</tr>
+</tbody>
+</table>
+<h3 id="approach-rhythm-high-jumplong-jump">Approach Rhythm (High
+Jump/Long Jump)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>CV%</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt;3%</td>
+<td>🟢 Excellent</td>
+</tr>
+<tr class="even">
+<td>3-5%</td>
+<td>🟡 Good</td>
+</tr>
+<tr class="odd">
+<td>5-7%</td>
+<td>🟠 Moderate</td>
+</tr>
+<tr class="even">
+<td>&gt;7%</td>
+<td>🔴 Inconsistent</td>
+</tr>
+</tbody>
+</table>
+<h3 id="reaction-time-thresholds">Reaction Time Thresholds</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Time</th>
+<th>Classification</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt;100ms</td>
+<td>⚠️ False Start Warning</td>
+</tr>
+<tr class="even">
+<td>&lt;180ms</td>
+<td>🟢 Excellent</td>
+</tr>
+<tr class="odd">
+<td>180-220ms</td>
+<td>🟡 Good</td>
+</tr>
+<tr class="even">
+<td>220-280ms</td>
+<td>🟠 Average</td>
+</tr>
+<tr class="odd">
+<td>&gt;280ms</td>
+<td>🔴 Slow</td>
+</tr>
+</tbody>
+</table>
+<h3 id="rsi-reference-values-context-dependent">RSI Reference Values
+(Context-Dependent)</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Context</th>
+<th>🟢 Good</th>
+<th>🟡 Average</th>
+<th>🔴 Low</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sprinting (max velocity)</td>
+<td>&gt;1.1</td>
+<td>0.9-1.1</td>
+<td>&lt;0.9</td>
+</tr>
+<tr class="even">
+<td>Hurdles (between hurdles)</td>
+<td>&gt;1.0</td>
+<td>0.8-1.0</td>
+<td>&lt;0.8</td>
+</tr>
+<tr class="odd">
+<td>Jumps (approach)</td>
+<td>&gt;1.2</td>
+<td>1.0-1.2</td>
+<td>&lt;1.0</td>
+</tr>
+<tr class="even">
+<td>Bosco Test (continuous)</td>
+<td>&gt;1.0</td>
+<td>0.7-1.0</td>
+<td>&lt;0.7</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="notes">Notes</h2>
+<ul>
+<li><strong>GCT</strong> = Ground Contact Time (milliseconds)</li>
+<li><strong>FT</strong> = Flight Time (milliseconds)</li>
+<li><strong>RSI</strong> = Reactive Strength Index (higher = more
+reactive/elastic)</li>
+<li><strong>g</strong> = 9.81 m/s² (gravitational acceleration)</li>
+<li>All asymmetry metrics use absolute value to capture magnitude
+regardless of direction</li>
+<li>Threshold values for color coding (Asymmetry %, Drift %, Reaction
+Time) are customizable in user settings</li>
+</ul>
