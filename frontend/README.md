@@ -93,15 +93,22 @@ Hooks return named properties for cleaner component usage:
 **GET Queries:**
 
 ```typescript
-const { trainingRuns, trainingRunsIsLoading, trainingRunsError, trainingRunsRefetch } =
-  useGetAllTrainingRuns();
+const {
+  trainingRuns,
+  trainingRunsIsLoading,
+  trainingRunsError,
+  trainingRunsRefetch,
+} = useGetAllTrainingRuns();
 ```
 
 **Mutations:**
 
 ```typescript
-const { createTrainingRun, createTrainingRunIsLoading, createTrainingRunError } =
-  useCreateTrainingRun();
+const {
+  createTrainingRun,
+  createTrainingRunIsLoading,
+  createTrainingRunError,
+} = useCreateTrainingRun();
 ```
 
 ## Tech Stack
@@ -128,12 +135,12 @@ bun run dev        # Start dev server (http://localhost:5173)
 
 **Available scripts:**
 
-| Command            | Description              |
-| ------------------ | ------------------------ |
-| `bun run dev`      | Start development server |
-| `bun run build`    | Type-check and build     |
-| `bun run lint`     | Run ESLint               |
-| `bun run preview`  | Preview production build |
+| Command           | Description              |
+| ----------------- | ------------------------ |
+| `bun run dev`     | Start development server |
+| `bun run build`   | Type-check and build     |
+| `bun run lint`    | Run ESLint               |
+| `bun run preview` | Preview production build |
 
 **Add new feature:**
 

@@ -16,7 +16,7 @@ else
 endif
 .SHELLFLAGS := -euo pipefail -c
 
-.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create test
+.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create test check-format-backend check-format-frontend check-format format-backend format-frontend format
 
 # Colors for output
 GREEN := \033[0;32m
@@ -184,3 +184,44 @@ test: ## Run backend tests in container
 		$(PROJECT_NAME)-test
 	@printf "  $(GREEN)$(CHECKMARK)$(NC) Tests complete\n"
 	@printf "\n"
+
+check-format-backend: ## Check code linting and formatting in the backend with Ruff
+	@printf "$(BLUE)Checking Backend Linting...\n$(NC)"
+	@cd backend && uv run ruff check .
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Backend linting passed\n"
+	@printf "$(BLUE)Checking Backend Formatting...\n$(NC)"
+	@cd backend && uv run ruff format --check .
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Backend formatting passed\n"
+	@printf "\n"
+
+check-format-frontend: ## Check code linting and formatting in the frontend with Eslint and Prettier
+	@printf "$(BLUE)Checking Frontend Linting...\n$(NC)"
+	@cd frontend && bun run lint
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Frontend linting passed\n"
+	@printf "$(BLUE)Checking Frontend Formatting...\n$(NC)"
+	@cd frontend && bun run check-format
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Frontend formatting passed\n"
+	@printf "\n"
+
+check-format: ## Check code linting and formatting in both backend and frontend
+	@$(MAKE) check-format-backend
+	@$(MAKE) check-format-frontend
+
+format-backend: ## Format backend code with Ruff
+	@printf "$(BLUE)Fixing Backend Linting...\n$(NC)"
+	@cd backend && uv run ruff check --fix .
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Backend linting fixed\n"
+	@printf "$(BLUE)Formatting Backend Code...\n$(NC)"
+	@cd backend && uv run ruff format .
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Backend formatting complete\n"
+	@printf "\n"
+
+format-frontend: ## Format frontend code with Prettier
+	@printf "$(BLUE)Formatting Frontend Code...\n$(NC)"
+	@cd frontend && bun run format
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Frontend formatting complete\n"
+	@printf "\n"
+
+format: ## Format code in both backend and frontend
+	@$(MAKE) format-backend
+	@$(MAKE) format-frontend

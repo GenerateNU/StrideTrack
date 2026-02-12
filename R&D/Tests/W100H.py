@@ -1,10 +1,8 @@
 "testing model option with tabula"
 
 import tabula
-import numpy as np
 import pandas as pd
 import requests
-from pathlib import Path
 from typing import Optional, Tuple
 
 

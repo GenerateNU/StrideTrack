@@ -1,7 +1,6 @@
 import re
 from pathlib import Path
-from typing import Optional, Tuple, Dict, Any
-import numpy as np
+from typing import Optional, Tuple
 import pandas as pd
 import pdfplumber
 import requests
