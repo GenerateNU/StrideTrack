@@ -7,6 +7,7 @@ from app.core.exceptions import (
     DevUserNotAllowedException,
     ExpiredTokenException,
     InvalidTokenException,
+    NotACoachException,
     NotFoundException,
 )
 
@@ -41,3 +42,7 @@ async def dev_user_not_allowed_handler(
     _: Request, __: DevUserNotAllowedException
 ) -> JSONResponse:
     return JSONResponse(status_code=403, content={"detail": "Dev user not allowed"})
+
+
+async def not_a_coach_handler(_: Request, __: NotACoachException) -> JSONResponse:
+    return JSONResponse(status_code=403, content={"detail": "User is not a coach"})

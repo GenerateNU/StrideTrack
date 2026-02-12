@@ -32,3 +32,11 @@ class DevUserNotAllowedException(Exception):
     def __init__(self, reason: str = "Dev user not allowed") -> None:
         self.reason = reason
         super().__init__(reason)
+
+
+class NotACoachException(Exception):
+    """Raised when a non-coach user tries to access coach-only resources."""
+
+    def __init__(self, reason: str = "User is not a coach") -> None:
+        self.reason = reason
+        super().__init__(reason)

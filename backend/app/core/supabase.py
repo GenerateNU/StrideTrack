@@ -13,4 +13,5 @@ async def get_async_supabase() -> AsyncClient:
             settings.supabase_url, settings.supabase_service_role_key
         )
         print("Supabase Initialized")
+        print(f"Key starts with: {settings.supabase_service_role_key[:20]}")
     return supabase
