@@ -1,29 +1,26 @@
-import { QueryLoading } from "@/components/QueryLoading";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/auth.context";
-
-const ENV = import.meta.env.VITE_ENVIRONMENT;
+import { config } from "@/lib/config";
+import { QueryLoading } from "@/components/QueryLoading";
 
 export default function LoginPage() {
-  const { user, loading, loginAsDev, loginWithGoogle, logout } = useAuth();
-  const devToken = localStorage.getItem("dev-token");
+  const { mode, loading, loginAsDev, loginWithGoogle } = useAuth();
 
-  return loading ? (
-    <QueryLoading /> //loading
-  ) : !devToken && !user ? ( //if we are logged out
-    <>
-      <div>Currently logged out</div>
+  if (loading) {
+    return <QueryLoading />;
+  }
+
+  if (mode !== "none") {
+    return <Navigate to="/" replace />;
+  }
+
+  return (
+    <div>
       <button onClick={loginWithGoogle}>Sign in with Google</button>
-      <button onClick={loginAsDev}>Login as Dev</button>{" "}
-    </>
-  ) : ENV === "development" && devToken && !user ? ( //already in dev
-    <>
-      <div>Logged in as Dev</div>
-      <button onClick={logout}>Clear Dev Login</button>
-    </>
-  ) : (
-    <>
-      <div>Logged in as Google {user?.email}</div>
-      <button onClick={logout}>Sign out of Google</button>
-    </>
+      <div />
+      {config.development.bypassAuth && (
+        <button onClick={loginAsDev}>Login as Dev</button>
+      )}
+    </div>
   );
 }

@@ -1,32 +1,49 @@
 import axios from "axios";
 import { supabase } from "./supabase";
+import { config } from "./config";
+import { getDevToken } from "./dev";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: config.apiUrl,
+  timeout: 30000,
 });
 
-const ENV = import.meta.env.VITE_ENVIRONMENT;
+api.interceptors.request.use(
+  async (requestConfig) => {
+    const devToken = getDevToken();
 
-api.interceptors.request.use(async (config) => {
-  if (ENV === "development") {
-    //dev token first
-    const devToken = localStorage.getItem("dev-token");
     if (devToken) {
-      config.headers = config.headers ?? {};
-      config.headers.Authorization = `Bearer ${devToken}`;
-      return config;
+      requestConfig.headers.Authorization = `Bearer ${devToken}`;
+      return requestConfig;
     }
-  }
-  //otherwise supabase session
-  const { data } = await supabase.auth.getSession();
-  const token = data.session?.access_token;
 
-  if (token) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+    // Otherwise use Supabase session
+    const { data } = await supabase.auth.getSession();
+    const token = data.session?.access_token;
 
-  return config;
-});
+    if (token) {
+      requestConfig.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return requestConfig;
+  },
+  (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
+
+    if (error.response?.data?.detail) {
+      error.message = error.response.data.detail;
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default api;

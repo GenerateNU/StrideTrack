@@ -1,68 +1,121 @@
 /* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
-import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { getDevToken, setDevToken, clearDevToken } from "@/lib/dev";
+import api from "@/lib/api";
+import type { Profile, Coach } from "@/types/auth.types";
+
+export type { Profile, Coach };
 
 export type AuthMode = "none" | "dev" | "google";
 
-export type AuthContextValue = {
+export interface AuthContextValue {
   mode: AuthMode;
-  user: User | null;
+  profile: Profile | null;
+  coach: Coach | null;
   loading: boolean;
+  error: Error | null;
   loginWithGoogle: () => Promise<void>;
-  loginAsDev: () => void;
+  loginAsDev: () => Promise<void>;
   logout: () => Promise<void>;
-};
+  refreshProfile: () => Promise<void>;
+}
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<AuthMode>("none");
-  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [coach, setCoach] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    //if previously clicked Login as Dev, we stored:
-    // localStorage["dev-token"] = "dev-token"
-    //so when app loads, we immediately  enter dev mode
-    const devToken = localStorage.getItem("dev-token");
+  const fetchProfile = useCallback(async () => {
+    try {
+      const { data } = await api.get<Profile>("/auth/me");
+      setProfile(data);
+      setError(null);
+
+      // If user is a coach, fetch coach data
+      if (data.role === "coach") {
+        try {
+          const { data: coachData } = await api.get<Coach>("/auth/me/coach");
+          setCoach(coachData);
+        } catch (err) {
+          console.error("Failed to fetch coach:", err);
+          setCoach(null);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+      setError(err as Error);
+      setProfile(null);
+      setCoach(null);
+    }
+  }, []);
+
+  const checkAuth = useCallback(async () => {
+    setLoading(true);
+
+    const devToken = getDevToken();
     if (devToken) {
       setMode("dev");
-      setUser(null);
+      await fetchProfile();
       setLoading(false);
       return;
     }
 
-    const sync = async () => {
+    try {
       const { data } = await supabase.auth.getUser();
-      setUser(data.user ?? null);
-      setMode(data.user ? "google" : "none");
+      if (data.user) {
+        setMode("google");
+        await fetchProfile();
+      } else {
+        setMode("none");
+        setProfile(null);
+        setCoach(null);
+      }
+    } catch (err) {
+      console.error("Auth check failed:", err);
+      setMode("none");
+      setProfile(null);
+      setCoach(null);
+    } finally {
       setLoading(false);
-    };
+    }
+  }, [fetchProfile]);
 
-    sync();
+  useEffect(() => {
+    checkAuth();
 
-    const { data } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      // If dev-token is present, ignore Supabase changes
-      if (localStorage.getItem("dev-token")) return;
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Ignore if dev token is present
+      if (getDevToken()) return;
 
-      setUser(newSession?.user ?? null);
-      setMode(newSession ? "google" : "none");
+      if (session) {
+        setMode("google");
+        fetchProfile();
+      } else {
+        setMode("none");
+        setProfile(null);
+        setCoach(null);
+      }
       setLoading(false);
     });
 
     return () => data.subscription.unsubscribe();
-  }, []);
+  }, [checkAuth, fetchProfile]);
 
   const loginWithGoogle = async () => {
-    // keep your existing redirect behavior
+    clearDevToken();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: window.location.origin },
@@ -70,32 +123,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   };
 
-  const loginAsDev = () => {
-    localStorage.setItem("dev-token", "dev-token");
-    setUser(null);
-    console.error("Logged in as Dev");
+  const loginAsDev = useCallback(async () => {
+    setDevToken();
     setMode("dev");
-    setLoading(false);
-  };
+    await fetchProfile();
+  }, [fetchProfile]);
 
   const logout = async () => {
-    localStorage.removeItem("dev-token");
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    setUser(null);
+    clearDevToken();
+    await supabase.auth.signOut();
+    setProfile(null);
+    setCoach(null);
     setMode("none");
+    setError(null);
   };
+
+  const refreshProfile = useCallback(async () => {
+    setError(null);
+    await fetchProfile();
+  }, [fetchProfile]);
 
   const value = useMemo(
     () => ({
       mode,
-      user,
+      profile,
+      coach,
       loading,
+      error,
       loginWithGoogle,
       loginAsDev,
       logout,
+      refreshProfile,
     }),
-    [mode, user, loading]
+    [mode, profile, coach, loading, error, loginAsDev, refreshProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
