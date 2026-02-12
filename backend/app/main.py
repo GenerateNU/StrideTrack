@@ -48,9 +48,10 @@ app.add_middleware(
 app.add_exception_handler(NotFoundException, not_found_exception_handler)
 app.add_exception_handler(ValueError, value_error_exception_handler)
 
-app.include_router(api_router)
-
 
 @app.get("/")
 def read_root() -> RootResponse:
     return RootResponse(message="StrideTrack API")
+
+
+app.include_router(api_router)
