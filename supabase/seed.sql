@@ -36,12 +36,35 @@ VALUES (
     '00000000-0000-0000-0000-000000000010'
 );
 
--- Seed athlete
+-- Seed athletes
 INSERT INTO athletes (athlete_id, coach_id, name, height_in, weight_lbs)
 VALUES (
     '00000000-0000-0000-0000-000000000002',
     '00000000-0000-0000-0000-000000000001',
     'Ben Marler',
     76,
-    165
+    185
 );
+
+INSERT INTO athletes (athlete_id, coach_id, name, height_in, weight_lbs)
+VALUES (
+    '00000000-0000-0000-0000-000000000003',
+    '00000000-0000-0000-0000-000000000001',
+    'Michael Maaseide',
+    70,
+    160
+);
+
+-- Insert RUN records
+INSERT INTO run (run_id, athlete_id, event_type, name) VALUES
+    ('d0271452-4bec-4759-84ef-c62beaafdbf0', '00000000-0000-0000-0000-000000000002', 'sprint_100m', 'Ben Sprint 1'),
+    ('86fb3baf-264d-4047-ad17-d97be11eaec3', '00000000-0000-0000-0000-000000000003', 'sprint_100m', 'Michael Sprint 1'),
+    ('acf9da17-bf30-4eb2-8494-3d641de4301b', '00000000-0000-0000-0000-000000000003', 'sprint_100m', 'Michael Sprint 2');
+
+-- Insert RUN_METRICS (5 sample records)
+INSERT INTO run_metrics (run_id, stride_num, foot, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms) VALUES
+    ('d0271452-4bec-4759-84ef-c62beaafdbf0', 1, 'right', 0, 1290, 1440, 1290, 150, 1440),
+    ('d0271452-4bec-4759-84ef-c62beaafdbf0', 1, 'left', 1320, 1410, 1850, 90, 440, 530),
+    ('86fb3baf-264d-4047-ad17-d97be11eaec3', 1, 'right', 0, 2300, 2370, 2300, 70, 2370),
+    ('86fb3baf-264d-4047-ad17-d97be11eaec3', 1, 'left', 2330, 2340, 2560, 10, 220, 230),
+    ('acf9da17-bf30-4eb2-8494-3d641de4301b', 1, 'right', 0, 1969, 2699, 1969, 730, 2699);
