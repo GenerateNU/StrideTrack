@@ -18,34 +18,30 @@ class AthleteService:
         logger.info("Service: Getting all athletes")
         athletes = await self.repository.get_all()
         logger.info(f"Service: Retrieved {len(athletes)} athletes")
-        return [AthleteResponse(**athlete) for athlete in athletes]
+        return athletes
 
     async def get_athlete_by_id(self, athlete_id: UUID) -> AthleteResponse:
         """Get an athlete by ID."""
         logger.info(f"Service: Getting athlete {athlete_id}")
         athlete = await self.repository.get_by_id(athlete_id)
         logger.info(f"Service: Found athlete {athlete_id}")
-        return AthleteResponse(**athlete)
+        return athlete
 
     async def create_athlete(self, athlete_create: AthleteCreate) -> AthleteResponse:
         """Create a new athlete."""
         logger.info(f"Service: Creating athlete {athlete_create.name}")
-        data = athlete_create.model_dump()
-        data["coach_id"] = str(data["coach_id"])
-        athlete = await self.repository.create(data)
-        logger.info(f"Service: Created athlete {athlete['athlete_id']}")
-        return AthleteResponse(**athlete)
+        athlete = await self.repository.create(athlete_create)
+        logger.info(f"Service: Created athlete {athlete.athlete_id}")
+        return athlete
 
     async def update_athlete(
         self, athlete_id: UUID, athlete_update: AthleteUpdate
     ) -> AthleteResponse:
         """Update an athlete."""
         logger.info(f"Service: Updating athlete {athlete_id}")
-        athlete = await self.repository.update(
-            athlete_id, athlete_update.model_dump(exclude_unset=True)
-        )
+        athlete = await self.repository.update(athlete_id, athlete_update)
         logger.info(f"Service: Updated athlete {athlete_id}")
-        return AthleteResponse(**athlete)
+        return athlete
 
     async def delete_athlete(self, athlete_id: UUID) -> None:
         """Delete an athlete."""
