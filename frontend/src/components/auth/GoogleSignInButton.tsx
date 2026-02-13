@@ -39,10 +39,10 @@ interface GoogleSignInButtonProps {
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className="flex w-full max-w-[300px] cursor-pointer items-center justify-center gap-3 rounded-full border border-[#747775] bg-white px-6 py-3 font-['Roboto',sans-serif] text-sm font-medium text-[#1f1f1f] shadow-sm transition-colors hover:bg-[#f7f8f8] active:bg-[#e8e8e8] disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-neutral-300 bg-white px-6 py-3.5 font-['Roboto',sans-serif] text-[15px] font-medium text-[#1f1f1f] transition-colors hover:bg-neutral-50 active:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <GoogleLogo />
-        <span>Sign in with Google</span>
+        <span>Continue with Google</span>
       </button>
     );
   }
