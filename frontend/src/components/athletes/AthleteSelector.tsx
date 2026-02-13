@@ -13,11 +13,15 @@ export function AthleteSelector() {
   const { athletes, athletesIsLoading, athletesError } = useGetAllAthletes();
 
   if (athletesIsLoading) return <div>Loading athletes...</div>;
-  if (athletesError) return <div>Error loading athletes: {athletesError.message}</div>;
+  if (athletesError)
+    return <div>Error loading athletes: {athletesError.message}</div>;
 
   return (
     <div className="max-w-md">
-      <label htmlFor="athlete-select" className="block text-sm font-medium mb-2">
+      <label
+        htmlFor="athlete-select"
+        className="block text-sm font-medium mb-2"
+      >
         Choose an athlete:
       </label>
       <select

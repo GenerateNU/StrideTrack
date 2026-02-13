@@ -17,16 +17,16 @@ export function useGetAllAthletes() {
   const query = useQuery({
     queryKey: ["athletes"],
     queryFn: async () => {
-      const response = await apiClient.get<z.infer<typeof athleteResponseSchema>[]>(
-        `${BASE_PATH}/athletes`
-      );
-      
+      const response = await apiClient.get<
+        z.infer<typeof athleteResponseSchema>[]
+      >(`${BASE_PATH}/athletes`);
+
       // Parse and validate with zod
       const parsed = z.array(athleteResponseSchema).safeParse(response.data);
       if (!parsed.success) {
         throw new Error("Invalid response format");
       }
-      
+
       return parsed.data;
     },
   });
