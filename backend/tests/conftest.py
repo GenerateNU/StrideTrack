@@ -27,13 +27,21 @@ def supabase_client() -> Generator[Client, None, None]:
 
 @pytest.fixture(autouse=True)
 def cleanup_training_runs(supabase_client: Client) -> Generator[None, None, None]:
-    """Clean up training_runs table before and after each test."""
+    """Clean up training_runs and athletes tables before and after each test."""
     # Clean before
     supabase_client.table("training_runs").delete().neq(
         "id", "00000000-0000-0000-0000-000000000000"
     ).execute()
+    supabase_client.table("athletes").delete().neq(
+        "athlete_id", "00000000-0000-0000-0000-000000000000"
+    ).execute()
+
     yield
+
     # Clean after
     supabase_client.table("training_runs").delete().neq(
         "id", "00000000-0000-0000-0000-000000000000"
+    ).execute()
+    supabase_client.table("athletes").delete().neq(
+        "athlete_id", "00000000-0000-0000-0000-000000000000"
     ).execute()
