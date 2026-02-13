@@ -7,6 +7,7 @@ import pandas as pd
 
 # Interval utilities
 
+
 @dataclass(frozen=True)
 class Interval:
     start: int
@@ -76,7 +77,9 @@ def _first_contact_after(df: pd.DataFrame, t_ms: int) -> pd.Series | None:
     return cand.iloc[cand["ic_time"].argmin()]
 
 
-def _count_steps_between(df: pd.DataFrame, t_start_exclusive: int, t_end_exclusive: int) -> int:
+def _count_steps_between(
+    df: pd.DataFrame, t_start_exclusive: int, t_end_exclusive: int
+) -> int:
     """
     Count step initial contacts (ic_time) strictly between two timestamps.
     """
@@ -142,7 +145,9 @@ def transform_stride_cycles_to_hurdle_metrics(
     gaps = _compute_gaps(contacts_sorted)
 
     # Hurdle gaps where neither foot is on ground
-    hurdle_gaps = _filter_hurdle_gaps(gaps, min_ms=hurdle_min_ft_ms, max_ms=hurdle_max_ft_ms)
+    hurdle_gaps = _filter_hurdle_gaps(
+        gaps, min_ms=hurdle_min_ft_ms, max_ms=hurdle_max_ft_ms
+    )
     if not hurdle_gaps:
         return pd.DataFrame(columns=out_cols)
 
@@ -173,10 +178,18 @@ def transform_stride_cycles_to_hurdle_metrics(
                 "takeoff_ft_ms": int(takeoff_ft),
                 "hurdle_split_ms": split_ms,
                 "steps_between_hurdles": steps_between,
-                "takeoff_foot": None if takeoff_step is None else str(takeoff_step["foot"]),
-                "takeoff_gct_ms": None if takeoff_step is None else int(takeoff_step["gct_ms"]),
-                "landing_foot": None if landing_step is None else str(landing_step["foot"]),
-                "landing_gct_ms": None if landing_step is None else int(landing_step["gct_ms"]),
+                "takeoff_foot": None
+                if takeoff_step is None
+                else str(takeoff_step["foot"]),
+                "takeoff_gct_ms": None
+                if takeoff_step is None
+                else int(takeoff_step["gct_ms"]),
+                "landing_foot": None
+                if landing_step is None
+                else str(landing_step["foot"]),
+                "landing_gct_ms": None
+                if landing_step is None
+                else int(landing_step["gct_ms"]),
             }
         )
 
@@ -185,7 +198,9 @@ def transform_stride_cycles_to_hurdle_metrics(
     if out["takeoff_gct_ms"].notna().any():
         gct0 = out["takeoff_gct_ms"].dropna().iloc[0]
         if gct0 and gct0 > 0:
-            out["gct_increase_hurdle_to_hurdle_pct"] = (out["takeoff_gct_ms"] - gct0) / gct0 * 100.0
+            out["gct_increase_hurdle_to_hurdle_pct"] = (
+                (out["takeoff_gct_ms"] - gct0) / gct0 * 100.0
+            )
         else:
             out["gct_increase_hurdle_to_hurdle_pct"] = np.nan
     else:
@@ -193,12 +208,20 @@ def transform_stride_cycles_to_hurdle_metrics(
 
     return out[out_cols]
 
+
 def main() -> None:
     from pathlib import Path
 
     repo_root = Path(__file__).resolve().parents[3]
 
-    csv_path = repo_root / "R&D" / "Tests" / "Two_foot_hurdle" / "Transformed_data" / "HurdleSensorJitter_110m_TransformedData.csv"
+    csv_path = (
+        repo_root
+        / "R&D"
+        / "Tests"
+        / "Two_foot_hurdle"
+        / "Transformed_data"
+        / "HurdleSensorJitter_110m_TransformedData.csv"
+    )
 
     df = pd.read_csv(csv_path)
 
@@ -233,7 +256,10 @@ def main() -> None:
 
     print("Mean Take-off FT (ms):", hurdles_df["takeoff_ft_ms"].mean())
     print("Mean Hurdle Split (ms):", hurdles_df["hurdle_split_ms"].dropna().mean())
-    print("Steps Between Hurdles (mode):", hurdles_df["steps_between_hurdles"].dropna().mode().iloc[0])
+    print(
+        "Steps Between Hurdles (mode):",
+        hurdles_df["steps_between_hurdles"].dropna().mode().iloc[0],
+    )
 
 
 if __name__ == "__main__":
