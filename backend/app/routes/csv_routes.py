@@ -52,3 +52,4 @@ async def upload_data_csv(
         ) from e
 
     return result
+
