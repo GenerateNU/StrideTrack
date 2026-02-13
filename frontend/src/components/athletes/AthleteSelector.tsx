@@ -1,4 +1,6 @@
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
+import { QueryLoading } from "@/components/QueryLoading";
+import { QueryError } from "@/components/QueryError";
 
 interface Athlete {
   athlete_id: string;
@@ -10,11 +12,12 @@ interface Athlete {
 }
 
 export function AthleteSelector() {
-  const { athletes, athletesIsLoading, athletesError } = useGetAllAthletes();
+  const { athletes, athletesIsLoading, athletesError, athletesRefetch } =
+    useGetAllAthletes();
 
-  if (athletesIsLoading) return <div>Loading athletes...</div>;
+  if (athletesIsLoading) return <QueryLoading />;
   if (athletesError)
-    return <div>Error loading athletes: {athletesError.message}</div>;
+    return <QueryError error={athletesError} refetch={athletesRefetch} />;
 
   return (
     <div className="max-w-md">
