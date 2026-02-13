@@ -14,7 +14,7 @@ class CSVService:
     def __init__(self, repository: CSVRepository) -> None:
         self.repository = repository
 
-    async def ingest_stride_csv(self, raw_df: pd.DataFrame) -> CSVUploadResponse:
+    async def ingest_stride_csv(self, raw_df: pd.DataFrame, athlete_id: int | None = None) -> CSVUploadResponse:
         # Transform
         try:
             transformed_df = transform_feet_to_stride_cycles(raw_df)
@@ -26,7 +26,7 @@ class CSVService:
 
         # Load
         try:
-            await self.repository.insert_transformed_stride_rows(transformed_df)
+            await self.repository.insert_transformed_stride_rows(transformed_df, athlete_id)
         except Exception as e:
             logger.exception("Service: Transformed run data insert failed")
             raise HTTPException(
