@@ -14,3 +14,5 @@ class ResponseData(BaseModel):
 
 class CSVUploadResponse(BaseModel):
     message: str = Field(..., min_length=1, max_length=255)
+    run_id: str | None = None
+    strides_count: int | None = None
