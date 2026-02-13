@@ -8,7 +8,10 @@ export function AthleteSelector() {
 
   return (
     <div className="max-w-md">
-      <label htmlFor="athlete-select" className="block text-sm font-medium mb-2">
+      <label
+        htmlFor="athlete-select"
+        className="block text-sm font-medium mb-2"
+      >
         Choose an athlete:
       </label>
       <select

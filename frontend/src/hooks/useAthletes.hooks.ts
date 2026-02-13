@@ -11,11 +11,11 @@ interface Athlete {
 }
 
 export function useAthletes() {
-    return useQuery<Athlete[]>({
-      queryKey: ["athletes"],
-      queryFn: async () => {
-        const response = await api.get("/api/athletes");
-        return response.data;
-      },
-    });
-  }
+  return useQuery<Athlete[]>({
+    queryKey: ["athletes"],
+    queryFn: async () => {
+      const response = await api.get("/api/athletes");
+      return response.data;
+    },
+  });
+}
