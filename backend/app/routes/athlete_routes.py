@@ -26,7 +26,9 @@ async def get_athlete_service(
 
 
 @router.get("", response_model=list[AthleteResponse])
-async def list_athletes(service: AthleteService = Depends(get_athlete_service)) -> list[dict]:
+async def list_athletes(
+    service: AthleteService = Depends(get_athlete_service),
+) -> list[dict]:
     """Get all athletes."""
     logger.info("Route: GET /athletes")
     athletes = await service.get_all_athletes()
