@@ -1,6 +1,5 @@
 """Factory for creating test CSV data."""
 from io import BytesIO
-from typing import Optional
 
 
 class CSVFactory:
@@ -37,7 +36,7 @@ left,not_a_number,150,200
 right,200,invalid,300"""
 
     @staticmethod
-    def create_csv_file(content: Optional[str] = None, filename: str = "test_run.csv"):
+    def create_csv_file(content: str | None = None, filename: str = "test_run.csv"):
         """
         Creates a file-like object for upload.
         
@@ -50,14 +49,14 @@ right,200,invalid,300"""
         """
         if content is None:
             content = CSVFactory.create_valid_csv_content()
-        
+
         return (filename, BytesIO(content.encode('utf-8')), "text/csv")
 
     @staticmethod
     def create_form_data(
         athlete_id: str = "00000000-0000-0000-0000-000000000001",
         event_type: str = "sprint_100m",
-        name: Optional[str] = "Test Run"
+        name: str | None = "Test Run"
     ) -> dict:
         """
         Creates form data for CSV upload.

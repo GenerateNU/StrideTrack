@@ -27,7 +27,7 @@ async def get_csv_service(
     "/upload-run", response_model=CSVUploadResponse, status_code=status.HTTP_201_CREATED
 )
 async def upload_data_csv(
-    file: UploadFile = File(...), 
+    file: UploadFile = File(...),
     athlete_id: str = Form(...),
     event_type: str = Form(...),
     name: str = Form(None),
@@ -38,7 +38,7 @@ async def upload_data_csv(
     # Basic file validation
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(status_code=400, detail="Run data must be in .csv format")
-    
+
     try:
         content = await file.read()
         raw_df = pd.read_csv(BytesIO(content))
@@ -47,7 +47,7 @@ async def upload_data_csv(
         raise HTTPException(
             status_code=400, detail=f"Failed to read CSV file: {str(e)}"
         ) from e
-    
+
     try:
         result = await service.ingest_stride_csv(
             raw_df,
@@ -62,5 +62,5 @@ async def upload_data_csv(
         raise HTTPException(
             status_code=500, detail=f"Failed to ingest run data frame: {str(e)}"
         ) from e
-    
+
     return result

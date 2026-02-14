@@ -1,7 +1,8 @@
 """Tests for CSV upload endpoint."""
-import pytest
 from fastapi.testclient import TestClient
+
 from tests.factories.csv_factory import CSVFactory
+
 
 class TestUploadCSV:
     """Tests for POST /csv/upload-run"""

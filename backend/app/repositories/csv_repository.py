@@ -2,6 +2,7 @@ import logging
 
 import pandas as pd
 from supabase._async.client import AsyncClient
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,7 +48,7 @@ class CSVRepository:
         logger.info(f"Repository: Successfully inserted {rows_inserted} rows")
 
         return rows_inserted
-    
+
     async def insert_complete_run(
         self,
         df: pd.DataFrame,
