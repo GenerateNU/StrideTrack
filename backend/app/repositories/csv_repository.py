@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 class CSVRepository:
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
-        self.metrics_table = "RUN_METRICS"
-        self.run_table = "RUN"
+        self.metrics_table = "run_metrics"
+        self.run_table = "run"
 
     async def create_record(
             self,
