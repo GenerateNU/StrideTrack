@@ -1,4 +1,7 @@
 """Tests for CSV upload endpoint."""
+
+from io import BytesIO  # ← ADD THIS
+
 from fastapi.testclient import TestClient
 
 from tests.factories.csv_factory import CSVFactory
@@ -13,13 +16,11 @@ class TestUploadCSV:
         form_data = CSVFactory.create_form_data(
             athlete_id="00000000-0000-0000-0000-000000000001",
             event_type="sprint_100m",
-            name="Morning Sprint"
+            name="Morning Sprint",
         )
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": csv_file},
-            data=form_data
+            "/csv/upload-run", files={"file": csv_file}, data=form_data
         )
 
         assert response.status_code == 201
@@ -33,9 +34,7 @@ class TestUploadCSV:
         form_data = CSVFactory.create_form_data(name=None)
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": csv_file},
-            data=form_data
+            "/csv/upload-run", files={"file": csv_file}, data=form_data
         )
 
         assert response.status_code == 201
@@ -48,9 +47,7 @@ class TestUploadCSV:
         form_data = CSVFactory.create_form_data()
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": csv_file},
-            data=form_data
+            "/csv/upload-run", files={"file": csv_file}, data=form_data
         )
 
         assert response.status_code == 201
@@ -59,10 +56,7 @@ class TestUploadCSV:
         """Returns 422 when file is missing."""
         form_data = CSVFactory.create_form_data()
 
-        response = test_client.post(
-            "/csv/upload-run",
-            data=form_data
-        )
+        response = test_client.post("/csv/upload-run", data=form_data)
 
         assert response.status_code == 422
 
@@ -73,7 +67,7 @@ class TestUploadCSV:
         response = test_client.post(
             "/csv/upload-run",
             files={"file": csv_file},
-            data={"event_type": "sprint_100m"}
+            data={"event_type": "sprint_100m"},
         )
 
         assert response.status_code == 422
@@ -85,7 +79,7 @@ class TestUploadCSV:
         response = test_client.post(
             "/csv/upload-run",
             files={"file": csv_file},
-            data={"athlete_id": "00000000-0000-0000-0000-000000000001"}
+            data={"athlete_id": "00000000-0000-0000-0000-000000000001"},
         )
 
         assert response.status_code == 422
@@ -96,9 +90,7 @@ class TestUploadCSV:
         form_data = CSVFactory.create_form_data()
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": txt_file},
-            data=form_data
+            "/csv/upload-run", files={"file": txt_file}, data=form_data
         )
 
         assert response.status_code == 400
@@ -110,9 +102,7 @@ class TestUploadCSV:
         form_data = CSVFactory.create_form_data(athlete_id="not-a-uuid")
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": csv_file},
-            data=form_data
+            "/csv/upload-run", files={"file": csv_file}, data=form_data
         )
 
         # Depending on your validation, this might be 422 or 400
@@ -124,9 +114,7 @@ class TestUploadCSV:
         form_data = CSVFactory.create_form_data(event_type="invalid_event")
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": csv_file},
-            data=form_data
+            "/csv/upload-run", files={"file": csv_file}, data=form_data
         )
 
         # This should fail at database level due to enum constraint
@@ -139,9 +127,7 @@ class TestUploadCSV:
         form_data = CSVFactory.create_form_data()
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": csv_file},
-            data=form_data
+            "/csv/upload-run", files={"file": csv_file}, data=form_data
         )
 
         assert response.status_code in [400, 500]
@@ -153,9 +139,7 @@ class TestUploadCSV:
         form_data = CSVFactory.create_form_data()
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": csv_file},
-            data=form_data
+            "/csv/upload-run", files={"file": csv_file}, data=form_data
         )
 
         assert response.status_code in [400, 500]
@@ -166,9 +150,7 @@ class TestUploadCSV:
         form_data = CSVFactory.create_form_data()
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": csv_file},
-            data=form_data
+            "/csv/upload-run", files={"file": csv_file}, data=form_data
         )
 
         assert response.status_code in [400, 500]
@@ -181,9 +163,7 @@ class TestUploadCSV:
         )
 
         response = test_client.post(
-            "/csv/upload-run",
-            files={"file": csv_file},
-            data=form_data
+            "/csv/upload-run", files={"file": csv_file}, data=form_data
         )
 
         # Should fail due to foreign key constraint

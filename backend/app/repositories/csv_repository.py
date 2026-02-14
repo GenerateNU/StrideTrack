@@ -13,19 +13,12 @@ class CSVRepository:
         self.run_table = "run"
 
     async def create_record(
-            self,
-            athlete_id: str,
-            event_type: str,
-            name: str = None
+        self, athlete_id: str, event_type: str, name: str = None
     ) -> str:
         """
         Creates a new record in the run table and returns the run_id
         """
-        run_data = {
-            "athlete_id": athlete_id,
-            "event_type": event_type,
-            "name": name
-        }
+        run_data = {"athlete_id": athlete_id, "event_type": event_type, "name": name}
         response = await self.supabase.table(self.run_table).insert(run_data).execute()
         run_id = response.data[0]["run_id"]
         logger.info(f"Repository: Created new run record with run_id: {run_id}")

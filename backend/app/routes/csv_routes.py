@@ -31,7 +31,7 @@ async def upload_data_csv(
     athlete_id: str = Form(...),
     event_type: str = Form(...),
     name: str = Form(None),
-    service: CSVService = Depends(get_csv_service)
+    service: CSVService = Depends(get_csv_service),
 ) -> CSVUploadResponse:
     logger.info(f"Route: POST /upload-run filename={file.filename}")
 
@@ -50,10 +50,7 @@ async def upload_data_csv(
 
     try:
         result = await service.ingest_stride_csv(
-            raw_df,
-            athlete_id=athlete_id,
-            event_type=event_type,
-            name=name
+            raw_df, athlete_id=athlete_id, event_type=event_type, name=name
         )
     except HTTPException:
         raise
