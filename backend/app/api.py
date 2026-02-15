@@ -6,6 +6,7 @@ from app.routes.auth_routes import router as auth_router
 from app.routes.csv_routes import router as csv_router
 from app.routes.example_routes import router as example_router
 from app.schemas.health_schemas import HealthResponse
+from app.routes.run_routes import router as run_router
 
 api_router = APIRouter(prefix="/api")
 
@@ -24,3 +25,5 @@ async def health_check(
 api_router.include_router(example_router)
 api_router.include_router(csv_router)
 api_router.include_router(auth_router)
+api_router.include_router(run_router)
+
