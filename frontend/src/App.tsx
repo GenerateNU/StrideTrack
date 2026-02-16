@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import LoginPage from "@/pages/LoginPage";
-import DashboardPage from "@/pages/DashboardPage";
+import VisualizationsPage from "@/pages/VisualizationsPage";
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
           element={
             <ProtectedRoute>
               <Routes>
-                <Route path="/" element={<DashboardPage />} />
+                <Route path="/" element={<VisualizationsPage />} />
               </Routes>
             </ProtectedRoute>
           }

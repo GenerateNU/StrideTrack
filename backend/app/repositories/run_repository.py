@@ -16,9 +16,9 @@ class RunRepository:
         """Get all run metrics for a specific athlete by joining RUN and RUN_METRICS."""
         logger.info(f"Repository: Fetching run metrics for athlete {athlete_id}")
         response = (
-            await self.supabase.table("RUN_METRICS")
-            .select("stride_num, ic_time, gct_ms, flight_ms, step_time_ms, foot, RUN!inner(run_id, athlete_id)")
-            .eq("RUN.athlete_id", athlete_id)
+            await self.supabase.table("run_metrics")
+            .select("stride_num, ic_time, gct_ms, flight_ms, step_time_ms, foot, run!inner(run_id, athlete_id)")
+            .eq("run.athlete_id", athlete_id)
             .order("ic_time")
             .execute()
         )
