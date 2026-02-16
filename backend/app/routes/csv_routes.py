@@ -2,7 +2,7 @@ import logging
 from io import BytesIO
 
 import pandas as pd
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 
 from app.repositories.csv_repository import CSVRepository
 from app.schemas.csv_schemas import CSVUploadResponse
@@ -23,13 +23,9 @@ async def get_csv_service() -> CSVService:
     "/upload-run", response_model=CSVUploadResponse, status_code=status.HTTP_201_CREATED
 )
 async def upload_data_csv(
-    file: UploadFile = File(...),
-    athlete_id: int | None = Form(None),
-    service: CSVService = Depends(get_csv_service),
+    file: UploadFile = File(...), service: CSVService = Depends(get_csv_service)
 ) -> CSVUploadResponse:
-    logger.info(
-        f"Route: POST /upload-run filename={file.filename} athlete_id={athlete_id}"
-    )
+    logger.info(f"Route: POST /upload-run filename={file.filename}")
 
     # Basic file validation
     if not file.filename or not file.filename.lower().endswith(".csv"):
@@ -46,7 +42,7 @@ async def upload_data_csv(
         ) from e
 
     try:
-        result = await service.ingest_stride_csv(raw_df, athlete_id)
+        result = await service.ingest_stride_csv(raw_df)
     except HTTPException:
         raise
     except Exception as e:
