@@ -21,4 +21,3 @@ class RunService:
 
         logger.info(f"Service: Retrieved {len(metrics)} metric records")
         return metrics
-

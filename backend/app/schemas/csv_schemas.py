@@ -11,5 +11,6 @@ class ResponseData(BaseModel):
     flight_ms: int = Field(..., gt=0)
     step_time_ms: int = Field(..., gt=0)
 
+
 class CSVUploadResponse(BaseModel):
     message: str = Field(..., min_length=1, max_length=255)

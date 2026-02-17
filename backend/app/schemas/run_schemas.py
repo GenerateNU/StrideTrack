@@ -8,4 +8,3 @@ class RunResponse(BaseModel):
     gct_ms: int = Field(..., gt=0)
     flight_ms: int = Field(..., gt=0)
     step_time_ms: int = Field(..., gt=0)
-
