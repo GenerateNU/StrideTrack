@@ -3,6 +3,7 @@ import pandas as pd
 
 # Counting Metrics
 
+
 def calculate_total_steps(df: pd.DataFrame) -> int:
     """
     Calculate total number of steps (ground contacts) in the run.
@@ -204,7 +205,8 @@ def calculate_contact_flight_index(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
-# Asymmetry Metrics
+# Aysmmetry metircs
+
 
 def _get_paired_strides(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -434,7 +436,6 @@ def calculate_ft_difference_lr(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
-
 def calculate_mean_gct_asymmetry(df: pd.DataFrame) -> float:
     """
     Calculate mean GCT asymmetry percentage across all strides.
@@ -465,7 +466,6 @@ def calculate_mean_ft_asymmetry(df: pd.DataFrame) -> float:
     if asymmetry_df.empty:
         return 0.0
     return float(asymmetry_df["ft_asymmetry_percent"].mean())
-
 
 
 def calculate_all_metrics(df: pd.DataFrame) -> dict:
