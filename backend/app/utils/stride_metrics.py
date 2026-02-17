@@ -1,31 +1,7 @@
-"""
-Stride Metrics Calculation Module
-
-This module provides functions to calculate various running biomechanics metrics
-from transformed stride data. Each function takes a DataFrame with stride-by-stride
-data and returns calculated metrics.
-
-Input DataFrame Schema:
-    - stride_num: int - Stride number (1 stride = left + right step)
-    - foot: str - 'left' or 'right'
-    - ic_time: int - Initial contact time (ms)
-    - to_time: int - Toe-off time (ms)
-    - next_ic_time: int - Next initial contact time (ms)
-    - gct_ms: int - Ground contact time (ms)
-    - flight_ms: int - Flight time (ms)
-    - step_time_ms: int - Step time (ms)
-"""
-
 import numpy as np
 import pandas as pd
 
-# from typing import Tuple
-
-
-# ============================================================================
-# COUNTING METRICS
-# ============================================================================
-
+# Counting Metrics
 
 def calculate_total_steps(df: pd.DataFrame) -> int:
     """
@@ -88,9 +64,7 @@ def calculate_mean_flight_time(df: pd.DataFrame) -> float:
     return float(df["flight_ms"].mean())
 
 
-# ============================================================================
-# RATIO METRICS
-# ============================================================================
+# Ratio Metrics
 
 
 def calculate_rsi(df: pd.DataFrame) -> pd.DataFrame:
@@ -230,10 +204,7 @@ def calculate_contact_flight_index(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
-# ============================================================================
-# ASYMMETRY METRICS
-# ============================================================================
-
+# Asymmetry Metrics
 
 def _get_paired_strides(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -463,10 +434,6 @@ def calculate_ft_difference_lr(df: pd.DataFrame) -> pd.DataFrame:
     return result
 
 
-# ============================================================================
-# AGGREGATE SUMMARY METRICS
-# ============================================================================
-
 
 def calculate_mean_gct_asymmetry(df: pd.DataFrame) -> float:
     """
@@ -499,10 +466,6 @@ def calculate_mean_ft_asymmetry(df: pd.DataFrame) -> float:
         return 0.0
     return float(asymmetry_df["ft_asymmetry_percent"].mean())
 
-
-# ============================================================================
-# CONVENIENCE FUNCTION - ALL METRICS
-# ============================================================================
 
 
 def calculate_all_metrics(df: pd.DataFrame) -> dict:
@@ -557,9 +520,6 @@ def calculate_all_metrics(df: pd.DataFrame) -> dict:
     }
 
 
-# ============================================================================
-# MAIN FUNCTION FOR TESTING
-# ============================================================================
 def main() -> None:
     """
     Test function using real transformed data from R&D/Tests.
