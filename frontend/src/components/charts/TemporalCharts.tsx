@@ -113,7 +113,7 @@ export const GroundContactTimeChart = ({ data }: ChartProps) => {
               value: "Stride Number",
               position: "insideBottom",
               offset: -5,
-              style: { fill: "#64748B", fontSize: 12 },
+              style: { fill: "#64748B", fontSize: 10 },
             }}
           />
           <YAxis
@@ -122,7 +122,7 @@ export const GroundContactTimeChart = ({ data }: ChartProps) => {
               angle: -90,
               position: "insideLeft",
               offset: 0,
-              style: { fill: "#64748B", fontSize: 12, textAnchor: "middle" },
+              style: { fill: "#64748B", fontSize: 10, textAnchor: "middle" },
             }}
           />
           <Tooltip
@@ -180,7 +180,7 @@ export const FlightTimeChart = ({ data }: ChartProps) => {
               value: "Stride Number",
               position: "insideBottom",
               offset: -5,
-              style: { fill: "#64748B", fontSize: 12 },
+              style: { fill: "#64748B", fontSize: 10 },
             }}
           />
           <YAxis
@@ -189,7 +189,7 @@ export const FlightTimeChart = ({ data }: ChartProps) => {
               angle: -90,
               position: "insideLeft",
               offset: 0,
-              style: { fill: "#64748B", fontSize: 12, textAnchor: "middle" },
+              style: { fill: "#64748B", fontSize: 10, textAnchor: "middle" },
             }}
           />
           <Tooltip
@@ -234,6 +234,7 @@ export const StepTimeChart = ({ data }: ChartProps) => {
   const chartData = transformDataForStackedBar(data);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onMouseMove = (state: any) => {
     if (state.activeTooltipIndex !== undefined) {
       setActiveIndex(state.activeTooltipIndex);
@@ -247,7 +248,7 @@ export const StepTimeChart = ({ data }: ChartProps) => {
       className="w-full max-w-[900px] mx-auto my-10 bg-white p-6 
   rounded-2xl shadow-sm border border-slate-100 font-['Inter',system-ui,sans-serif]"
     >
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={chartData}
           onMouseMove={onMouseMove}
@@ -263,25 +264,25 @@ export const StepTimeChart = ({ data }: ChartProps) => {
             dataKey="label"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#64748B", fontSize: 12 }}
+            tick={{ fill: "#64748B", fontSize: 10 }}
             dy={10}
             label={{
               value: "Step (Stride Number + Foot)",
               position: "insideBottom",
               offset: -30,
-              style: { fill: "#64748B", fontSize: 12 },
+              style: { fill: "#64748B", fontSize: 10 },
             }}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#64748B", fontSize: 12 }}
+            tick={{ fill: "#64748B", fontSize: 10 }}
             label={{
               value: "Time (milliseconds)",
               angle: -90,
               position: "insideLeft",
               offset: 0,
-              style: { fill: "#64748B", fontSize: 12, textAnchor: "middle" },
+              style: { fill: "#64748B", fontSize: 10, textAnchor: "middle" },
             }}
           />
           <Tooltip content={<CustomTooltip />} cursor={false} />

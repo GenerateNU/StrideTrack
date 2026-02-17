@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 
+
 class ResponseData(BaseModel):
     stride_num: int = Field(..., gt=0)
     foot: str = Field(..., min_length=1, max_length=255)

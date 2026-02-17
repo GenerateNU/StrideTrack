@@ -1,12 +1,12 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
 from app.core.supabase import get_async_supabase
 from app.repositories.run_repository import RunRepository
-from app.schemas.run_schemas import (RunResponse)
+from app.schemas.run_schemas import RunResponse
 from app.services.run_service import RunService
 
 logger = logging.getLogger(__name__)
