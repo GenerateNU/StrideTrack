@@ -38,7 +38,11 @@ const EventSelector: React.FC<EventSelectorProps> = ({
           {placeholder}
         </option>
         {events.map((event) => (
-          <option key={event.value} value={event.value} style={{ color: "black" }}>
+          <option
+            key={event.value}
+            value={event.value}
+            style={{ color: "black" }}
+          >
             {event.label}
           </option>
         ))}
