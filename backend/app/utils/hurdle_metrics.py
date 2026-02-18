@@ -88,6 +88,95 @@ def _count_steps_between(
     return int(mask.sum())
 
 
+# Individual hurdle metric accessors
+
+
+def calc_hurdle_split_ms(
+    df_steps: pd.DataFrame,
+    hurdle_min_ft_ms: int = 260,
+    hurdle_max_ft_ms: int | None = None,
+) -> pd.DataFrame:
+    """
+    Hurdle Split: time between consecutive hurdle clearances. DataFrame with columns: hurdle_num, hurdle_split_ms
+    """
+    out = transform_stride_cycles_to_hurdle_metrics(
+        df_steps, hurdle_min_ft_ms=hurdle_min_ft_ms, hurdle_max_ft_ms=hurdle_max_ft_ms
+    )
+    return out[["hurdle_num", "hurdle_split_ms"]]
+
+
+def calc_steps_between_hurdles(
+    df_steps: pd.DataFrame,
+    hurdle_min_ft_ms: int = 260,
+    hurdle_max_ft_ms: int | None = None,
+) -> pd.DataFrame:
+    """
+    Steps Between Hurdles: count of ground contacts between hurdles. DataFrame with columns: hurdle_num,
+    steps_between_hurdles
+    """
+    out = transform_stride_cycles_to_hurdle_metrics(
+        df_steps, hurdle_min_ft_ms=hurdle_min_ft_ms, hurdle_max_ft_ms=hurdle_max_ft_ms
+    )
+    return out[["hurdle_num", "steps_between_hurdles"]]
+
+
+def calc_takeoff_gct_ms(
+    df_steps: pd.DataFrame,
+    hurdle_min_ft_ms: int = 260,
+    hurdle_max_ft_ms: int | None = None,
+) -> pd.DataFrame:
+    """
+    Take-off GCT: GCT of the last step before hurdle clearance. DataFrame with columns: hurdle_num, takeoff_gct_ms
+    """
+    out = transform_stride_cycles_to_hurdle_metrics(
+        df_steps, hurdle_min_ft_ms=hurdle_min_ft_ms, hurdle_max_ft_ms=hurdle_max_ft_ms
+    )
+    return out[["hurdle_num", "takeoff_gct_ms"]]
+
+
+def calc_landing_gct_ms(
+    df_steps: pd.DataFrame,
+    hurdle_min_ft_ms: int = 260,
+    hurdle_max_ft_ms: int | None = None,
+) -> pd.DataFrame:
+    """
+    Landing GCT: GCT of the first step after hurdle clearance. DataFrame with columns: hurdle_num, landing_gct_ms
+    """
+    out = transform_stride_cycles_to_hurdle_metrics(
+        df_steps, hurdle_min_ft_ms=hurdle_min_ft_ms, hurdle_max_ft_ms=hurdle_max_ft_ms
+    )
+    return out[["hurdle_num", "landing_gct_ms"]]
+
+
+def calc_takeoff_ft_ms(
+    df_steps: pd.DataFrame,
+    hurdle_min_ft_ms: int = 260,
+    hurdle_max_ft_ms: int | None = None,
+) -> pd.DataFrame:
+    """
+    Take-off FT: FT during hurdle clearance. DataFrame with columns: hurdle_num, takeoff_ft_ms
+    """
+    out = transform_stride_cycles_to_hurdle_metrics(
+        df_steps, hurdle_min_ft_ms=hurdle_min_ft_ms, hurdle_max_ft_ms=hurdle_max_ft_ms
+    )
+    return out[["hurdle_num", "takeoff_ft_ms"]]
+
+
+def calc_gct_increase_hurdle_to_hurdle_pct(
+    df_steps: pd.DataFrame,
+    hurdle_min_ft_ms: int = 260,
+    hurdle_max_ft_ms: int | None = None,
+) -> pd.DataFrame:
+    """
+    GCT Increase Hurdle-to-Hurdle: (GCT_hurdle_N - GCT_hurdle_1) / GCT_hurdle_1 * 100 DataFrame with columns:
+    hurdle_num, gct_increase_hurdle_to_hurdle_pct
+    """
+    out = transform_stride_cycles_to_hurdle_metrics(
+        df_steps, hurdle_min_ft_ms=hurdle_min_ft_ms, hurdle_max_ft_ms=hurdle_max_ft_ms
+    )
+    return out[["hurdle_num", "gct_increase_hurdle_to_hurdle_pct"]]
+
+
 # Main transformation
 
 
@@ -98,11 +187,6 @@ def transform_stride_cycles_to_hurdle_metrics(
 ) -> pd.DataFrame:
     """
     Compute hurdle metrics from stride-cycle rows.
-
-    Output columns:
-      hurdle_num, clearance_start_ms, clearance_end_ms, takeoff_ft_ms, hurdle_split_ms,
-      steps_between_hurdles, takeoff_foot, takeoff_gct_ms, landing_foot, landing_gct_ms,
-      gct_increase_hurdle_to_hurdle_pct
     """
     required = {"foot", "ic_time", "to_time", "gct_ms"}
     missing = required - set(df_steps.columns)
@@ -260,6 +344,32 @@ def main() -> None:
         "Steps Between Hurdles (mode):",
         hurdles_df["steps_between_hurdles"].dropna().mode().iloc[0],
     )
+
+    print("=" * 60)
+    print("INDIVIDUAL METRIC FUNCTIONS")
+    print("=" * 60)
+    print("Hurdle Split:")
+    print(calc_hurdle_split_ms(df))
+    print()
+    print("Steps Between Hurdles:")
+    print(calc_steps_between_hurdles(df))
+    print()
+    print("Take-off GCT:")
+    print(calc_takeoff_gct_ms(df))
+    print()
+    print("Landing GCT:")
+    print(calc_landing_gct_ms(df))
+    print()
+    print("Take-off FT:")
+    print(calc_takeoff_ft_ms(df))
+    print()
+    print("GCT Increase Hurdle-to-Hurdle (%):")
+    print(calc_gct_increase_hurdle_to_hurdle_pct(df))
+
+    print("=" * 60)
+    print("COMPLETE METRICS")
+    print("=" * 60)
+    print(transform_stride_cycles_to_hurdle_metrics(df))
 
 
 if __name__ == "__main__":
