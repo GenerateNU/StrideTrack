@@ -64,8 +64,7 @@ const transformDataForLROverlay = (
   return Array.from(strideMap.values()).sort(
     (a, b) => a.stride_num - b.stride_num
   );
-}; */
-
+}; 
 
 const transformDataForStackedBar = (data: RunMetric[]) => {
   return data
@@ -77,7 +76,7 @@ const transformDataForStackedBar = (data: RunMetric[]) => {
       flight_ms: row.flight_ms,
     }))
     .sort((a, b) => a.stride_num - b.stride_num);
-};
+}; */
 
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload || !payload.length) return null;
@@ -95,7 +94,7 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 import { useLROverlayData, useStackedBarData } from "@/hooks/useRunMetrics";
 
 export const GroundContactTimeChart = ({ runId }: { runId: string }) => {
-  const { lrData, lrLoading, lrError } = useLROverlayData(runId, "gct_ms");
+  const { lrData } = useLROverlayData(runId, "gct_ms");
   return (
     <div
       className="w-full max-w-[900px] mx-auto my-10 bg-white p-6 rounded-2xl 
@@ -176,7 +175,7 @@ export const GroundContactTimeChart = ({ runId }: { runId: string }) => {
 };
 
 export const FlightTimeChart = ({ runId }: { runId: string }) => {
-  const {lrData, lrLoading, lrError} = useLROverlayData(runId, "flight_ms");
+  const { lrData } = useLROverlayData(runId, "flight_ms");
 
   return (
     <div className="w-full max-w-[900px] mx-auto my-10 bg-background p-6 rounded-2xl shadow-sm border border-slate-100 font-['Inter',system-ui,sans-serif]">
@@ -250,7 +249,8 @@ export const FlightTimeChart = ({ runId }: { runId: string }) => {
 };
 
 export const StepTimeChart = ({ runId }: { runId: string }) => {
-  const { stackedData, stackedLoading, stackedError } = useStackedBarData(runId);
+  const { stackedData } =
+    useStackedBarData(runId);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

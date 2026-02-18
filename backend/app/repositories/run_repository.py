@@ -36,4 +36,7 @@ class RunRepository:
             )
             raise NotFoundException("Run metric", str(run_id))
 
-        logger.info(f"Repository: F
+        logger.info(f"Repository: Found run metric: {run_id}")
+        return response.data
+
+
