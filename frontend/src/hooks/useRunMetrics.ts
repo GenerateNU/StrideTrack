@@ -1,7 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import {z} from "zod";
-import {runMetricSchema, lrOverlaySchema, stackedBarSchema } from "@/types/runMetrics.types.ts";
-import type { RunMetric, LROverlayData, StackedBarData } from "@/types/runMetrics.types.ts";
+import { z } from "zod";
+import {
+  runMetricSchema,
+  lrOverlaySchema,
+  stackedBarSchema,
+} from "@/types/runMetrics.types.ts";
+import type {
+  RunMetric,
+  LROverlayData,
+  StackedBarData,
+} from "@/types/runMetrics.types.ts";
 import { apiClient } from "@/axios.config";
 import { validateResponse } from "@/utils/validation";
 

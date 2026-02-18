@@ -1,4 +1,3 @@
-
 import "@/index.css";
 
 interface CustomTooltipProps {
@@ -12,7 +11,11 @@ interface CustomTooltipProps {
   label?: string;
 }
 
-export const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+export const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: CustomTooltipProps) => {
   if (!active || !payload || !payload.length) return null;
   return (
     <div className="bg-background rounded-xl px-4 py-3 shadow-lg border-none text-sm">
@@ -60,7 +63,6 @@ const transformDataForStackedBar = (data: RunMetric[]) => {
     }))
     .sort((a, b) => a.stride_num - b.stride_num);
 }; */
-
 
 /*
 export const GroundContactTimeChart = ({ runId }: { runId: string }) => {
