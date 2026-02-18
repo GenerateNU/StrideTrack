@@ -10,31 +10,40 @@ class CSVFactory:
     def create_valid_csv_content() -> str:
         """Creates valid CSV content with stride data."""
         return """Time,Force_Foot1,Force_Foot2
-left,100,150,200
-right,200,250,300
-left,300,350,400
-right,400,450,500"""
+1296674,0,4095
+1296684,0,4095
+1296694,0,4095
+1296704,0,4095
+1296714,0,4095
+1296724,0,0
+1296734,4095,0
+1296744,4095,0
+1296754,4095,0
+1296764,4095,0
+1296774,0,0
+1296784,0,4095
+1296794,0,4095"""
 
     @staticmethod
     def create_minimal_csv_content() -> str:
         """Creates minimal valid CSV with just two rows."""
         return """Time,Force_Foot1,Force_Foot2
-left,100,150,200
-right,200,250,300"""
+1296674,0,4095
+1296684,4095,0"""
 
     @staticmethod
     def create_invalid_csv_missing_columns() -> str:
         """Creates CSV with missing required columns."""
-        return """foot,ic_time
-left,100
-right,200"""
+        return """Time,Force_Foot1
+1296674,0
+1296684,4095"""
 
     @staticmethod
     def create_invalid_csv_bad_data() -> str:
         """Creates CSV with invalid data types."""
         return """Time,Force_Foot1,Force_Foot2
-left,not_a_number,150,200
-right,200,invalid,300"""
+not_a_number,0,4095
+1296684,invalid,4095"""
 
     @staticmethod
     def create_csv_file(
