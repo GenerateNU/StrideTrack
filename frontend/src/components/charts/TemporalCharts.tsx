@@ -11,16 +11,22 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import type { RunMetric } from "@/hooks/useAthleteRunMetrics";
+import type { RunMetric } from "@/hooks/useRunMetrics";
 import { useState } from "react";
+import "@/index.css";
 
-const BRAND_COLORS = {
-  darkOrange: "#FF6B35",
-  lightOrange: "#FFB399",
-  highlightDark: "#A52A2A",
-  highlightLight: "#E07B5E",
-  black: "#000000",
-};
+export const chartColors = {
+  card: "hsl(var(--card))",
+  primary: "hsl(var(--primary))",
+  secondary: "hsl(var(--secondary))",
+  destructive: "hsl(var(--destructive))",
+  destructiveHover: "hsl(var(--destructive-hover))",
+  mutedForeground: "hsl(var(--muted-foreground))",
+  mutedForegroundHover: "hsl(var(--muted-foreground-hover))",
+  border: "hsl(var(--border))",
+  foreground: "hsl(var(--foreground))",
+  primaryLight: "hsl(var(--primary) / 0.2)",
+} as const;
 
 interface ChartProps {
   data: RunMetric[];
@@ -37,6 +43,7 @@ interface CustomTooltipProps {
   label?: string;
 }
 
+/*
 const transformDataForLROverlay = (
   data: RunMetric[],
   metric: "gct_ms" | "flight_ms"
@@ -57,7 +64,8 @@ const transformDataForLROverlay = (
   return Array.from(strideMap.values()).sort(
     (a, b) => a.stride_num - b.stride_num
   );
-};
+}; */
+
 
 const transformDataForStackedBar = (data: RunMetric[]) => {
   return data
@@ -74,19 +82,8 @@ const transformDataForStackedBar = (data: RunMetric[]) => {
 const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (!active || !payload || !payload.length) return null;
   return (
-    <div
-      style={{
-        background: "white",
-        borderRadius: 12,
-        padding: "12px 16px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        border: "none",
-        fontSize: 13,
-      }}
-    >
-      <p style={{ fontWeight: 600, marginBottom: 6, color: "#334155" }}>
-        Stride {label}
-      </p>
+    <div className="bg-background rounded-xl px-4 py-3 shadow-lg border-none text-sm">
+      <p className="font-semibold mb-1.5 text-foreground">Stride {label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.fill || p.color, margin: "2px 0" }}>
           {p.name}: {p.value} ms
@@ -95,25 +92,29 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     </div>
   );
 };
+import { useLROverlayData, useStackedBarData } from "@/hooks/useRunMetrics";
 
-export const GroundContactTimeChart = ({ data }: ChartProps) => {
-  const chartData = transformDataForLROverlay(data, "gct_ms");
-
+export const GroundContactTimeChart = ({ runId }: { runId: string }) => {
+  const { lrData, lrLoading, lrError } = useLROverlayData(runId, "gct_ms");
   return (
     <div
       className="w-full max-w-[900px] mx-auto my-10 bg-white p-6 rounded-2xl 
-  shadow-sm border border-slate-100 font-['Inter',system-ui,sans-serif]"
+      shadow-sm border border-slate-100 font-['Inter',system-ui,sans-serif]"
     >
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+        <LineChart data={lrData}>
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="stride_num"
             label={{
               value: "Stride Number",
               position: "insideBottom",
               offset: -5,
-              style: { fill: "#64748B", fontSize: 10 },
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
             }}
           />
           <YAxis
@@ -122,7 +123,11 @@ export const GroundContactTimeChart = ({ data }: ChartProps) => {
               angle: -90,
               position: "insideLeft",
               offset: 0,
-              style: { fill: "#64748B", fontSize: 10, textAnchor: "middle" },
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
             }}
           />
           <Tooltip
@@ -131,6 +136,87 @@ export const GroundContactTimeChart = ({ data }: ChartProps) => {
               border: "none",
               boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               fontSize: 13,
+              backgroundColor: chartColors.card,
+              color: chartColors.foreground,
+            }}
+            formatter={(value) => [`${value} ms`]}
+          />
+          <Legend
+            verticalAlign="bottom"
+            align="center"
+            wrapperStyle={{
+              paddingTop: 40,
+              fontSize: 11,
+              paddingLeft: 60,
+              color: chartColors.foreground,
+            }}
+            iconType="circle"
+            iconSize={8}
+          />
+          <Line
+            type="monotone"
+            dataKey="left"
+            stroke={chartColors.destructive}
+            strokeWidth={2}
+            name="Left Foot"
+            dot={{ fill: chartColors.destructive }}
+          />
+          <Line
+            type="monotone"
+            dataKey="right"
+            stroke={chartColors.foreground}
+            strokeWidth={2}
+            name="Right Foot"
+            dot={{ fill: chartColors.foreground }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
+
+export const FlightTimeChart = ({ runId }: { runId: string }) => {
+  const {lrData, lrLoading, lrError} = useLROverlayData(runId, "flight_ms");
+
+  return (
+    <div className="w-full max-w-[900px] mx-auto my-10 bg-background p-6 rounded-2xl shadow-sm border border-slate-100 font-['Inter',system-ui,sans-serif]">
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={lrData}>
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
+          <XAxis
+            dataKey="stride_num"
+            label={{
+              value: "Stride Number",
+              position: "insideBottom",
+              offset: -5,
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
+            }}
+          />
+          <YAxis
+            label={{
+              value: "Time (milliseconds)",
+              angle: -90,
+              position: "insideLeft",
+              offset: 0,
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
+            }}
+          />
+          <Tooltip
+            contentStyle={{
+              borderRadius: 12,
+              border: "none",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              fontSize: 13,
+              backgroundColor: chartColors.card,
+              color: chartColors.foreground,
             }}
             formatter={(value) => [`${value} ms`]}
           />
@@ -144,18 +230,18 @@ export const GroundContactTimeChart = ({ data }: ChartProps) => {
           <Line
             type="monotone"
             dataKey="left"
-            stroke={BRAND_COLORS.darkOrange}
+            stroke={chartColors.destructive}
             strokeWidth={2}
             name="Left Foot"
-            dot={{ fill: BRAND_COLORS.darkOrange }}
+            dot={{ fill: chartColors.destructive }}
           />
           <Line
             type="monotone"
             dataKey="right"
-            stroke={BRAND_COLORS.black}
+            stroke={chartColors.foreground}
             strokeWidth={2}
             name="Right Foot"
-            dot={{ fill: BRAND_COLORS.black }}
+            dot={{ fill: chartColors.foreground }}
           />
         </LineChart>
       </ResponsiveContainer>
@@ -163,75 +249,8 @@ export const GroundContactTimeChart = ({ data }: ChartProps) => {
   );
 };
 
-export const FlightTimeChart = ({ data }: ChartProps) => {
-  const chartData = transformDataForLROverlay(data, "flight_ms");
-
-  return (
-    <div
-      className="w-full max-w-[900px] mx-auto my-10 bg-white p-6 rounded-2xl 
-  shadow-sm border border-slate-100 font-['Inter',system-ui,sans-serif]"
-    >
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-          <XAxis
-            dataKey="stride_num"
-            label={{
-              value: "Stride Number",
-              position: "insideBottom",
-              offset: -5,
-              style: { fill: "#64748B", fontSize: 10 },
-            }}
-          />
-          <YAxis
-            label={{
-              value: "Time (milliseconds)",
-              angle: -90,
-              position: "insideLeft",
-              offset: 0,
-              style: { fill: "#64748B", fontSize: 10, textAnchor: "middle" },
-            }}
-          />
-          <Tooltip
-            contentStyle={{
-              borderRadius: 12,
-              border: "none",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              fontSize: 13,
-            }}
-            formatter={(value) => [`${value} ms`]}
-          />
-          <Legend
-            verticalAlign="bottom"
-            align="center"
-            wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 60 }}
-            iconType="circle"
-            iconSize={8}
-          />
-          <Line
-            type="monotone"
-            dataKey="left"
-            stroke={BRAND_COLORS.darkOrange}
-            strokeWidth={2}
-            name="Left Foot"
-            dot={{ fill: BRAND_COLORS.darkOrange }}
-          />
-          <Line
-            type="monotone"
-            dataKey="right"
-            stroke={BRAND_COLORS.black}
-            strokeWidth={2}
-            name="Right Foot"
-            dot={{ fill: BRAND_COLORS.black }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
-export const StepTimeChart = ({ data }: ChartProps) => {
-  const chartData = transformDataForStackedBar(data);
+export const StepTimeChart = ({ runId }: { runId: string }) => {
+  const { stackedData, stackedLoading, stackedError } = useStackedBarData(runId);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -245,12 +264,12 @@ export const StepTimeChart = ({ data }: ChartProps) => {
 
   return (
     <div
-      className="w-full max-w-[900px] mx-auto my-10 bg-white p-6 
-  rounded-2xl shadow-sm border border-slate-100 font-['Inter',system-ui,sans-serif]"
+      className="w-full max-w-[900px] mx-auto my-10 bg-background p-6 
+      rounded-2xl shadow-sm border border-slate-100 font-['Inter',system-ui,sans-serif]"
     >
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
-          data={chartData}
+          data={stackedData}
           onMouseMove={onMouseMove}
           onMouseLeave={() => setActiveIndex(null)}
           margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
@@ -258,31 +277,35 @@ export const StepTimeChart = ({ data }: ChartProps) => {
           <CartesianGrid
             vertical={false}
             strokeDasharray="0"
-            stroke="#E2E8F0"
+            stroke={chartColors.border}
           />
           <XAxis
             dataKey="label"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#64748B", fontSize: 10 }}
+            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
             dy={10}
             label={{
               value: "Step (Stride Number + Foot)",
               position: "insideBottom",
               offset: -30,
-              style: { fill: "#64748B", fontSize: 10 },
+              style: { fill: chartColors.mutedForeground, fontSize: 10 },
             }}
           />
           <YAxis
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#64748B", fontSize: 10 }}
+            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
             label={{
               value: "Time (milliseconds)",
               angle: -90,
               position: "insideLeft",
               offset: 0,
-              style: { fill: "#64748B", fontSize: 10, textAnchor: "middle" },
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
             }}
           />
           <Tooltip content={<CustomTooltip />} cursor={false} />
@@ -298,16 +321,16 @@ export const StepTimeChart = ({ data }: ChartProps) => {
             dataKey="gct_ms"
             stackId="a"
             name="Ground Contact Time"
-            fill={BRAND_COLORS.darkOrange}
+            fill={chartColors.destructive}
             radius={[0, 0, 0, 0]}
           >
-            {chartData.map((_, i) => (
+            {stackedData.map((_, i) => (
               <Cell
                 key={`gct-${i}`}
                 fill={
                   i === activeIndex
-                    ? BRAND_COLORS.highlightDark
-                    : BRAND_COLORS.darkOrange
+                    ? chartColors.destructiveHover
+                    : chartColors.destructive
                 }
               />
             ))}
@@ -317,16 +340,16 @@ export const StepTimeChart = ({ data }: ChartProps) => {
             dataKey="flight_ms"
             stackId="a"
             name="Flight Time"
-            fill={BRAND_COLORS.lightOrange}
+            fill={chartColors.mutedForeground}
             radius={[8, 8, 0, 0]}
           >
-            {chartData.map((_, i) => (
+            {stackedData.map((_, i) => (
               <Cell
                 key={`flight-${i}`}
                 fill={
                   i === activeIndex
-                    ? BRAND_COLORS.highlightLight
-                    : BRAND_COLORS.lightOrange
+                    ? chartColors.mutedForegroundHover
+                    : chartColors.mutedForeground
                 }
               />
             ))}

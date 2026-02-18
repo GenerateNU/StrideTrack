@@ -1,4 +1,4 @@
-import { useAthleteRunMetrics } from "@/hooks/useAthleteRunMetrics";
+import { useRunMetrics } from "@/hooks/useRunMetrics";
 import {
   GroundContactTimeChart,
   FlightTimeChart,
@@ -11,7 +11,7 @@ const HARDCODED_ATHLETE_ID = "00000000-0000-0000-0000-000000000002";
 
 export default function VisualizationsPage() {
   const { metrics, metricsIsLoading, metricsError, metricsRefetch } =
-    useAthleteRunMetrics(HARDCODED_ATHLETE_ID);
+    useRunMetrics(HARDCODED_ATHLETE_ID);
 
   if (metricsIsLoading) return <QueryLoading />;
   if (metricsError)

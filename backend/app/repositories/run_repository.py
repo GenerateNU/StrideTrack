@@ -1,5 +1,9 @@
 import logging
 
+from uuid import UUID
+from typing import Literal
+from schemas.sun_schemas import RunResponse, LROverlayData, StackedBarData
+
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
@@ -13,24 +17,23 @@ class RunRepository:
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
 
-    async def get_metrics(self, athlete_id: str) -> list[dict]:
-        """Get all run metrics for a specific athlete by joining RUN and RUN_METRICS."""
-        logger.info(f"Repository: Fetching run metrics for athlete {athlete_id}")
+    async def get_run_metrics(self, run_id: UUID) -> list[RunResponse]:
+        """Get a run metric from RUN_METRICS table."""
+        logger.info(f"Repository: Fetching run metric: {run_id}")
         response = (
             await self.supabase.table("run_metrics")
             .select(
-                "stride_num, ic_time, gct_ms, flight_ms, step_time_ms, foot, run!inner(run_id, athlete_id)"
+                "stride_num, ic_time, gct_ms, flight_ms, step_time_ms, foot"
             )
-            .eq("run.athlete_id", athlete_id)
+            .eq("run_id", run_id)
             .order("ic_time")
             .execute()
         )
 
         if not response.data:
             logger.warning(
-                f"Repository: Run metrics not found for athlete {athlete_id}"
+                f"Repository: Run metric not found for id {run_id}"
             )
-            raise NotFoundException("Run metrics", str(athlete_id))
+            raise NotFoundException("Run metric", str(run_id))
 
-        logger.info(f"Repository: Found run metrics for athlete {athlete_id}")
-        return response.data
+        logger.info(f"Repository: F

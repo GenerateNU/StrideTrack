@@ -1,6 +1,8 @@
 import logging
 from uuid import UUID
-
+from typing import Literal
+from app.schemas.run_schemas import RunResponse, LROverlayData, StackedBarData
+from app.utils.chart_transformations import transform_data_for_lr_overlay, transform_data_for_stacked_bar
 from app.repositories.run_repository import RunRepository
 
 logger = logging.getLogger(__name__)
@@ -12,12 +14,8 @@ class RunService:
     def __init__(self, repository: RunRepository) -> None:
         self.repository = repository
 
-    async def get_run_metrics(self, athlete_id: UUID) -> list[dict]:
-        """Get all run metrics for a specific athlete."""
-        logger.info(f"Service: Getting metrics for athlete {athlete_id}")
+    async def get_metrics_by_run_id(self, run_id: UUID) -> list[RunResponse]:
+        """Get all run metrics for a specific run."""
+        logger.info(f"Service: Getting metrics for run {run_id}")
 
-        # Convert UUID to string for Supabase query
-        metrics = await self.repository.get_metrics(str(athlete_id))
-
-        logger.info(f"Service: Retrieved {len(metrics)} metric records")
-        return metrics
+        # Convert UUID to string for Supabase qu
