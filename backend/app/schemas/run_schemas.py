@@ -1,5 +1,6 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
-from typing import Optional, Literal
 
 
 class RunResponse(BaseModel):
@@ -10,10 +11,12 @@ class RunResponse(BaseModel):
     flight_ms: int = Field(..., gt=0)
     step_time_ms: int = Field(..., gt=0)
 
+
 class LROverlayData(BaseModel):
     stride_num: int
-    left: Optional[float] = None
-    right: Optional[float] = None
+    left: float | None = None
+    right: float | None = None
+
 
 class StackedBarData(BaseModel):
     stride_num: int

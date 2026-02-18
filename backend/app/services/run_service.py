@@ -1,9 +1,13 @@
 import logging
-from uuid import UUID
 from typing import Literal
-from app.schemas.run_schemas import RunResponse, LROverlayData, StackedBarData
-from app.utils.chart_transformations import transform_data_for_lr_overlay, transform_data_for_stacked_bar
+from uuid import UUID
+
 from app.repositories.run_repository import RunRepository
+from app.schemas.run_schemas import LROverlayData, RunResponse, StackedBarData
+from app.utils.chart_transformations import (
+    transform_data_for_lr_overlay,
+    transform_data_for_stacked_bar,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +28,9 @@ class RunService:
         logger.info(f"Service: Retrieved metrics for run {run_id}")
         return metric
 
-    async def transform_lr_overlay(self, run_id: UUID, metric) -> list[LROverlayData]:
+    async def transform_lr_overlay(
+        self, run_id: UUID, metric: Literal["gct_ms", "flight_ms"]
+    ) -> list[LROverlayData]:
         """Transform run data for FT and GCT visualizations"""
         logger.info(f"Service: Transforming run {run_id} for {metric} visualization")
 
@@ -34,7 +40,7 @@ class RunService:
         logger.info(f"Service: Transformed run {run_id} for {metric} visualization")
         return transformed
 
-    async def transform_stacked_bar(self, run_id) -> list[StackedBarData]:
+    async def transform_stacked_bar(self, run_id: UUID) -> list[StackedBarData]:
         """Transform run data for step time visualization"""
         logger.info(f"Service: Transforming run {run_id} for stacked bar chart")
 

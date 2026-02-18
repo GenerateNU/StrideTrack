@@ -1,9 +1,7 @@
 import logging
-
 from uuid import UUID
-from typing import Literal
-from schemas.sun_schemas import RunResponse, LROverlayData, StackedBarData
 
+from schemas.sun_schemas import RunResponse
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
@@ -22,21 +20,15 @@ class RunRepository:
         logger.info(f"Repository: Fetching run metric: {run_id}")
         response = (
             await self.supabase.table("run_metrics")
-            .select(
-                "stride_num, ic_time, gct_ms, flight_ms, step_time_ms, foot"
-            )
+            .select("stride_num, ic_time, gct_ms, flight_ms, step_time_ms, foot")
             .eq("run_id", run_id)
             .order("ic_time")
             .execute()
         )
 
         if not response.data:
-            logger.warning(
-                f"Repository: Run metric not found for id {run_id}"
-            )
+            logger.warning(f"Repository: Run metric not found for id {run_id}")
             raise NotFoundException("Run metric", str(run_id))
 
         logger.info(f"Repository: Found run metric: {run_id}")
         return response.data
-
-

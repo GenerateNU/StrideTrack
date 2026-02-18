@@ -1,7 +1,11 @@
-from app.schemas.run_schemas import RunResponse, LROverlayData, StackedBarData
 from typing import Literal
 
-def transform_data_for_lr_overlay(data: list[RunResponse], metric: Literal["gct_ms", "flight_ms"]) -> list[LROverlayData]:
+from app.schemas.run_schemas import LROverlayData, RunResponse, StackedBarData
+
+
+def transform_data_for_lr_overlay(
+    data: list[RunResponse], metric: Literal["gct_ms", "flight_ms"]
+) -> list[LROverlayData]:
     """Transform each data point in run for FT and GCT visualizations"""
 
     stride_map: dict[int, dict] = {}
@@ -12,6 +16,7 @@ def transform_data_for_lr_overlay(data: list[RunResponse], metric: Literal["gct_
         stride_map[stride_num][row["foot"]] = row[metric]
 
     return sorted(stride_map.values(), key=lambda x: x["stride_num"])
+
 
 def transform_data_for_stacked_bar(data: list[RunResponse]) -> list[StackedBarData]:
     """Transform each data point in run for stacked bar chart (step time)"""

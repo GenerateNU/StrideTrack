@@ -1,36 +1,5 @@
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-import type { RunMetric } from "@/hooks/useRunMetrics";
-import { useState } from "react";
+
 import "@/index.css";
-
-export const chartColors = {
-  card: "hsl(var(--card))",
-  primary: "hsl(var(--primary))",
-  secondary: "hsl(var(--secondary))",
-  destructive: "hsl(var(--destructive))",
-  destructiveHover: "hsl(var(--destructive-hover))",
-  mutedForeground: "hsl(var(--muted-foreground))",
-  mutedForegroundHover: "hsl(var(--muted-foreground-hover))",
-  border: "hsl(var(--border))",
-  foreground: "hsl(var(--foreground))",
-  primaryLight: "hsl(var(--primary) / 0.2)",
-} as const;
-
-interface ChartProps {
-  data: RunMetric[];
-}
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -42,6 +11,20 @@ interface CustomTooltipProps {
   }>;
   label?: string;
 }
+
+export const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className="bg-background rounded-xl px-4 py-3 shadow-lg border-none text-sm">
+      <p className="font-semibold mb-1.5 text-foreground">Stride {label}</p>
+      {payload.map((p, i) => (
+        <p key={i} style={{ color: p.fill || p.color, margin: "2px 0" }}>
+          {p.name}: {p.value} ms
+        </p>
+      ))}
+    </div>
+  );
+};
 
 /*
 const transformDataForLROverlay = (
@@ -78,21 +61,8 @@ const transformDataForStackedBar = (data: RunMetric[]) => {
     .sort((a, b) => a.stride_num - b.stride_num);
 }; */
 
-const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-  if (!active || !payload || !payload.length) return null;
-  return (
-    <div className="bg-background rounded-xl px-4 py-3 shadow-lg border-none text-sm">
-      <p className="font-semibold mb-1.5 text-foreground">Stride {label}</p>
-      {payload.map((p, i) => (
-        <p key={i} style={{ color: p.fill || p.color, margin: "2px 0" }}>
-          {p.name}: {p.value} ms
-        </p>
-      ))}
-    </div>
-  );
-};
-import { useLROverlayData, useStackedBarData } from "@/hooks/useRunMetrics";
 
+/*
 export const GroundContactTimeChart = ({ runId }: { runId: string }) => {
   const { lrData } = useLROverlayData(runId, "gct_ms");
   return (
@@ -359,3 +329,4 @@ export const StepTimeChart = ({ runId }: { runId: string }) => {
     </div>
   );
 };
+*/
