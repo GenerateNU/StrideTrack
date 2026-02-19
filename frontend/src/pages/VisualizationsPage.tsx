@@ -14,7 +14,7 @@ export default function VisualizationsPage() {
 
         <div className="space-y-8">
           <div>
-            <h2 className="text-xl font-bold mb-3 text-destructive">
+            <h2 className="text-xl font-bold mb-3 text-primary">
               Ground Contact Time (GCT) - Left vs Right Foot
             </h2>
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
@@ -23,7 +23,7 @@ export default function VisualizationsPage() {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold mb-3 text-destructive">
+            <h2 className="text-xl font-bold mb-3 text-primary">
               Flight Time (FT) - Left vs Right Foot
             </h2>
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
@@ -32,7 +32,7 @@ export default function VisualizationsPage() {
           </div>
 
           <div>
-            <h2 className="text-xl font-bold mb-3 text-destructive">
+            <h2 className="text-xl font-bold mb-3 text-primary">
               Step Time - Ground Contact + Flight (Stacked)
             </h2>
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">

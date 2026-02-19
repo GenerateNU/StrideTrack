@@ -23,7 +23,7 @@ export default function LoginPage() {
         className="pointer-events-none absolute -top-1/4 left-1/2 h-[600px] w-[600px] -translate-x-1/2 rounded-full opacity-15 blur-[120px]"
         style={{
           background:
-            "radial-gradient(circle, #fb8b24 0%, #f77f00 40%, transparent 70%)",
+            "radial-gradient(circle, hsl(var(--primary)) 0%, hsl(var(--primary-hover)) 40%, transparent 70%)",
         }}
       />
 
@@ -31,7 +31,7 @@ export default function LoginPage() {
       <div
         className="pointer-events-none absolute -bottom-1/4 left-1/2 h-[400px] w-[400px] -translate-x-1/2 rounded-full opacity-10 blur-[100px]"
         style={{
-          background: "radial-gradient(circle, #fb8b24 0%, transparent 70%)",
+          background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
         }}
       />
 

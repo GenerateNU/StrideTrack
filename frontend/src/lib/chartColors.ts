@@ -5,6 +5,7 @@ export const chartColors = {
   secondary: "hsl(var(--secondary))",
   destructive: "hsl(var(--destructive))",
   destructiveHover: "hsl(var(--destructive-hover))",
+  primaryHover: "hsl(var(--primary-hover))",
   mutedForeground: "hsl(var(--muted-foreground))",
   mutedForegroundHover: "hsl(var(--muted-foreground-hover))",
   border: "hsl(var(--border))",

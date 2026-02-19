@@ -83,7 +83,7 @@ export const StepTimeChart = ({ runId }: { runId: string }) => {
           dataKey="gct_ms"
           stackId="a"
           name="Ground Contact Time"
-          fill={chartColors.destructive}
+          fill={chartColors.primary}
           radius={[0, 0, 0, 0]}
         >
           {stackedData.map((_, i) => (
@@ -91,8 +91,8 @@ export const StepTimeChart = ({ runId }: { runId: string }) => {
               key={`gct-${i}`}
               fill={
                 i === activeIndex
-                  ? chartColors.destructiveHover
-                  : chartColors.destructive
+                  ? chartColors.primaryHover
+                  : chartColors.primary
               }
             />
           ))}

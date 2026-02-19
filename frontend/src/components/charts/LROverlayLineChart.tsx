@@ -73,10 +73,10 @@ export const LROverlayLineChart = ({
         <Line
           type="monotone"
           dataKey="left"
-          stroke={chartColors.destructive}
+          stroke={chartColors.primary}
           strokeWidth={2}
           name="Left Foot"
-          dot={{ fill: chartColors.destructive }}
+          dot={{ fill: chartColors.primary }}
         />
         <Line
           type="monotone"
