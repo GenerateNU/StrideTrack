@@ -42,7 +42,7 @@ async def get_lr_overlay(
 ) -> list[LROverlayData]:
     """Get left/right overlay chart data for a specific run."""
     logger.info(f"Route: GET /athletes/{run_id}/metrics/lr-overlay?metric={metric}")
-    return await service.get_lr_overlay(run_id, metric)
+    return await service.transform_lr_overlay(run_id, metric)
 
 
 @router.get(
@@ -54,4 +54,4 @@ async def get_stacked_bar(
 ) -> list[StackedBarData]:
     """Get stacked bar chart data for a specific run."""
     logger.info(f"Route: GET /athletes/{run_id}/metrics/stacked-bar")
-    return await service.get_stacked_bar(run_id)
+    return await service.transform_stacked_bar(run_id)

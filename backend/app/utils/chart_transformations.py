@@ -9,7 +9,7 @@ def transform_data_for_lr_overlay(
     """Transform each data point in run for FT and GCT visualizations"""
 
     stride_map: dict[int, dict] = {}
-    for row in RunResponse:
+    for row in data:
         stride_num = row["stride_num"]
         if stride_num not in stride_map:
             stride_map[stride_num] = {"stride_num": stride_num}
