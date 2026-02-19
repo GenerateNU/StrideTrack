@@ -26,7 +26,7 @@
       "devDependencies": {
         "@eslint/js": "^9.39.1",
         "@types/node": "^24.10.1",
-        "@types/react": "^19.2.5",
+        "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^5.1.1",
         "autoprefixer": "^10.4.23",
@@ -325,7 +325,7 @@
 
     "@types/phoenix": ["@types/phoenix@1.6.7", "", {}, "sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q=="],
 
-    "@types/react": ["@types/react@19.2.10", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-WPigyYuGhgZ/cTPRXB2EwUw+XvsRA3GqHlsP4qteqrnnjDrApbS7MxcGr/hke5iUoeB7E/gQtrs9I37zAJ0Vjw=="],
+    "@types/react": ["@types/react@19.2.14", "", { "dependencies": { "csstype": "^3.2.2" } }, "sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w=="],
 
     "@types/react-dom": ["@types/react-dom@19.2.3", "", { "peerDependencies": { "@types/react": "^19.2.0" } }, "sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ=="],
 
