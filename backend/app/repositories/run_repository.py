@@ -1,10 +1,10 @@
 import logging
 from uuid import UUID
 
-from schemas.sun_schemas import RunResponse
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
+from app.schemas.run_schemas import RunResponse
 
 logger = logging.getLogger(__name__)
 
