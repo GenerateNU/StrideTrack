@@ -1,32 +1,48 @@
 import React from "react";
 import { useEvents } from "../../hooks/useEvents";
+import type { EventTypeEnum } from "../../types/event.types";
 
 interface EventSelectorProps {
-  selectedEvent: string;
-  onChange: (value: string) => void;
+  value: EventTypeEnum | null;
+  onChange: (event: EventTypeEnum | null) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
 }
 
 const EventSelector: React.FC<EventSelectorProps> = ({
-  selectedEvent,
+  value,
   onChange,
+  placeholder = "Select an event...",
+  disabled = false,
+  className = "",
 }) => {
-  const { events, loading, error } = useEvents();
+  const events = useEvents();
 
-  if (loading) return <p>Loading events...</p>;
-  if (error) return <p>Error loading events: {error}</p>;
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = e.target.value;
+    onChange(selected ? (selected as EventTypeEnum) : null);
+  };
 
   return (
-    <div>
-      <label htmlFor="event-select">Select Event:</label>
+    <div className={`event-selector ${className}`}>
       <select
-        id="event-select"
-        value={selectedEvent}
-        onChange={(e) => onChange(e.target.value)}
+        style={{ color: "black", backgroundColor: "white" }}
+        className="event-selector__select"
+        value={value ?? ""}
+        onChange={handleChange}
+        disabled={disabled}
+        aria-label="Select event type"
       >
-        <option value="">-- Choose an event --</option>
-
+        <option value="" disabled style={{ color: "black" }}>
+          {placeholder}
+        </option>
         {events.map((event) => (
-          <option key={event.value} value={event.value}>
+          <option
+            key={event.value}
+            value={event.value}
+            style={{ color: "black" }}
+          >
             {event.label}
           </option>
         ))}
