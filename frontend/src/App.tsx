@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
 import LoginPage from "@/pages/LoginPage";
-import DashboardPage from "@/pages/DashboardPage";
+import VisualizationsPage from "@/pages/VisualizationsPage";
 
 function App() {
   return (
@@ -12,9 +13,11 @@ function App() {
           path="*"
           element={
             <ProtectedRoute>
-              <Routes>
-                <Route path="/" element={<DashboardPage />} />
-              </Routes>
+              <AppLayout>
+                <Routes>
+                  <Route path="/" element={<VisualizationsPage />} />
+                </Routes>
+              </AppLayout>
             </ProtectedRoute>
           }
         />
