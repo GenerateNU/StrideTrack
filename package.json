@@ -2,6 +2,7 @@
   "name": "stridetrack",
   "module": "index.ts",
   "dependencies": {
+    "recharts": "^3.7.0",
     "supabase": "^2.68.1"
   },
   "private": true,

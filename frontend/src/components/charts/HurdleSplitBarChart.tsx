@@ -44,7 +44,11 @@ export const HurdleSplitBarChart = ({
           }}
           tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
         />
-        <Tooltip formatter={(value: number) => [`${value} ms`]} />
+        <Tooltip
+          formatter={(value: number | undefined) => [
+            value != null ? `${value} ms` : "N/A",
+          ]}
+        />{" "}
         <ReferenceLine
           y={meanSplitMs}
           stroke={chartColors.primary}
