@@ -1,6 +1,7 @@
 import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
 import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
 import { StepTimeChart } from "@/components/charts/StepTimeChart";
+import { HurdleSplitChart } from "@/components/charts/HurdleSplitChart"
 
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 
@@ -39,6 +40,16 @@ export default function VisualizationsPage() {
               <StepTimeChart runId={HARDCODED_RUN_ID} />
             </div>
           </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Hurdle Split Times
+            </h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <HurdleSplitChart eventId={HARDCODED_RUN_ID} />
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
