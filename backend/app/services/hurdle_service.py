@@ -1,8 +1,30 @@
+# app/services/hurdle_service.py
+
 import logging
 from uuid import UUID
 
+import numpy as np
+import pandas as pd
+
 from app.repositories.run_repository import RunRepository
-from app.schemas.hurdle_schemas import HurdleMetricRow
+from app.schemas.hurdle_schemas import (
+    GctIncreaseData,
+    HurdleMetricRow,
+    HurdleSplitBarData,
+    LandingGctBarData,
+    StepsBetweenHurdlesData,
+    TakeoffFtBarData,
+    TakeoffGctBarData,
+)
+from app.utils.hurdle_chart_transformations import (
+    transform_gct_increase,
+    transform_hurdle_splits,
+    transform_landing_gct,
+    transform_steps_between_hurdles,
+    transform_takeoff_ft,
+    transform_takeoff_gct,
+)
+from app.utils.hurdle_metrics import transform_stride_cycles_to_hurdle_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -13,23 +35,69 @@ class HurdleService:
     def __init__(self, repository: RunRepository) -> None:
         self.repository = repository
 
-    async def get_hurdle_metrics_by_run_id(self, run_id: UUID) -> list[HurdleMetricRow]:
+    async def _get_hurdle_metric_rows(self, run_id: UUID) -> list[HurdleMetricRow]:
         """
-        Fetch raw step rows for a run and transform them into per-hurdle metrics.
+        Shared helper: fetch raw steps, run the hurdle transform,
+        and return validated HurdleMetricRow objects.
         """
-        logger.info(f"Service: Getting hurdle metrics for run {run_id}")
-
-        # IMPORTANT: hurdle transform requires at least foot, ic_time, to_time, gct_ms.
-        # So the repository method used here must SELECT to_time.
         steps = await self.repository.get_run_metrics_for_hurdles(run_id)
 
-        # TODO: Replace this placeholder with your real transform call.
-        # Example:
-        # transformed_rows = transform_stride_cycles_to_hurdle_metrics(steps)
-        transformed_rows: list[dict] = []
+        df = pd.DataFrame(steps)
+        hurdle_df = transform_stride_cycles_to_hurdle_metrics(df)
+        rows = hurdle_df.to_dict(orient="records")
 
-        # Pydantic will coerce/validate and also ensures consistent response shape.
-        result = [HurdleMetricRow(**row) for row in transformed_rows]
+        # numpy.nan survives .where() and .to_dict() in mixed-type columns.
+        # Sanitize at the dict level so Pydantic sees Python None, not nan.
+        sanitized = [
+            {k: (None if isinstance(v, float) and np.isnan(v) else v) for k, v in row.items()}
+            for row in rows
+        ]
 
+        return [HurdleMetricRow(**row) for row in sanitized]
+
+    async def get_hurdle_metrics_by_run_id(
+        self, run_id: UUID
+    ) -> list[HurdleMetricRow]:
+        """Get all per-hurdle metrics for a run."""
+        logger.info(f"Service: Getting hurdle metrics for run {run_id}")
+        result = await self._get_hurdle_metric_rows(run_id)
         logger.info(f"Service: Returning {len(result)} hurdle rows for run {run_id}")
         return result
+
+    async def get_hurdle_splits(self, run_id: UUID) -> list[HurdleSplitBarData]:
+        """Transform hurdle data for split bar chart."""
+        logger.info(f"Service: Getting hurdle splits for run {run_id}")
+        data = await self._get_hurdle_metric_rows(run_id)
+        return transform_hurdle_splits(data)
+
+    async def get_steps_between_hurdles(
+        self, run_id: UUID
+    ) -> list[StepsBetweenHurdlesData]:
+        """Transform hurdle data for steps-between display."""
+        logger.info(f"Service: Getting steps between hurdles for run {run_id}")
+        data = await self._get_hurdle_metric_rows(run_id)
+        return transform_steps_between_hurdles(data)
+
+    async def get_takeoff_gct(self, run_id: UUID) -> list[TakeoffGctBarData]:
+        """Transform hurdle data for takeoff GCT bar chart."""
+        logger.info(f"Service: Getting takeoff GCT for run {run_id}")
+        data = await self._get_hurdle_metric_rows(run_id)
+        return transform_takeoff_gct(data)
+
+    async def get_landing_gct(self, run_id: UUID) -> list[LandingGctBarData]:
+        """Transform hurdle data for landing GCT bar chart."""
+        logger.info(f"Service: Getting landing GCT for run {run_id}")
+        data = await self._get_hurdle_metric_rows(run_id)
+        return transform_landing_gct(data)
+
+    async def get_takeoff_ft(self, run_id: UUID) -> list[TakeoffFtBarData]:
+        """Transform hurdle data for takeoff FT bar chart."""
+        logger.info(f"Service: Getting takeoff FT for run {run_id}")
+        data = await self._get_hurdle_metric_rows(run_id)
+        return transform_takeoff_ft(data)
+
+    async def get_gct_increase(self, run_id: UUID) -> list[GctIncreaseData]:
+        """Transform hurdle data for GCT increase KPI."""
+        logger.info(f"Service: Getting GCT increase for run {run_id}")
+        data = await self._get_hurdle_metric_rows(run_id)
+        return transform_gct_increase(data)
