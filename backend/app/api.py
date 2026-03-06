@@ -1,4 +1,4 @@
-from backend.app.routes.hurdle_routes import router as hurdle_router
+from app.routes.hurdle_routes import router as hurdle_router
 from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
