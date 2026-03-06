@@ -1,4 +1,3 @@
-from app.routes.hurdle_routes import router as hurdle_router
 from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
@@ -7,6 +6,7 @@ from app.routes.athlete_routes import router as athlete_router
 from app.routes.auth_routes import router as auth_router
 from app.routes.csv_routes import router as csv_router
 from app.routes.example_routes import router as example_router
+from app.routes.hurdle_routes import router as hurdle_router
 from app.routes.run_routes import router as run_router
 from app.schemas.health_schemas import HealthResponse
 
