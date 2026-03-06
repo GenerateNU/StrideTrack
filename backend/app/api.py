@@ -1,3 +1,4 @@
+from backend.app.routes.hurdle_routes import router as hurdle_router
 from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
@@ -8,7 +9,6 @@ from app.routes.csv_routes import router as csv_router
 from app.routes.example_routes import router as example_router
 from app.routes.run_routes import router as run_router
 from app.schemas.health_schemas import HealthResponse
-from app.routes.hurlde_routes import router as hurdle_router
 
 api_router = APIRouter(prefix="/api")
 

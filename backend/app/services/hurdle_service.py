@@ -36,28 +36,25 @@ class HurdleService:
         self.repository = repository
 
     async def _get_hurdle_metric_rows(self, run_id: UUID) -> list[HurdleMetricRow]:
-        """
-        Shared helper: fetch raw steps, run the hurdle transform,
-        and return validated HurdleMetricRow objects.
-        """
+        """Fetch raw steps, run the hurdle transform, and return validated HurdleMetricRow objects."""
         steps = await self.repository.get_run_metrics_for_hurdles(run_id)
 
         df = pd.DataFrame(steps)
         hurdle_df = transform_stride_cycles_to_hurdle_metrics(df)
         rows = hurdle_df.to_dict(orient="records")
 
-        # numpy.nan survives .where() and .to_dict() in mixed-type columns.
         # Sanitize at the dict level so Pydantic sees Python None, not nan.
         sanitized = [
-            {k: (None if isinstance(v, float) and np.isnan(v) else v) for k, v in row.items()}
+            {
+                k: (None if isinstance(v, float) and np.isnan(v) else v)
+                for k, v in row.items()
+            }
             for row in rows
         ]
 
         return [HurdleMetricRow(**row) for row in sanitized]
 
-    async def get_hurdle_metrics_by_run_id(
-        self, run_id: UUID
-    ) -> list[HurdleMetricRow]:
+    async def get_hurdle_metrics_by_run_id(self, run_id: UUID) -> list[HurdleMetricRow]:
         """Get all per-hurdle metrics for a run."""
         logger.info(f"Service: Getting hurdle metrics for run {run_id}")
         result = await self._get_hurdle_metric_rows(run_id)

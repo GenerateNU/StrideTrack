@@ -40,7 +40,7 @@ async def get_hurdle_metrics(
     run_id: UUID,
     service: HurdleService = Depends(get_hurdle_service),
 ) -> list[HurdleMetricRow]:
-    """Get all per-hurdle derived metrics for a specific run."""
+    """Get all hurdle metrics for a specific run."""
     logger.info(f"Route: GET /run/athletes/{run_id}/metrics/hurdles")
     return await service.get_hurdle_metrics_by_run_id(run_id)
 

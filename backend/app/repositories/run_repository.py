@@ -32,13 +32,10 @@ class RunRepository:
 
         logger.info(f"Repository: Found run metric: {run_id}")
         return response.data
-    
+
     async def get_run_metrics_for_hurdles(self, run_id: UUID) -> list[dict]:
-        """
-        Get run metric rows with the extra fields needed for hurdle transformations.
-        Requires at least: foot, ic_time, to_time, gct_ms.
-        """
-        logger.info(f"Repository: Fetching run metrics (hurdles) for run: {run_id}")
+        """Get run metric rows with the extra fields needed for hurdle transformations."""
+        logger.info(f"Repository: Fetching run metric (hurdles): {run_id}")
         response = (
             await self.supabase.table("run_metrics")
             .select(
@@ -50,8 +47,10 @@ class RunRepository:
         )
 
         if not response.data:
-            logger.warning(f"Repository: Run metric not found for id {run_id}")
+            logger.warning(
+                f"Repository: Run metric (hurdles) not found for id {run_id}"
+            )
             raise NotFoundException("Run metric", str(run_id))
 
-        logger.info(f"Repository: Found run metrics (hurdles) for run: {run_id}")
+        logger.info(f"Repository: Found run metric (hurdles): {run_id}")
         return response.data
