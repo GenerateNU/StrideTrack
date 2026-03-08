@@ -11,26 +11,27 @@ interface Athlete {
   created_at: string;
 }
 
-export function AthleteSelector() {
-  const { athletes, athletesIsLoading, athletesError, athletesRefetch } =
-    useGetAllAthletes();
+interface AthleteSelectorProps {
+  value: string | null;
+  onChange: (athleteId: string | null) => void;
+}
+
+export function AthleteSelector({ value, onChange }: AthleteSelectorProps) {
+  const { athletes, athletesIsLoading, athletesError, athletesRefetch } = useGetAllAthletes();
 
   if (athletesIsLoading) return <QueryLoading />;
-  if (athletesError)
-    return <QueryError error={athletesError} refetch={athletesRefetch} />;
+  if (athletesError) return <QueryError error={athletesError} refetch={athletesRefetch} />;
 
   return (
     <div className="max-w-md">
-      <label
-        htmlFor="athlete-select"
-        className="block text-sm font-medium mb-2"
-      >
+      <label htmlFor="athlete-select" className="block text-sm font-medium mb-2">
         Choose an athlete:
       </label>
       <select
         id="athlete-select"
         className="w-full p-2 border rounded-md bg-background"
-        defaultValue=""
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value || null)}
       >
         <option value="" disabled>
           Select an athlete
