@@ -17,14 +17,19 @@ interface AthleteSelectorProps {
 }
 
 export function AthleteSelector({ value, onChange }: AthleteSelectorProps) {
-  const { athletes, athletesIsLoading, athletesError, athletesRefetch } = useGetAllAthletes();
+  const { athletes, athletesIsLoading, athletesError, athletesRefetch } =
+    useGetAllAthletes();
 
   if (athletesIsLoading) return <QueryLoading />;
-  if (athletesError) return <QueryError error={athletesError} refetch={athletesRefetch} />;
+  if (athletesError)
+    return <QueryError error={athletesError} refetch={athletesRefetch} />;
 
   return (
     <div className="max-w-md">
-      <label htmlFor="athlete-select" className="block text-sm font-medium mb-2">
+      <label
+        htmlFor="athlete-select"
+        className="block text-sm font-medium mb-2"
+      >
         Choose an athlete:
       </label>
       <select

@@ -1,7 +1,10 @@
 import { useState, useRef, useCallback } from "react";
-import { AthleteSelector } from "@/components/athletes/AthleteSelector";
-import EventSelector from "@/components/events/EventSelector";
+import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
+import { useEvents } from "@/hooks/useEvents";
 import { useCreateRun } from "@/hooks/useCreateRun.hooks";
+import { QueryLoading } from "@/components/QueryLoading";
+import { ChevronDown } from "lucide-react";
+
 import type { EventTypeEnum } from "@/types/event.types";
 
 export default function RecordingPage() {
@@ -21,11 +24,17 @@ export default function RecordingPage() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  // POST hook for creating a run
+  // Data hooks
+  const { athletes, athletesIsLoading } = useGetAllAthletes();
+  const events = useEvents();
   const { mutate: createRun, isPending } = useCreateRun();
 
   // Both selections required to proceed
   const canProceed = athleteId !== null && eventType !== null;
+
+  // Get display names for the recording screen header
+  const selectedAthlete = athletes.find((a) => a.athlete_id === athleteId);
+  const selectedEvent = events.find((e) => e.value === eventType);
 
   // Start the timer — captures real start time, updates every 10ms
   const startTimer = useCallback(() => {
@@ -75,40 +84,82 @@ export default function RecordingPage() {
 
   // ── Setup Screen ──
   if (screen === "setup") {
+    if (athletesIsLoading) return <QueryLoading />;
+
     return (
       <div className="min-h-screen bg-background px-6 py-10">
         <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-bold text-foreground mb-1">New Run</h1>
-          <p className="text-sm text-muted-foreground mb-10">
+          <h1 className="text-2xl font-bold text-foreground">New Run</h1>
+          <p className="text-sm text-muted-foreground mt-1 mb-10">
             Select an athlete and event to begin recording
           </p>
 
-          <div className="space-y-6">
-            <AthleteSelector value={athleteId} onChange={setAthleteId} />
-
-            <div>
-              <label className="block text-sm font-medium mb-2">Event</label>
-              <EventSelector value={eventType} onChange={setEventType} />
+          {/* Athlete selector */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Athlete
+            </label>
+            <div className="relative">
+              <select
+                value={athleteId ?? ""}
+                onChange={(e) => setAthleteId(e.target.value || null)}
+                className="w-full appearance-none rounded-xl border border-border bg-card px-4 py-3.5 pr-10 text-sm font-medium text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              >
+                <option value="" disabled>
+                  Select an athlete
+                </option>
+                {athletes.map((athlete) => (
+                  <option key={athlete.athlete_id} value={athlete.athlete_id}>
+                    {athlete.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             </div>
-
-            <button
-              onClick={() => setScreen("recording")}
-              disabled={!canProceed}
-              className={`w-full py-3.5 rounded-xl font-semibold text-lg transition-all ${
-                canProceed
-                  ? "cursor-pointer opacity-100"
-                  : "cursor-not-allowed opacity-40"
-              }`}
-              style={{
-                backgroundColor: canProceed
-                  ? "hsl(var(--primary))"
-                  : "hsl(var(--primary))",
-                color: "hsl(var(--primary-foreground))",
-              }}
-            >
-              Continue
-            </button>
           </div>
+
+          {/* Event selector */}
+          <div className="mb-10">
+            <label className="block text-sm font-medium text-foreground mb-2">
+              Event
+            </label>
+            <div className="relative">
+              <select
+                value={eventType ?? ""}
+                onChange={(e) =>
+                  setEventType((e.target.value as EventTypeEnum) || null)
+                }
+                className="w-full appearance-none rounded-xl border border-border bg-card px-4 py-3.5 pr-10 text-sm font-medium text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              >
+                <option value="" disabled>
+                  Select an event
+                </option>
+                {events.map((event) => (
+                  <option key={event.value} value={event.value}>
+                    {event.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            </div>
+          </div>
+
+          {/* Continue button */}
+          <button
+            onClick={() => setScreen("recording")}
+            disabled={!canProceed}
+            className={`w-full py-3.5 rounded-xl font-semibold text-base transition-all ${
+              canProceed
+                ? "cursor-pointer opacity-100"
+                : "cursor-not-allowed opacity-40"
+            }`}
+            style={{
+              backgroundColor: "hsl(var(--primary))",
+              color: "hsl(var(--primary-foreground))",
+            }}
+          >
+            Continue
+          </button>
         </div>
       </div>
     );
@@ -116,26 +167,28 @@ export default function RecordingPage() {
 
   // ── Recording Screen ──
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center px-6 pt-16">
-      {/* Header info — athlete name and event would go here */}
-      <h1 className="text-2xl font-bold text-foreground mb-1">New Run</h1>
-      <p className="text-sm text-muted-foreground mb-12">Recording Session</p>
+    <div className="min-h-screen bg-background flex flex-col items-center px-6 pt-14">
+      {/* Header */}
+      <h1 className="text-2xl font-bold text-foreground">New Run</h1>
+      <p className="text-sm text-muted-foreground mt-1 mb-10">
+        {selectedAthlete?.name} · {selectedEvent?.label}
+      </p>
 
-      {/* Timer circle — matches artifact style with subtle border */}
+      {/* Timer circle */}
       <div
-        className="w-56 h-56 rounded-full flex flex-col items-center justify-center transition-all"
+        className="w-56 h-56 rounded-full flex flex-col items-center justify-center bg-card"
         style={{
           border: `4px solid ${
             isRunning
               ? "hsl(var(--destructive))"
-              : "hsl(var(--border))"
+              : isStopped
+                ? "hsl(var(--primary))"
+                : "hsl(var(--border))"
           }`,
-          boxShadow: isRunning
-            ? "0 0 24px hsl(var(--destructive) / 0.15)"
-            : "0 4px 20px hsl(var(--foreground) / 0.06)",
+          boxShadow: "0 2px 16px hsl(var(--foreground) / 0.04)",
         }}
       >
-        <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
           {isRunning ? "Recording" : isStopped ? "Stopped" : "Ready"}
         </span>
         <span
@@ -146,36 +199,7 @@ export default function RecordingPage() {
         </span>
       </div>
 
-      {/* Status pill — similar to "Waiting for Sensor" in the artifact */}
-      <div
-        className="mt-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full"
-        style={{
-          backgroundColor: isRunning
-            ? "hsl(142 71% 45% / 0.1)"
-            : "hsl(var(--muted))",
-        }}
-      >
-        <div
-          className="w-2 h-2 rounded-full"
-          style={{
-            backgroundColor: isRunning
-              ? "hsl(142, 71%, 45%)"
-              : "hsl(var(--muted-foreground))",
-          }}
-        />
-        <span
-          className="text-xs font-medium"
-          style={{
-            color: isRunning
-              ? "hsl(142, 71%, 35%)"
-              : "hsl(var(--muted-foreground))",
-          }}
-        >
-          {isRunning ? "Connected" : "Waiting for Sensor"}
-        </span>
-      </div>
-
-      {/* Start/Stop button — large and prominent like the artifact */}
+      {/* Start/Stop button — hidden after stopping */}
       {!isStopped && (
         <button
           onClick={isRunning ? stopTimer : startTimer}
@@ -196,12 +220,7 @@ export default function RecordingPage() {
         <div className="mt-10 flex gap-4">
           <button
             onClick={resetAll}
-            className="px-10 py-4 rounded-2xl font-semibold text-lg cursor-pointer transition-colors"
-            style={{
-              border: "1px solid hsl(var(--border))",
-              color: "hsl(var(--foreground))",
-              backgroundColor: "transparent",
-            }}
+            className="px-10 py-4 rounded-2xl font-semibold text-lg cursor-pointer transition-colors border border-border text-foreground bg-card"
           >
             Delete
           </button>
@@ -226,7 +245,7 @@ export default function RecordingPage() {
           className="mt-5 text-sm font-medium cursor-pointer"
           style={{ color: "hsl(var(--primary))" }}
         >
-          Change Selection
+          Change Event
         </button>
       )}
     </div>
