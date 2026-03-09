@@ -1,9 +1,3 @@
-"""
-StrideTrack R&D: Anomaly Detection in 400mH & 400m Sprint
-Uses autoencoder (sklearn MLPRegressor) trained on Athletes First data
-to detect abnormal race pacing patterns via reconstruction error.
-"""
-
 import re, os, subprocess, tempfile
 import numpy as np
 import pandas as pd
