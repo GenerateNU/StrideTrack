@@ -3,11 +3,17 @@ from typing import Literal
 from uuid import UUID
 
 from app.repositories.run_repository import RunRepository
-from app.schemas.run_schemas import LROverlayData, RunResponse, StackedBarData
+from app.schemas.run_schemas import (
+    LROverlayData,
+    RunResponse,
+    SprintDriftData,
+    StackedBarData,
+)
 from app.utils.chart_transformations import (
     transform_data_for_lr_overlay,
     transform_data_for_stacked_bar,
 )
+from app.utils.sprint_metrics import calculate_drift
 
 logger = logging.getLogger(__name__)
 
@@ -49,3 +55,11 @@ class RunService:
 
         logger.info(f"Service: Transformed run {run_id} for stacked bar chart")
         return transformed
+
+    async def get_sprint_drift(self, run_id: UUID) -> SprintDriftData:
+        """Calculate GCT and FT drift % for sprint fatigue tracking."""
+        logger.info(f"Service: Calculating sprint drift for run {run_id}")
+        data = await self.repository.get_run_metrics(run_id)
+        result = calculate_drift(data)
+        logger.info(f"Service: Calculated sprint drift for run {run_id}")
+        return result

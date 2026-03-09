@@ -24,3 +24,8 @@ class StackedBarData(BaseModel):
     label: str
     gct_ms: float
     flight_ms: float
+
+
+class SprintDriftData(BaseModel):
+    gct_drift_pct: float
+    ft_drift_pct: float
