@@ -1,6 +1,7 @@
 import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
 import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
 import { StepTimeChart } from "@/components/charts/StepTimeChart";
+import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 
@@ -38,6 +39,13 @@ export default function VisualizationsPage() {
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
               <StepTimeChart runId={HARDCODED_RUN_ID} />
             </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Sprint Drift
+            </h2>
+            <SprintDriftKPIs runId={HARDCODED_RUN_ID} />
           </div>
         </div>
       </div>

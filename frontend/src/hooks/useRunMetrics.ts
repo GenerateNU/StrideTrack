@@ -4,11 +4,13 @@ import {
   runMetricSchema,
   lrOverlaySchema,
   stackedBarSchema,
+  sprintDriftSchema,
 } from "@/types/runMetrics.types.ts";
 import type {
   RunMetric,
   LROverlayData,
   StackedBarData,
+  SprintDriftData,
 } from "@/types/runMetrics.types.ts";
 import { apiClient } from "@/axios.config";
 import { validateResponse } from "@/utils/validation";
@@ -76,5 +78,26 @@ export function useStackedBarData(runId: string | null) {
     stackedData: query.data ?? [],
     stackedLoading: query.isLoading,
     stackedError: query.error,
+  };
+}
+
+export function useSprintDrift(runId: string | null) {
+  const query = useQuery({
+    queryKey: ["sprint-drift", runId],
+    queryFn: async () => {
+      if (!runId) return null;
+      const response = await apiClient.get<SprintDriftData>(
+        `/api/run/athletes/${runId}/metrics/sprint-drift`
+      );
+      return validateResponse(response.data, sprintDriftSchema);
+    },
+    enabled: !!runId,
+  });
+
+  return {
+    driftData: query.data ?? null,
+    driftLoading: query.isLoading,
+    driftError: query.error,
+    driftRefetch: query.refetch,
   };
 }
