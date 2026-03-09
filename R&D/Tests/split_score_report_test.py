@@ -15,7 +15,7 @@ from scipy import stats
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 
-# ── PARSING (same as anomaly_detection.py) ───────────────────
+# Parsing PDFs
 
 def pdf_to_text(pdf_path):
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -66,40 +66,57 @@ def parse_400m(filepath):
         m = re.match(r'^(.+?)\s*\([A-Z]{3}\)', s)
         if m and re.search(r'\(\d{4}\)', s) and '100m' in s:
             athlete = m.group(1).strip()
-        if not re.match(r'^\s*date\s', line): continue
+        if not re.match(r'^\s*date\s', line):
+            continue
         nums = []
+
         for p in s.split()[2:]:
-            try: nums.append(float(p))
+            try:
+                nums.append(float(p))
             except ValueError:
-                if '/' in p: break
+                if '/' in p:
+                    break
+
         official = next((n for n in nums if 43 < n < 60), None)
-        if not official: continue
+
+        if not official:
+            continue
+
         inums = []
+
         for off in [1, 2]:
             if i + off < len(lines) and 'interval' in lines[i+off]:
                 for p in lines[i+off].split():
-                    try: inums.append(float(p))
-                    except ValueError: continue
+                    try:
+                        inums.append(float(p))
+                    except ValueError:
+                        continue
                 break
+
         cum = [n for n in nums if n < official]
         splits = None
+        
         if len(cum) >= 8:
             splits = [cum[1], cum[3]-cum[1], cum[5]-cum[3], official-cum[5]]
         elif len(cum) == 4:
             splits = [cum[0], cum[1]-cum[0], cum[2]-cum[1], official-cum[2]]
         elif len(cum) == 3 and cum[0] < 15:
             splits = [cum[0], cum[1]-cum[0], cum[2]-cum[1], official-cum[2]]
+
         if not splits and len(inums) >= 4:
             for start in range(len(inums) - 3):
                 c = inums[start:start+4]
-                if abs(sum(c) - official) < 0.5: splits = c; break
+                if abs(sum(c) - official) < 0.5:
+                     splits = c
+                     break
+                
         if splits and len(splits) == 4 and all(8 < s < 15 for s in splits):
             races.append({'athlete': athlete, 'time': official,
                          'splits': [round(s, 2) for s in splits]})
     return races
 
 
-# ── PERCENTILE ENGINE ────────────────────────────────────────
+# Percentile Generation
 
 class RaceAnalyzer:
     """Stores population distributions and computes percentile reports."""
@@ -243,7 +260,7 @@ class RaceAnalyzer:
         plt.close()
 
 
-# ── TEST RUNS ────────────────────────────────────────────────
+# Testing Script - provides mock tests and generates possible report types
 
 def main():
     print("Loading population data...")
