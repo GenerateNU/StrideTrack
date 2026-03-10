@@ -82,4 +82,4 @@ async def get_step_frequency(
 ) -> list[StepFrequencyData]:
     """Get step frequency data for a specific run."""
     logger.info(f"Route: GET /athletes/{run_id}/metrics/step-frequency")
-    return await service.get_step_frequency(run_id)
+    return await service.transform_step_frequency(run_id)
