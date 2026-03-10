@@ -29,11 +29,14 @@ function DriftCard({
         {label}
       </span>
       <span className={`text-4xl font-bold ${colorClass}`}>
-        {sign}{value.toFixed(1)}%
+        {sign}
+        {value.toFixed(1)}%
       </span>
       <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
         <span className="text-green-500">● &lt;{thresholds.good}%</span>
-        <span className="text-yellow-500">● {thresholds.good}–{thresholds.warn}%</span>
+        <span className="text-yellow-500">
+          ● {thresholds.good}–{thresholds.warn}%
+        </span>
         <span className="text-red-500">● &gt;{thresholds.warn}%</span>
       </div>
     </div>
@@ -41,16 +44,18 @@ function DriftCard({
 }
 
 export const SprintDriftKPIs = ({ runId }: { runId: string }) => {
-    const { driftData, driftLoading, driftError, driftRefetch } = useSprintDrift(runId);
-  
-    if (driftLoading) return <QueryLoading />;
-    if (driftError) return <QueryError error={driftError} refetch={driftRefetch} />;
-    if (!driftData) return null;
-  
-    return (
-      <div className="grid grid-cols-2 gap-3">
-        <DriftCard label="GCT Drift" value={driftData.gct_drift_pct} />
-        <DriftCard label="FT Drift" value={driftData.ft_drift_pct} />
-      </div>
-    );
-  };
+  const { driftData, driftLoading, driftError, driftRefetch } =
+    useSprintDrift(runId);
+
+  if (driftLoading) return <QueryLoading />;
+  if (driftError)
+    return <QueryError error={driftError} refetch={driftRefetch} />;
+  if (!driftData) return null;
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <DriftCard label="GCT Drift" value={driftData.gct_drift_pct} />
+      <DriftCard label="FT Drift" value={driftData.ft_drift_pct} />
+    </div>
+  );
+};

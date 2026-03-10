@@ -95,7 +95,7 @@ export function useSprintDrift(runId: string | null) {
     },
     enabled: !!runId,
   });
-  
+
   return {
     driftData: query.data ?? null,
     driftLoading: query.isLoading,

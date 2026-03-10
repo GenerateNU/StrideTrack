@@ -32,9 +32,9 @@ class RunRepository:
 
         logger.info(f"Repository: Found run metric: {run_id}")
         return response.data
-    
+
     async def get_step_frequency(self, run_id: UUID) -> list[RunResponse]:
-        """Fetch run metrics needed for step frequency chart. """
+        """Fetch run metrics needed for step frequency chart."""
         logger.info(f"Repository: Fetching step frequency for run: {run_id}")
         response = (
             await self.supabase.table("run_metrics")
