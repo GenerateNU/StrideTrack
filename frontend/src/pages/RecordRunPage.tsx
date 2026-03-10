@@ -1,10 +1,9 @@
 import { useState, useRef, useCallback } from "react";
+import { AthleteSelector } from "@/components/athletes/AthleteSelector";
+import EventSelector from "@/components/events/EventSelector";
+import { useCreateRun } from "@/hooks/useCreateRun.hooks";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useEvents } from "@/hooks/useEvents";
-import { useCreateRun } from "@/hooks/useCreateRun.hooks";
-import { QueryLoading } from "@/components/QueryLoading";
-import { ChevronDown } from "lucide-react";
-
 import type { EventTypeEnum } from "@/types/event.types";
 
 export default function RecordingPage() {
@@ -24,8 +23,8 @@ export default function RecordingPage() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  // Data hooks
-  const { athletes, athletesIsLoading } = useGetAllAthletes();
+  // Data hooks — used for display names on recording screen
+  const { athletes } = useGetAllAthletes();
   const events = useEvents();
   const { mutate: createRun, isPending } = useCreateRun();
 
@@ -84,8 +83,6 @@ export default function RecordingPage() {
 
   // ── Setup Screen ──
   if (screen === "setup") {
-    if (athletesIsLoading) return <QueryLoading />;
-
     return (
       <div className="min-h-screen bg-background px-6 py-10">
         <div className="max-w-md mx-auto">
@@ -94,72 +91,26 @@ export default function RecordingPage() {
             Select an athlete and event to begin recording
           </p>
 
-          {/* Athlete selector */}
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Athlete
-            </label>
-            <div className="relative">
-              <select
-                value={athleteId ?? ""}
-                onChange={(e) => setAthleteId(e.target.value || null)}
-                className="w-full appearance-none rounded-xl border border-border bg-card px-4 py-3.5 pr-10 text-sm font-medium text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                <option value="" disabled>
-                  Select an athlete
-                </option>
-                {athletes.map((athlete) => (
-                  <option key={athlete.athlete_id} value={athlete.athlete_id}>
-                    {athlete.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            </div>
-          </div>
+          <div className="space-y-6">
+            <AthleteSelector value={athleteId} onChange={setAthleteId} />
+            <EventSelector value={eventType} onChange={setEventType} />
 
-          {/* Event selector */}
-          <div className="mb-10">
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Event
-            </label>
-            <div className="relative">
-              <select
-                value={eventType ?? ""}
-                onChange={(e) =>
-                  setEventType((e.target.value as EventTypeEnum) || null)
-                }
-                className="w-full appearance-none rounded-xl border border-border bg-card px-4 py-3.5 pr-10 text-sm font-medium text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                <option value="" disabled>
-                  Select an event
-                </option>
-                {events.map((event) => (
-                  <option key={event.value} value={event.value}>
-                    {event.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            </div>
+            <button
+              onClick={() => setScreen("recording")}
+              disabled={!canProceed}
+              className={`w-full py-3.5 rounded-xl font-semibold text-base transition-all ${
+                canProceed
+                  ? "cursor-pointer opacity-100"
+                  : "cursor-not-allowed opacity-40"
+              }`}
+              style={{
+                backgroundColor: "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
+              }}
+            >
+              Continue
+            </button>
           </div>
-
-          {/* Continue button */}
-          <button
-            onClick={() => setScreen("recording")}
-            disabled={!canProceed}
-            className={`w-full py-3.5 rounded-xl font-semibold text-base transition-all ${
-              canProceed
-                ? "cursor-pointer opacity-100"
-                : "cursor-not-allowed opacity-40"
-            }`}
-            style={{
-              backgroundColor: "hsl(var(--primary))",
-              color: "hsl(var(--primary-foreground))",
-            }}
-          >
-            Continue
-          </button>
         </div>
       </div>
     );
