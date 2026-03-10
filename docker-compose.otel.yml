@@ -1,0 +1,14 @@
+# Jaeger v2 all-in-one: receives OTLP directly (no separate collector needed for local dev).
+# UI: http://localhost:16686
+# Backend sends to host.docker.internal:4317 (gRPC).
+services:
+  jaeger:
+    image: jaegertracing/jaeger:2.15.1
+    container_name: stridetrack-jaeger
+    command:
+      - "--set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317"
+      - "--set=receivers.otlp.protocols.http.endpoint=0.0.0.0:4318"
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "16686:16686" # Jaeger UI
