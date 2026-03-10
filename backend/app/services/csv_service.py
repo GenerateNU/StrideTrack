@@ -46,7 +46,8 @@ class CSVService:
                 logger.exception("Service: Transformed run data insert failed")
                 span.set_attribute("error", True)
                 raise HTTPException(
-                    status_code=500, detail=f"Transformed run data insert failed: {str(e)}"
+                    status_code=500,
+                    detail=f"Transformed run data insert failed: {str(e)}",
                 ) from e
 
             logger.info(

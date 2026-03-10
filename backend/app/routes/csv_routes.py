@@ -47,7 +47,9 @@ async def upload_data_csv(
 
         if not file.filename or not file.filename.lower().endswith(".csv"):
             span.set_attribute("error", True)
-            raise HTTPException(status_code=400, detail="Run data must be in .csv format")
+            raise HTTPException(
+                status_code=400, detail="Run data must be in .csv format"
+            )
 
         try:
             content = await file.read()
