@@ -32,3 +32,21 @@ class RunRepository:
 
         logger.info(f"Repository: Found run metric: {run_id}")
         return response.data
+    
+    async def get_step_frequency(self, run_id: UUID) -> list[RunResponse]:
+        """Fetch run metrics needed for step frequency chart. """
+        logger.info(f"Repository: Fetching step frequency for run: {run_id}")
+        response = (
+            await self.supabase.table("run_metrics")
+            .select("stride_num, ic_time, step_time_ms, foot")
+            .eq("run_id", run_id)
+            .order("ic_time")
+            .execute()
+        )
+
+        if not response.data:
+            logger.warning(f"Repository: Run metric not found for id {run_id}")
+            raise NotFoundException("Run metric", str(run_id))
+
+        logger.info(f"Repository: Found step frequency data for run: {run_id}")
+        return response.data

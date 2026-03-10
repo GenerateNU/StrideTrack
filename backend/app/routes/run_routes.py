@@ -12,6 +12,7 @@ from app.schemas.run_schemas import (
     RunResponse,
     SprintDriftData,
     StackedBarData,
+    StepFrequencyData,
 )
 from app.services.run_service import RunService
 
@@ -70,3 +71,15 @@ async def get_sprint_drift(
     """Get GCT and FT drift percentages for sprint fatigue tracking."""
     logger.info(f"Route: GET /athletes/{run_id}/metrics/sprint-drift")
     return await service.get_sprint_drift(run_id)
+
+
+@router.get(
+    "/athletes/{run_id}/metrics/step-frequency", response_model=list[StepFrequencyData]
+)
+async def get_step_frequency(
+    run_id: UUID,
+    service: RunService = Depends(get_run_service),
+) -> list[StepFrequencyData]:
+    """Get step frequency data for a specific run."""
+    logger.info(f"Route: GET /athletes/{run_id}/metrics/step-frequency")
+    return await service.get_step_frequency(run_id)

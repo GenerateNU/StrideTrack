@@ -5,12 +5,14 @@ import {
   lrOverlaySchema,
   stackedBarSchema,
   sprintDriftSchema,
+  stepFrequencySchema,
 } from "@/types/runMetrics.types.ts";
 import type {
   RunMetric,
   LROverlayData,
   StackedBarData,
   SprintDriftData,
+  StepFrequencyData,
 } from "@/types/runMetrics.types.ts";
 import { apiClient } from "@/axios.config";
 import { validateResponse } from "@/utils/validation";
@@ -93,11 +95,31 @@ export function useSprintDrift(runId: string | null) {
     },
     enabled: !!runId,
   });
-
+  
   return {
     driftData: query.data ?? null,
     driftLoading: query.isLoading,
     driftError: query.error,
     driftRefetch: query.refetch,
+  };
+}
+
+export function useStepFrequencyData(runId: string | null) {
+  const query = useQuery({
+    queryKey: ["step-frequency", runId],
+    queryFn: async () => {
+      if (!runId) return [];
+      const response = await apiClient.get<StepFrequencyData[]>(
+        `/api/run/athletes/${runId}/metrics/step-frequency`
+      );
+      return validateResponse(response.data, z.array(stepFrequencySchema));
+    },
+    enabled: !!runId,
+  });
+
+  return {
+    stepFrequencyData: query.data ?? [],
+    stepFrequencyLoading: query.isLoading,
+    stepFrequencyError: query.error,
   };
 }

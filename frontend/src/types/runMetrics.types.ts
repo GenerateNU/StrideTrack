@@ -29,9 +29,15 @@ export const sprintDriftSchema = z.object({
   ft_drift_pct: z.number(),
 });
 
+export const stepFrequencySchema = z.object({
+  stride_num: z.number(),
+  foot: z.string(),
+  label: z.string(),
+  step_frequency_hz: z.number(),
+});
 
 export type RunMetric = z.infer<typeof runMetricSchema>;
 export type LROverlayData = z.infer<typeof lrOverlaySchema>;
 export type StackedBarData = z.infer<typeof stackedBarSchema>;
 export type SprintDriftData = z.infer<typeof sprintDriftSchema>;
-
+export type StepFrequencyData = z.infer<typeof stepFrequencySchema>;

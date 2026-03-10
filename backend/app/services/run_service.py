@@ -8,10 +8,12 @@ from app.schemas.run_schemas import (
     RunResponse,
     SprintDriftData,
     StackedBarData,
+    StepFrequencyData,
 )
 from app.utils.chart_transformations import (
     transform_data_for_lr_overlay,
     transform_data_for_stacked_bar,
+    transform_data_for_step_frequency,
 )
 from app.utils.sprint_metrics import calculate_drift
 
@@ -63,3 +65,13 @@ class RunService:
         result = calculate_drift(data)
         logger.info(f"Service: Calculated sprint drift for run {run_id}")
         return result
+
+    async def transform_step_frequency(self, run_id: UUID) -> list[StepFrequencyData]:
+        """Transform run data for step frequency visualization"""
+        logger.info(f"Service: Transforming run {run_id} for step frequency chart")
+
+        data = await self.repository.get_run_metrics(run_id)
+        transformed = transform_data_for_step_frequency(data)
+
+        logger.info(f"Service: Transformed run {run_id} for step frequency chart")
+        return transformed
