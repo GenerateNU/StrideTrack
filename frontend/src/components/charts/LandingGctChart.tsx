@@ -39,6 +39,7 @@ export const LandingGctChart = ({ runId }: { runId: string }) => {
           tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
         />
         <YAxis
+          domain={["auto", "auto"]}
           label={{
             value: "Ground Contact Time (ms)",
             angle: -90,

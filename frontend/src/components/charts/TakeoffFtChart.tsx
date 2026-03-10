@@ -39,6 +39,7 @@ export const TakeoffFtChart = ({ runId }: { runId: string }) => {
           tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
         />
         <YAxis
+          domain={["auto", "auto"]}
           label={{
             value: "Flight Time (ms)",
             angle: -90,

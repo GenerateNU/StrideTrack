@@ -41,7 +41,7 @@ export const HurdleSplitChart = ({ runId }: { runId: string }) => {
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={validSplits}
-          margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+          margin={{ top: 20, right: 60, left: 20, bottom: 40 }}
         >
           <CartesianGrid vertical={false} stroke={chartColors.border} />
           <XAxis
@@ -59,6 +59,7 @@ export const HurdleSplitChart = ({ runId }: { runId: string }) => {
             tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <YAxis
+            domain={["auto", "auto"]}
             label={{
               value: "Split Time (ms)",
               angle: -90,
