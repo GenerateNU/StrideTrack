@@ -7,10 +7,7 @@ export function useCreateRun() {
 
   const mutation = useMutation({
     mutationFn: async (data: CreateRunPayload) => {
-      const response = await apiClient.post<CreateRunResponse>(
-        "/run",
-        data
-      );
+      const response = await apiClient.post<CreateRunResponse>("/run", data);
       return response.data;
     },
     onSuccess: () => {
