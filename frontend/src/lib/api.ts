@@ -33,15 +33,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      window.location.href = "/login";
-      return Promise.reject(error);
-    }
-
     if (error.response?.data?.detail) {
       error.message = error.response.data.detail;
     }
-
     return Promise.reject(error);
   }
 );
