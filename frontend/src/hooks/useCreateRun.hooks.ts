@@ -1,31 +1,26 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api";
-import type { EventTypeEnum } from "@/types/event.types";
-
-const BASE_PATH = "/api";
-
-interface CreateRunPayload {
-  athlete_id: string;
-  event_type: EventTypeEnum;
-  elapsed_ms: number;
-}
-
-interface CreateRunResponse {
-  run_id: string;
-  athlete_id: string;
-  event_type: string;
-  elapsed_ms: number;
-  created_at: string;
-}
+import type { CreateRunPayload, CreateRunResponse } from "@/types/run.types";
 
 export function useCreateRun() {
-  return useMutation<CreateRunResponse, Error, CreateRunPayload>({
-    mutationFn: async (data) => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (data: CreateRunPayload) => {
       const response = await apiClient.post<CreateRunResponse>(
-        `${BASE_PATH}/run`,
+        "/run",
         data
       );
       return response.data;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["runs"] });
+    },
   });
+
+  return {
+    createRun: mutation.mutateAsync,
+    createRunIsLoading: mutation.isPending,
+    createRunError: mutation.error,
+  };
 }

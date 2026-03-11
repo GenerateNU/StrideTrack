@@ -26,7 +26,7 @@ export default function RecordingPage() {
   // Data hooks — used for display names on recording screen
   const { athletes } = useGetAllAthletes();
   const events = useEvents();
-  const { mutate: createRun, isPending } = useCreateRun();
+  const { createRun, createRunIsLoading } = useCreateRun();
 
   // Both selections required to proceed
   const canProceed = athleteId !== null && eventType !== null;
@@ -55,12 +55,18 @@ export default function RecordingPage() {
   }, []);
 
   // Save the run to the database, then reset
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!athleteId || !eventType) return;
-    createRun(
-      { athlete_id: athleteId, event_type: eventType, elapsed_ms: elapsedMs },
-      { onSuccess: () => resetAll() }
-    );
+    try {
+      await createRun({
+        athlete_id: athleteId,
+        event_type: eventType,
+        elapsed_ms: elapsedMs,
+      });
+      resetAll();
+    } catch (error) {
+      console.error("Failed to save run:", error);
+    }
   };
 
   // Reset everything back to setup screen — used by both Delete and Save
@@ -177,14 +183,14 @@ export default function RecordingPage() {
           </button>
           <button
             onClick={handleSave}
-            disabled={isPending}
+            disabled={createRunIsLoading}
             className="px-10 py-4 rounded-2xl font-semibold text-lg cursor-pointer transition-colors disabled:opacity-50"
             style={{
               backgroundColor: "hsl(var(--primary))",
               color: "hsl(var(--primary-foreground))",
             }}
           >
-            {isPending ? "Saving..." : "Save"}
+            {createRunIsLoading ? "Saving..." : "Save"}
           </button>
         </div>
       )}
