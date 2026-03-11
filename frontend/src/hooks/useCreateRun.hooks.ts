@@ -1,5 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import apiClient from "@/lib/api";
+import api from "@/lib/api";
+import { validateResponse } from "@/utils/validation";
+import {
+  createRunPayloadSchema,
+  createRunResponseSchema,
+} from "@/types/run.types";
 import type { CreateRunPayload, CreateRunResponse } from "@/types/run.types";
 
 export function useCreateRun() {
@@ -7,8 +12,9 @@ export function useCreateRun() {
 
   const mutation = useMutation({
     mutationFn: async (data: CreateRunPayload) => {
-      const response = await apiClient.post<CreateRunResponse>("/run", data);
-      return response.data;
+      const validated = createRunPayloadSchema.parse(data);
+      const response = await api.post<CreateRunResponse>("/run", validated);
+      return validateResponse(response.data, createRunResponseSchema);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["runs"] });
