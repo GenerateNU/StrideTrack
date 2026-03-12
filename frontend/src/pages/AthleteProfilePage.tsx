@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useGetAllRuns } from "@/hooks/useRuns.hooks";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Activity, Calendar } from "lucide-react";
 
 export default function AthleteProfilePage() {
   const { athleteId } = useParams<{ athleteId: string }>();
@@ -49,17 +49,24 @@ export default function AthleteProfilePage() {
   }
 
   return (
-    <div className="py-4">
+    <div className="py-6">
       <button
         onClick={() => navigate("/")}
-        className="mb-4 flex items-center gap-1 text-sm text-muted-foreground"
+        className="mb-5 flex items-center gap-1 text-sm text-muted-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
         Back
       </button>
 
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-base font-bold text-foreground">
+      {/* Profile header */}
+      <div className="mb-6 flex items-center gap-4">
+        <div
+          className="flex h-14 w-14 items-center justify-center rounded-full text-lg font-bold text-primary-foreground"
+          style={{
+            background:
+              "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))",
+          }}
+        >
           {athlete.name
             .split(" ")
             .map((n) => n[0])
@@ -67,21 +74,22 @@ export default function AthleteProfilePage() {
             .toUpperCase()}
         </div>
         <div>
-          <h2 className="text-lg font-bold text-foreground">{athlete.name}</h2>
+          <h2 className="text-xl font-bold text-foreground">{athlete.name}</h2>
           <p className="text-xs text-muted-foreground">
             {athlete.height_in ? `${athlete.height_in}" · ` : ""}
-            {athlete.weight_lbs ? `${athlete.weight_lbs} lbs` : ""}
-            {` · ${athleteRuns.length} run${athleteRuns.length !== 1 ? "s" : ""}`}
+            {athlete.weight_lbs ? `${athlete.weight_lbs} lbs · ` : ""}
+            {athleteRuns.length} run{athleteRuns.length !== 1 ? "s" : ""}
           </p>
         </div>
       </div>
 
-      <div className="mb-4 flex gap-1 rounded-lg bg-secondary p-1">
+      {/* Tabs */}
+      <div className="mb-5 flex gap-1 rounded-xl bg-secondary p-1">
         {(["summary", "runs"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 rounded-md py-2 text-xs font-semibold transition-colors ${
+            className={`flex-1 rounded-lg py-2.5 text-xs font-semibold transition-colors ${
               tab === t
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground"
@@ -94,14 +102,44 @@ export default function AthleteProfilePage() {
 
       {tab === "summary" && (
         <div className="space-y-4">
-          <div className="rounded-xl border border-border bg-card p-4">
+          {/* Stats grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
+                <Activity className="h-4 w-4 text-foreground" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                {athleteRuns.length}
+              </div>
+              <div className="text-xs text-muted-foreground">Total Runs</div>
+            </div>
+            <div className="rounded-2xl border border-border bg-card p-4">
+              <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
+                <Calendar className="h-4 w-4 text-foreground" />
+              </div>
+              <div className="text-2xl font-bold text-foreground">
+                {new Set(athleteRuns.map((r) => r.event_type)).size}
+              </div>
+              <div className="text-xs text-muted-foreground">Event Types</div>
+            </div>
+          </div>
+
+          {/* Latest run */}
+          <div className="rounded-2xl border border-border bg-card p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Latest Run
             </p>
             {latestRun ? (
-              <div className="space-y-2">
+              <button
+                onClick={() =>
+                  navigate(
+                    `/athletes/${athleteId}/runs/${latestRun.run_id}`
+                  )
+                }
+                className="w-full text-left"
+              >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-sm font-semibold text-foreground">
                     {latestRun.event_type.replace("_", " ")}
                   </span>
                   <span className="text-xs text-muted-foreground">
@@ -109,43 +147,22 @@ export default function AthleteProfilePage() {
                   </span>
                 </div>
                 {latestRun.elapsed_ms && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Duration: {(latestRun.elapsed_ms / 1000).toFixed(1)}s
                   </p>
                 )}
-                <p className="text-xs italic text-muted-foreground">
-                  Detailed metrics will appear after visualization integration.
+                <p
+                  className="mt-2 text-xs font-medium"
+                  style={{ color: "hsl(var(--primary))" }}
+                >
+                  View analysis →
                 </p>
-              </div>
+              </button>
             ) : (
               <p className="text-sm text-muted-foreground">
                 No runs recorded yet.
               </p>
             )}
-          </div>
-
-          <div className="rounded-xl border border-border bg-card p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Activity
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg bg-secondary p-3">
-                <div className="text-lg font-bold text-foreground">
-                  {athleteRuns.length}
-                </div>
-                <div className="text-[10px] font-medium text-muted-foreground">
-                  Total Runs
-                </div>
-              </div>
-              <div className="rounded-lg bg-secondary p-3">
-                <div className="text-lg font-bold text-foreground">
-                  {new Set(athleteRuns.map((r) => r.event_type)).size}
-                </div>
-                <div className="text-[10px] font-medium text-muted-foreground">
-                  Event Types
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -157,7 +174,7 @@ export default function AthleteProfilePage() {
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {dateLabel}
               </p>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {dateRuns.map((run) => (
                   <button
                     key={run.run_id}
@@ -166,11 +183,23 @@ export default function AthleteProfilePage() {
                         `/athletes/${athleteId}/runs/${run.run_id}`
                       )
                     }
-                    className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-left"
+                    className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left"
                   >
-                    <span className="rounded bg-secondary px-1.5 py-0.5 text-xs font-medium text-secondary-foreground">
-                      {run.event_type.replace("_", " ")}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
+                        <Activity className="h-4 w-4 text-foreground" />
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-foreground">
+                          {run.event_type.replace("_", " ")}
+                        </span>
+                        {run.elapsed_ms && (
+                          <p className="text-[10px] text-muted-foreground">
+                            {(run.elapsed_ms / 1000).toFixed(1)}s
+                          </p>
+                        )}
+                      </div>
+                    </div>
                     <span className="text-xs text-muted-foreground">
                       {new Date(run.created_at).toLocaleTimeString("en-US", {
                         hour: "numeric",
@@ -183,9 +212,9 @@ export default function AthleteProfilePage() {
             </div>
           ))}
           {athleteRuns.length === 0 && (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              No runs yet.
-            </p>
+            <div className="rounded-2xl border border-dashed border-border bg-secondary/30 p-8 text-center">
+              <p className="text-sm text-muted-foreground">No runs yet.</p>
+            </div>
           )}
         </div>
       )}

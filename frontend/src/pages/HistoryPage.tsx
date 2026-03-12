@@ -6,12 +6,32 @@ import { useEvents } from "@/hooks/useEvents";
 import { QueryLoading } from "@/components/QueryLoading";
 import { QueryError } from "@/components/QueryError";
 
+type DateRange = "all" | "today" | "week" | "month";
+
+function getDateRangeStart(range: DateRange): Date | null {
+  if (range === "all") return null;
+  const now = new Date();
+  if (range === "today") {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+  if (range === "week") {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 7);
+    return d;
+  }
+  // month
+  const d = new Date(now);
+  d.setDate(d.getDate() - 30);
+  return d;
+}
+
 export default function HistoryPage() {
   const navigate = useNavigate();
   const { runs, runsIsLoading, runsError, runsRefetch } = useGetAllRuns();
   const { athletes } = useGetAllAthletes();
   const events = useEvents();
   const [eventFilter, setEventFilter] = useState<string>("all");
+  const [dateRange, setDateRange] = useState<DateRange>("all");
 
   const athleteMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -24,11 +44,17 @@ export default function HistoryPage() {
     if (eventFilter !== "all") {
       result = result.filter((r) => r.event_type === eventFilter);
     }
+    const rangeStart = getDateRangeStart(dateRange);
+    if (rangeStart) {
+      result = result.filter(
+        (r) => new Date(r.created_at).getTime() >= rangeStart.getTime()
+      );
+    }
     return result.sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [runs, eventFilter]);
+  }, [runs, eventFilter, dateRange]);
 
   const grouped = useMemo(() => {
     const groups = new Map<string, typeof filtered>();
@@ -44,9 +70,16 @@ export default function HistoryPage() {
     return groups;
   }, [filtered]);
 
-  const filterOptions = [
+  const eventFilterOptions = [
     { value: "all", label: "All" },
     ...events.map((e) => ({ value: e.value, label: e.label })),
+  ];
+
+  const dateFilterOptions: { value: DateRange; label: string }[] = [
+    { value: "all", label: "All Time" },
+    { value: "today", label: "Today" },
+    { value: "week", label: "This Week" },
+    { value: "month", label: "This Month" },
   ];
 
   if (runsIsLoading) return <QueryLoading />;
@@ -54,8 +87,31 @@ export default function HistoryPage() {
 
   return (
     <div className="space-y-4 py-4">
+      {/* Date filter */}
       <div className="flex gap-1.5 overflow-x-auto pb-1">
-        {filterOptions.map((opt) => (
+        {dateFilterOptions.map((opt) => (
+          <button
+            key={opt.value}
+            onClick={() => setDateRange(opt.value)}
+            className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              dateRange === opt.value
+                ? "text-primary-foreground"
+                : "bg-secondary text-secondary-foreground"
+            }`}
+            style={
+              dateRange === opt.value
+                ? { backgroundColor: "hsl(var(--primary))" }
+                : undefined
+            }
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Event filter */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {eventFilterOptions.map((opt) => (
           <button
             key={opt.value}
             onClick={() => setEventFilter(opt.value)}
@@ -75,6 +131,7 @@ export default function HistoryPage() {
         ))}
       </div>
 
+      {/* Grouped runs */}
       {Array.from(grouped.entries()).map(([dateLabel, dateRuns]) => (
         <div key={dateLabel}>
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -101,11 +158,18 @@ export default function HistoryPage() {
                     </span>
                   </div>
                 </div>
-                <div className="text-right text-xs text-muted-foreground">
-                  {new Date(run.created_at).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(run.created_at).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </div>
+                  {run.elapsed_ms && (
+                    <div className="text-[10px] text-muted-foreground">
+                      {(run.elapsed_ms / 1000).toFixed(1)}s
+                    </div>
+                  )}
                 </div>
               </button>
             ))}
@@ -114,9 +178,12 @@ export default function HistoryPage() {
       ))}
 
       {filtered.length === 0 && (
-        <p className="py-8 text-center text-sm text-muted-foreground">
-          No runs found.
-        </p>
+        <div className="py-12 text-center">
+          <p className="text-sm text-muted-foreground">No runs found.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Runs will appear here once a GET endpoint is available.
+          </p>
+        </div>
       )}
     </div>
   );

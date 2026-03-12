@@ -3,10 +3,13 @@ import { Outlet } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
 import { UserCircle, LogOut, Plus } from "lucide-react";
 import { useAuth } from "@/context/auth.context";
+import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
+import logo from "@/assets/stridetrack-logo.png";
 
 export function AppLayout() {
   const { logout, profile } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [addAthleteOpen, setAddAthleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -20,9 +23,20 @@ export function AppLayout() {
   }, [menuOpen]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card px-4 py-3">
-        <h1 className="text-lg font-bold tracking-tight">StrideTrack</h1>
+    <div className="relative min-h-screen bg-background text-foreground">
+      {/* Subtle warm glow behind header — matches login page feel */}
+      <div
+        className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[500px] -translate-x-1/2 rounded-full opacity-[0.07] blur-[100px]"
+        style={{
+          background:
+            "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
+        }}
+      />
+
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card/95 px-4 py-3 backdrop-blur-sm">
+        <div className="flex items-center gap-2">
+          <img src={logo} alt="StrideTrack" className="h-8 w-auto" />
+        </div>
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -47,6 +61,7 @@ export function AppLayout() {
               <button
                 onClick={() => {
                   setMenuOpen(false);
+                  setAddAthleteOpen(true);
                 }}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground transition-colors hover:bg-secondary"
               >
@@ -69,11 +84,15 @@ export function AppLayout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-lg px-4 pb-24">
+      <main className="relative mx-auto max-w-lg px-4 pb-24">
         <Outlet />
       </main>
 
       <BottomNav />
+      <AddAthleteModal
+        open={addAthleteOpen}
+        onClose={() => setAddAthleteOpen(false)}
+      />
     </div>
   );
 }

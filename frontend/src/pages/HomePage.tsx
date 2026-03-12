@@ -4,7 +4,7 @@ import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useGetAllRuns } from "@/hooks/useRuns.hooks";
 import { QueryLoading } from "@/components/QueryLoading";
 import { QueryError } from "@/components/QueryError";
-import { Search, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, Activity } from "lucide-react";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -23,7 +23,16 @@ export default function HomePage() {
   );
 
   return (
-    <div className="space-y-4 py-4">
+    <div className="space-y-6 py-6">
+      {/* Welcome section */}
+      <div>
+        <h2 className="text-2xl font-bold text-foreground">Your Athletes</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {athletes.length} athlete{athletes.length !== 1 ? "s" : ""} · {runs.length} run{runs.length !== 1 ? "s" : ""} recorded
+        </p>
+      </div>
+
+      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
@@ -35,11 +44,8 @@ export default function HomePage() {
         />
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {filtered.length} athlete{filtered.length !== 1 ? "s" : ""}
-      </p>
-
-      <div className="space-y-2">
+      {/* Athlete list */}
+      <div className="space-y-3">
         {filtered.map((athlete) => {
           const athleteRuns = runs
             .filter((r) => r.athlete_id === athlete.athlete_id)
@@ -54,16 +60,22 @@ export default function HomePage() {
           return (
             <div
               key={athlete.athlete_id}
-              className="rounded-xl border border-border bg-card"
+              className="overflow-hidden rounded-2xl border border-border bg-card"
             >
-              <div className="flex items-center justify-between p-3">
+              <div className="flex items-center justify-between p-4">
                 <button
                   onClick={() =>
                     navigate(`/athletes/${athlete.athlete_id}`)
                   }
                   className="flex items-center gap-3 text-left"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-sm font-bold text-foreground">
+                  <div
+                    className="flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold text-primary-foreground"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))",
+                    }}
+                  >
                     {athlete.name
                       .split(" ")
                       .map((n) => n[0])
@@ -74,9 +86,21 @@ export default function HomePage() {
                     <div className="text-sm font-semibold text-foreground">
                       {athlete.name}
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      {athlete.height_in ? `${athlete.height_in}" · ` : ""}
-                      {athlete.weight_lbs ? `${athlete.weight_lbs} lbs` : ""}
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      {athlete.height_in && <span>{athlete.height_in}"</span>}
+                      {athlete.height_in && athlete.weight_lbs && (
+                        <span>·</span>
+                      )}
+                      {athlete.weight_lbs && (
+                        <span>{athlete.weight_lbs} lbs</span>
+                      )}
+                      <span>·</span>
+                      <span className="flex items-center gap-0.5">
+                        <Activity className="h-3 w-3" />
+                        {athleteRuns.length > 0
+                          ? `${runs.filter((r) => r.athlete_id === athlete.athlete_id).length} runs`
+                          : "No runs"}
+                      </span>
                     </div>
                   </div>
                 </button>
@@ -86,7 +110,11 @@ export default function HomePage() {
                     onClick={() =>
                       navigate(`/athletes/${athlete.athlete_id}`)
                     }
-                    className="rounded-lg bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground"
+                    className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                    style={{
+                      backgroundColor: "hsl(var(--primary))",
+                      color: "hsl(var(--primary-foreground))",
+                    }}
                   >
                     Profile
                   </button>
@@ -110,8 +138,8 @@ export default function HomePage() {
               </div>
 
               {isExpanded && athleteRuns.length > 0 && (
-                <div className="border-t border-border px-3 pb-3 pt-2">
-                  <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <div className="border-t border-border bg-secondary/30 px-4 pb-3 pt-2">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Recent Runs
                   </p>
                   <div className="space-y-1.5">
@@ -123,14 +151,21 @@ export default function HomePage() {
                             `/athletes/${athlete.athlete_id}/runs/${run.run_id}`
                           )
                         }
-                        className="flex w-full items-center justify-between rounded-lg bg-secondary px-3 py-2 text-left"
+                        className="flex w-full items-center justify-between rounded-xl bg-card px-3 py-2.5 text-left border border-border"
                       >
-                        <span className="text-xs font-medium text-secondary-foreground">
+                        <span className="text-xs font-medium text-foreground">
                           {run.event_type.replace("_", " ")}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">
-                          {formatTimeAgo(run.created_at)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {run.elapsed_ms && (
+                            <span className="text-[10px] font-medium text-muted-foreground">
+                              {(run.elapsed_ms / 1000).toFixed(1)}s
+                            </span>
+                          )}
+                          <span className="text-[10px] text-muted-foreground">
+                            {formatTimeAgo(run.created_at)}
+                          </span>
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -139,6 +174,17 @@ export default function HomePage() {
             </div>
           );
         })}
+
+        {filtered.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-border bg-secondary/30 p-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              {search ? "No athletes match your search." : "No athletes yet."}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Add athletes from the profile menu above.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
