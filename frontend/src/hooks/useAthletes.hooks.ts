@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import apiClient from "@/lib/api";
-
-const BASE_PATH = "/api";
+import api from "@/lib/api";
 
 const athleteResponseSchema = z.object({
   athlete_id: z.string(),
@@ -13,20 +11,18 @@ const athleteResponseSchema = z.object({
   created_at: z.string(),
 });
 
+type Athlete = z.infer<typeof athleteResponseSchema>;
+
 export function useGetAllAthletes() {
   const query = useQuery({
     queryKey: ["athletes"],
     queryFn: async () => {
-      const response = await apiClient.get<
-        z.infer<typeof athleteResponseSchema>[]
-      >(`${BASE_PATH}/athletes`);
+      const response = await api.get<Athlete[]>("/athletes");
 
-      // Parse and validate with zod
       const parsed = z.array(athleteResponseSchema).safeParse(response.data);
       if (!parsed.success) {
         throw new Error("Invalid response format");
       }
-
       return parsed.data;
     },
   });

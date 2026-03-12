@@ -74,8 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) {
         setMode("google");
         await fetchProfile();
       } else {
@@ -96,14 +96,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     checkAuth();
 
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Ignore if dev token is present
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (getDevToken()) return;
 
-      if (session) {
+      if (event === "SIGNED_IN" && session?.access_token) {
         setMode("google");
         fetchProfile();
-      } else {
+      } else if (event === "SIGNED_OUT") {
         setMode("none");
         setProfile(null);
         setCoach(null);

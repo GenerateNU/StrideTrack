@@ -4,7 +4,7 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.run_schemas import RunResponse
+from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunResponse
 
 logger = logging.getLogger(__name__)
 
@@ -32,3 +32,17 @@ class RunRepository:
 
         logger.info(f"Repository: Found run metric: {run_id}")
         return response.data
+
+    async def create(self, run_create: RunCreate) -> RunCreateResponse:
+        """Create a new run."""
+        logger.info(f"Repository: Creating run for athlete {run_create.athlete_id}")
+        data = {
+            "athlete_id": str(run_create.athlete_id),
+            "event_type": run_create.event_type,
+            "elapsed_ms": run_create.elapsed_ms,
+        }
+        response = await self.supabase.table("run").insert(data).execute()
+        if not response.data:
+            raise Exception("Failed to create run")
+        logger.info(f"Repository: Created run {response.data[0]['run_id']}")
+        return RunCreateResponse(**response.data[0])
