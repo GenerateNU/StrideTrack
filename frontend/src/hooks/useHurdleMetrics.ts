@@ -40,6 +40,7 @@ export function useHurdleSplits(runId: string | null) {
     splitData: query.data ?? null,
     splitLoading: query.isLoading,
     splitError: query.error,
+    refetchSplitData: query.refetch,
   };
 }
 
@@ -67,6 +68,7 @@ export function useStepsBetweenHurdles(runId: string | null) {
     stepsData: query.data ?? null,
     stepsLoading: query.isLoading,
     stepsError: query.error,
+    refetchStepsData: query.refetch,
   };
 }
 
@@ -91,6 +93,7 @@ export function useTakeoffGct(runId: string | null) {
     takeoffGctData: query.data ?? null,
     takeoffGctLoading: query.isLoading,
     takeoffGctError: query.error,
+    refetchTakeoffGctData: query.refetch,
   };
 }
 
@@ -115,6 +118,7 @@ export function useLandingGct(runId: string | null) {
     landingGctData: query.data ?? null,
     landingGctLoading: query.isLoading,
     landingGctError: query.error,
+    refetchLandingGctData: query.refetch,
   };
 }
 
@@ -139,6 +143,7 @@ export function useTakeoffFt(runId: string | null) {
     takeoffFtData: query.data ?? null,
     takeoffFtLoading: query.isLoading,
     takeoffFtError: query.error,
+    refetchTakeoffFtData: query.refetch,
   };
 }
 
@@ -163,5 +168,6 @@ export function useGctIncrease(runId: string | null) {
     gctIncreaseData: query.data ?? null,
     gctIncreaseLoading: query.isLoading,
     gctIncreaseError: query.error,
+    refetchGctIncreaseData: query.refetch,
   };
 }
