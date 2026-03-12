@@ -15,8 +15,12 @@ import "@/index.css";
 import { CustomTooltip } from "@/components/charts/CustomToolTip";
 
 export const StepFrequencyChart = ({ runId }: { runId: string }) => {
-  const { stepFrequencyData } = useStepFrequencyData(runId);
-
+  const {
+    stepFrequencyData,
+    stepFrequencyLoading,
+    stepFrequencyError,
+    stepFrequencyRefetch,
+  } = useStepFrequencyData(runId);
   const strideNums = [...new Set(stepFrequencyData.map((d) => d.stride_num))];
 
   const chartData = strideNums.map((strideNum) => {
