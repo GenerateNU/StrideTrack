@@ -1,5 +1,3 @@
-# app/routes/hurdle_routes.py
-
 import logging
 from uuid import UUID
 

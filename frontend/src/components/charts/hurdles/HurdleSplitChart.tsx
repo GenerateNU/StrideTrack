@@ -1,3 +1,5 @@
+import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/QueryLoading";
 import { useHurdleSplits } from "@/hooks/useHurdleMetrics";
 import { chartColors } from "@/lib/chartColors";
 import {
@@ -12,9 +14,23 @@ import {
 } from "recharts";
 
 export const HurdleSplitChart = ({ runId }: { runId: string }) => {
-  const { splitData, splitLoading } = useHurdleSplits(runId);
+  const { splitData, splitLoading, splitError, refetchSplitData } =
+    useHurdleSplits(runId);
 
-  if (splitLoading || !splitData) {
+  if (splitLoading) {
+    return <QueryLoading />;
+  }
+
+  if (splitError) {
+    return (
+      <QueryError
+        error={splitError as Error}
+        refetch={() => void refetchSplitData()}
+      />
+    );
+  }
+
+  if (!splitData) {
     return null;
   }
 

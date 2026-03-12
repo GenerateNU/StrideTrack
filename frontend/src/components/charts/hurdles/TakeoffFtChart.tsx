@@ -1,3 +1,5 @@
+import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/QueryLoading";
 import { useTakeoffFt } from "@/hooks/useHurdleMetrics";
 import { chartColors } from "@/lib/chartColors";
 import {
@@ -11,9 +13,27 @@ import {
 } from "recharts";
 
 export const TakeoffFtChart = ({ runId }: { runId: string }) => {
-  const { takeoffFtData, takeoffFtLoading } = useTakeoffFt(runId);
+  const {
+    takeoffFtData,
+    takeoffFtLoading,
+    takeoffFtError,
+    refetchTakeoffFtData,
+  } = useTakeoffFt(runId);
 
-  if (takeoffFtLoading || !takeoffFtData) {
+  if (takeoffFtLoading) {
+    return <QueryLoading />;
+  }
+
+  if (takeoffFtError) {
+    return (
+      <QueryError
+        error={takeoffFtError as Error}
+        refetch={() => void refetchTakeoffFtData()}
+      />
+    );
+  }
+
+  if (!takeoffFtData) {
     return null;
   }
 

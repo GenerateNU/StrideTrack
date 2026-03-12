@@ -1,10 +1,26 @@
+import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/QueryLoading";
 import { useStepsBetweenHurdles } from "@/hooks/useHurdleMetrics";
 import { chartColors } from "@/lib/chartColors";
 
 export const StepsBetweenHurdlesChart = ({ runId }: { runId: string }) => {
-  const { stepsData, stepsLoading } = useStepsBetweenHurdles(runId);
+  const { stepsData, stepsLoading, stepsError, refetchStepsData } =
+    useStepsBetweenHurdles(runId);
 
-  if (stepsLoading || !stepsData) {
+  if (stepsLoading) {
+    return <QueryLoading />;
+  }
+
+  if (stepsError) {
+    return (
+      <QueryError
+        error={stepsError as Error}
+        refetch={() => void refetchStepsData()}
+      />
+    );
+  }
+
+  if (!stepsData) {
     return null;
   }
 

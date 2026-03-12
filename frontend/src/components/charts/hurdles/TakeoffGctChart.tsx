@@ -1,3 +1,5 @@
+import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/QueryLoading";
 import { useTakeoffGct } from "@/hooks/useHurdleMetrics";
 import { chartColors } from "@/lib/chartColors";
 import {
@@ -11,9 +13,27 @@ import {
 } from "recharts";
 
 export const TakeoffGctChart = ({ runId }: { runId: string }) => {
-  const { takeoffGctData, takeoffGctLoading } = useTakeoffGct(runId);
+  const {
+    takeoffGctData,
+    takeoffGctLoading,
+    takeoffGctError,
+    refetchTakeoffGctData,
+  } = useTakeoffGct(runId);
 
-  if (takeoffGctLoading || !takeoffGctData) {
+  if (takeoffGctLoading) {
+    return <QueryLoading />;
+  }
+
+  if (takeoffGctError) {
+    return (
+      <QueryError
+        error={takeoffGctError as Error}
+        refetch={() => void refetchTakeoffGctData()}
+      />
+    );
+  }
+
+  if (!takeoffGctData) {
     return null;
   }
 

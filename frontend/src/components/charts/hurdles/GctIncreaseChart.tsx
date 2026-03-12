@@ -1,9 +1,29 @@
+import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/QueryLoading";
 import { useGctIncrease } from "@/hooks/useHurdleMetrics";
 
 export const GctIncreaseChart = ({ runId }: { runId: string }) => {
-  const { gctIncreaseData, gctIncreaseLoading } = useGctIncrease(runId);
+  const {
+    gctIncreaseData,
+    gctIncreaseLoading,
+    gctIncreaseError,
+    refetchGctIncreaseData,
+  } = useGctIncrease(runId);
 
-  if (gctIncreaseLoading || !gctIncreaseData) {
+  if (gctIncreaseLoading) {
+    return <QueryLoading />;
+  }
+
+  if (gctIncreaseError) {
+    return (
+      <QueryError
+        error={gctIncreaseError as Error}
+        refetch={() => void refetchGctIncreaseData()}
+      />
+    );
+  }
+
+  if (!gctIncreaseData) {
     return null;
   }
 

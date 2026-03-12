@@ -1,3 +1,5 @@
+import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/QueryLoading";
 import { useLandingGct } from "@/hooks/useHurdleMetrics";
 import { chartColors } from "@/lib/chartColors";
 import {
@@ -11,9 +13,27 @@ import {
 } from "recharts";
 
 export const LandingGctChart = ({ runId }: { runId: string }) => {
-  const { landingGctData, landingGctLoading } = useLandingGct(runId);
+  const {
+    landingGctData,
+    landingGctLoading,
+    landingGctError,
+    refetchLandingGctData,
+  } = useLandingGct(runId);
 
-  if (landingGctLoading || !landingGctData) {
+  if (landingGctLoading) {
+    return <QueryLoading />;
+  }
+
+  if (landingGctError) {
+    return (
+      <QueryError
+        error={landingGctError as Error}
+        refetch={() => void refetchLandingGctData()}
+      />
+    );
+  }
+
+  if (!landingGctData) {
     return null;
   }
 
