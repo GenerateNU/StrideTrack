@@ -90,7 +90,7 @@ export default function RecordingPage() {
   // ── Setup Screen ──
   if (screen === "setup") {
     return (
-      <div className="min-h-screen bg-background px-6 py-10">
+      <div className="py-10">
         <div className="max-w-md mx-auto">
           <h1 className="text-2xl font-bold text-foreground">New Run</h1>
           <p className="text-sm text-muted-foreground mt-1 mb-10">
@@ -124,7 +124,7 @@ export default function RecordingPage() {
 
   // ── Recording Screen ──
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center px-6 pt-14">
+    <div className="flex flex-col items-center pt-10">
       {/* Header */}
       <h1 className="text-2xl font-bold text-foreground">New Run</h1>
       <p className="text-sm text-muted-foreground mt-1 mb-10">

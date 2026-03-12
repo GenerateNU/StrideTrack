@@ -20,6 +20,7 @@ function App() {
               <Routes>
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<HomePage />} />
+                  <Route path="/record" element={<RecordingPage />} />
                   <Route path="/history" element={<HistoryPage />} />
                   <Route
                     path="/athletes/:athleteId"
@@ -30,7 +31,6 @@ function App() {
                     element={<RunAnalysisPage />}
                   />
                 </Route>
-                <Route path="/record" element={<RecordingPage />} />
               </Routes>
             </ProtectedRoute>
           }
