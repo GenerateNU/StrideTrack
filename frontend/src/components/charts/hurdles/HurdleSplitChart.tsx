@@ -1,6 +1,6 @@
 import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
-import { useHurdleSplits } from "@/hooks/useHurdleMetrics";
+import { useHurdleSplits } from "@/hooks/useHurdleMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 import {
   Bar,

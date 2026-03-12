@@ -1,6 +1,6 @@
 import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
-import { useTakeoffGct } from "@/hooks/useHurdleMetrics";
+import { useTakeoffGct } from "@/hooks/useHurdleMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 import {
   Bar,

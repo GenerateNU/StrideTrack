@@ -1,6 +1,6 @@
 import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
-import { useStepsBetweenHurdles } from "@/hooks/useHurdleMetrics";
+import { useStepsBetweenHurdles } from "@/hooks/useHurdleMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 
 export const StepsBetweenHurdlesChart = ({ runId }: { runId: string }) => {

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
 from app.core.supabase import get_async_supabase
-from app.repositories.run_repository import RunRepository
+from app.repositories.hurdle_repository import HurdleRepository
 from app.schemas.hurdle_schemas import (
     GctIncreaseData,
     HurdleMetricRow,
@@ -26,7 +26,7 @@ router = APIRouter(prefix="/run", tags=["Run"])
 async def get_hurdle_service(
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> HurdleService:
-    repository = RunRepository(supabase)
+    repository = HurdleRepository(supabase)
     return HurdleService(repository)
 
 

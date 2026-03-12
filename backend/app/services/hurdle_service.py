@@ -1,12 +1,10 @@
-# app/services/hurdle_service.py
-
 import logging
 from uuid import UUID
 
 import numpy as np
 import pandas as pd
 
-from app.repositories.run_repository import RunRepository
+from app.repositories.hurdle_repository import HurdleRepository
 from app.schemas.hurdle_schemas import (
     GctIncreaseData,
     HurdleMetricRow,
@@ -32,12 +30,12 @@ logger = logging.getLogger(__name__)
 class HurdleService:
     """Service for hurdle-metric related business logic."""
 
-    def __init__(self, repository: RunRepository) -> None:
+    def __init__(self, repository: HurdleRepository) -> None:
         self.repository = repository
 
     async def _get_hurdle_metric_rows(self, run_id: UUID) -> list[HurdleMetricRow]:
         """Fetch raw steps, run the hurdle transform, and return validated HurdleMetricRow objects."""
-        steps = await self.repository.get_run_metrics_for_hurdles(run_id)
+        steps = await self.repository.get_hurdle_metrics(run_id)
 
         df = pd.DataFrame(steps)
         hurdle_df = transform_stride_cycles_to_hurdle_metrics(df)

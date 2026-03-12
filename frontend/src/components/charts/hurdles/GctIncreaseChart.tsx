@@ -1,6 +1,6 @@
 import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
-import { useGctIncrease } from "@/hooks/useHurdleMetrics";
+import { useGctIncrease } from "@/hooks/useHurdleMetrics.hooks";
 
 export const GctIncreaseChart = ({ runId }: { runId: string }) => {
   const {
