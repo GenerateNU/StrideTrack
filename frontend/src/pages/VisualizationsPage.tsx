@@ -1,12 +1,12 @@
 import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
-import { GctIncreaseChart } from "@/components/charts/GctIncreaseChart";
 import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
-import { HurdleSplitChart } from "@/components/charts/HurdleSplitChart";
-import { LandingGctChart } from "@/components/charts/LandingGctChart";
-import { StepsBetweenHurdlesChart } from "@/components/charts/StepsBetweenHurdlesChart";
+import { GctIncreaseChart } from "@/components/charts/hurdles/GctIncreaseChart";
+import { HurdleSplitChart } from "@/components/charts/hurdles/HurdleSplitChart";
+import { LandingGctChart } from "@/components/charts/hurdles/LandingGctChart";
+import { StepsBetweenHurdlesChart } from "@/components/charts/hurdles/StepsBetweenHurdlesChart";
+import { TakeoffFtChart } from "@/components/charts/hurdles/TakeoffFtChart";
+import { TakeoffGctChart } from "@/components/charts/hurdles/TakeoffGctChart";
 import { StepTimeChart } from "@/components/charts/StepTimeChart";
-import { TakeoffFtChart } from "@/components/charts/TakeoffFtChart";
-import { TakeoffGctChart } from "@/components/charts/TakeoffGctChart";
 
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
