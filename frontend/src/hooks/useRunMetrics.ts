@@ -89,7 +89,7 @@ export function useSprintDrift(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await apiClient.get<SprintDriftData>(
-        `/api/run/athletes/${runId}/metrics/sprint-drift`
+        `/run/athletes/${runId}/metrics/sprint-drift`
       );
       return validateResponse(response.data, sprintDriftSchema);
     },
@@ -110,7 +110,7 @@ export function useStepFrequencyData(runId: string | null) {
     queryFn: async () => {
       if (!runId) return [];
       const response = await apiClient.get<StepFrequencyData[]>(
-        `/api/run/athletes/${runId}/metrics/step-frequency`
+        `/run/athletes/${runId}/metrics/step-frequency`
       );
       return validateResponse(response.data, z.array(stepFrequencySchema));
     },
@@ -121,5 +121,6 @@ export function useStepFrequencyData(runId: string | null) {
     stepFrequencyData: query.data ?? [],
     stepFrequencyLoading: query.isLoading,
     stepFrequencyError: query.error,
+    stepFrequencyRefetch: query.refetch,
   };
 }

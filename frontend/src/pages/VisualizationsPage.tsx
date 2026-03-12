@@ -2,7 +2,7 @@ import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
 import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
 import { StepTimeChart } from "@/components/charts/StepTimeChart";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
-import { StepFrequencyChart } from "@/components/charts/StepFrequencyChart";
+import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
 
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 
