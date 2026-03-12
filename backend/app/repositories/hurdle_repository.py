@@ -28,9 +28,7 @@ class HurdleRepository:
         )
 
         if not response.data:
-            logger.warning(
-                f"Repository: Hurdle metric not found for id {run_id}"
-            )
+            logger.warning(f"Repository: Hurdle metric not found for id {run_id}")
             raise NotFoundException("Hurdle metric", str(run_id))
 
         logger.info(f"Repository: Found hurdle metric: {run_id}")
