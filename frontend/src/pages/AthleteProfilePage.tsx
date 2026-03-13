@@ -26,8 +26,7 @@ export default function AthleteProfilePage() {
         .filter((r) => r.athlete_id === athleteId)
         .sort(
           (a, b) =>
-            new Date(b.created_at).getTime() -
-            new Date(a.created_at).getTime()
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         ),
     [runs, athleteId]
   );
@@ -145,9 +144,7 @@ export default function AthleteProfilePage() {
             {latestRun ? (
               <button
                 onClick={() =>
-                  navigate(
-                    `/athletes/${athleteId}/runs/${latestRun.run_id}`
-                  )
+                  navigate(`/athletes/${athleteId}/runs/${latestRun.run_id}`)
                 }
                 className="w-full text-left"
               >
@@ -192,9 +189,7 @@ export default function AthleteProfilePage() {
                   <button
                     key={run.run_id}
                     onClick={() =>
-                      navigate(
-                        `/athletes/${athleteId}/runs/${run.run_id}`
-                      )
+                      navigate(`/athletes/${athleteId}/runs/${run.run_id}`)
                     }
                     className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm shadow-foreground/[0.02]"
                   >

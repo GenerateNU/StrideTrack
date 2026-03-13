@@ -52,9 +52,7 @@ export default function RunAnalysisPage() {
               day: "numeric",
               year: "numeric",
             })}
-            {run.elapsed_ms
-              ? ` · ${(run.elapsed_ms / 1000).toFixed(1)}s`
-              : ""}
+            {run.elapsed_ms ? ` · ${(run.elapsed_ms / 1000).toFixed(1)}s` : ""}
           </p>
         )}
       </div>

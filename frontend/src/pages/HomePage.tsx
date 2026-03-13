@@ -72,9 +72,7 @@ export default function HomePage() {
             >
               <div className="flex items-center justify-between p-4">
                 <button
-                  onClick={() =>
-                    navigate(`/athletes/${athlete.athlete_id}`)
-                  }
+                  onClick={() => navigate(`/athletes/${athlete.athlete_id}`)}
                   className="flex items-center gap-3.5 text-left"
                 >
                   <div
@@ -107,9 +105,7 @@ export default function HomePage() {
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() =>
-                      navigate(`/athletes/${athlete.athlete_id}`)
-                    }
+                    onClick={() => navigate(`/athletes/${athlete.athlete_id}`)}
                     className="rounded-xl px-3.5 py-1.5 text-xs font-semibold transition-colors"
                     style={{
                       backgroundColor: "hsl(var(--primary))",
@@ -121,9 +117,7 @@ export default function HomePage() {
                   {athleteRuns.length > 0 && (
                     <button
                       onClick={() =>
-                        setExpandedId(
-                          isExpanded ? null : athlete.athlete_id
-                        )
+                        setExpandedId(isExpanded ? null : athlete.athlete_id)
                       }
                       className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-secondary"
                     >
@@ -176,9 +170,7 @@ export default function HomePage() {
         {filtered.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border p-12 text-center">
             <p className="text-sm font-medium text-muted-foreground">
-              {search
-                ? "No athletes match your search."
-                : "No athletes yet."}
+              {search ? "No athletes match your search." : "No athletes yet."}
             </p>
             <p className="mt-1.5 text-xs text-muted-foreground">
               {search

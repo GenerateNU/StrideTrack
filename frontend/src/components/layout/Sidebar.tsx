@@ -32,7 +32,10 @@ export function Sidebar() {
             >
               {({ isActive }) => (
                 <>
-                  <Icon className="h-[18px] w-[18px]" strokeWidth={isActive ? 2.2 : 1.8} />
+                  <Icon
+                    className="h-[18px] w-[18px]"
+                    strokeWidth={isActive ? 2.2 : 1.8}
+                  />
                   <span>{label}</span>
                 </>
               )}

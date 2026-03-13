@@ -24,7 +24,10 @@ export function BottomNav() {
                   style={{ backgroundColor: "hsl(var(--primary))" }}
                 />
               )}
-              <Home className="relative h-5 w-5" strokeWidth={isActive ? 2.2 : 1.8} />
+              <Home
+                className="relative h-5 w-5"
+                strokeWidth={isActive ? 2.2 : 1.8}
+              />
               <span className="relative">Home</span>
             </>
           )}
@@ -47,7 +50,11 @@ export function BottomNav() {
               >
                 <div className="h-4 w-4 rounded-full border-[3px] border-primary-foreground" />
               </span>
-              <span className={isActive ? "text-foreground" : "text-muted-foreground"}>
+              <span
+                className={
+                  isActive ? "text-foreground" : "text-muted-foreground"
+                }
+              >
                 Record
               </span>
             </>
@@ -71,7 +78,10 @@ export function BottomNav() {
                   style={{ backgroundColor: "hsl(var(--primary))" }}
                 />
               )}
-              <Clock className="relative h-5 w-5" strokeWidth={isActive ? 2.2 : 1.8} />
+              <Clock
+                className="relative h-5 w-5"
+                strokeWidth={isActive ? 2.2 : 1.8}
+              />
               <span className="relative">History</span>
             </>
           )}
