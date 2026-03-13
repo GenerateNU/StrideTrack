@@ -4,6 +4,14 @@ import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useGetAllRuns } from "@/hooks/useRuns.hooks";
 import { ArrowLeft, Activity, Calendar } from "lucide-react";
 
+function nameToHue(name: string): number {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash) % 360;
+}
+
 export default function AthleteProfilePage() {
   const { athleteId } = useParams<{ athleteId: string }>();
   const navigate = useNavigate();
@@ -48,6 +56,8 @@ export default function AthleteProfilePage() {
     );
   }
 
+  const hue = nameToHue(athlete.name);
+
   return (
     <div className="py-6">
       <button
@@ -61,10 +71,9 @@ export default function AthleteProfilePage() {
       {/* Profile header */}
       <div className="mb-6 flex items-center gap-4">
         <div
-          className="flex h-14 w-14 items-center justify-center rounded-full text-lg font-bold text-primary-foreground"
+          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white"
           style={{
-            background:
-              "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))",
+            background: `linear-gradient(135deg, hsl(${hue} 45% 42%), hsl(${hue + 30} 40% 55%))`,
           }}
         >
           {athlete.name
@@ -76,9 +85,13 @@ export default function AthleteProfilePage() {
         <div>
           <h2 className="text-xl font-bold text-foreground">{athlete.name}</h2>
           <p className="text-xs text-muted-foreground">
-            {athlete.height_in ? `${athlete.height_in}" · ` : ""}
-            {athlete.weight_lbs ? `${athlete.weight_lbs} lbs · ` : ""}
-            {athleteRuns.length} run{athleteRuns.length !== 1 ? "s" : ""}
+            {[
+              athlete.height_in ? `${athlete.height_in}"` : null,
+              athlete.weight_lbs ? `${athlete.weight_lbs} lbs` : null,
+              `${athleteRuns.length} run${athleteRuns.length !== 1 ? "s" : ""}`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </p>
         </div>
       </div>
@@ -104,7 +117,7 @@ export default function AthleteProfilePage() {
         <div className="space-y-4">
           {/* Stats grid */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
               <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
                 <Activity className="h-4 w-4 text-foreground" />
               </div>
@@ -113,7 +126,7 @@ export default function AthleteProfilePage() {
               </div>
               <div className="text-xs text-muted-foreground">Total Runs</div>
             </div>
-            <div className="rounded-2xl border border-border bg-card p-4">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
               <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
                 <Calendar className="h-4 w-4 text-foreground" />
               </div>
@@ -125,7 +138,7 @@ export default function AthleteProfilePage() {
           </div>
 
           {/* Latest run */}
-          <div className="rounded-2xl border border-border bg-card p-4">
+          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Latest Run
             </p>
@@ -183,7 +196,7 @@ export default function AthleteProfilePage() {
                         `/athletes/${athleteId}/runs/${run.run_id}`
                       )
                     }
-                    className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left"
+                    className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm shadow-foreground/[0.02]"
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
@@ -212,8 +225,10 @@ export default function AthleteProfilePage() {
             </div>
           ))}
           {athleteRuns.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-border bg-secondary/30 p-8 text-center">
-              <p className="text-sm text-muted-foreground">No runs yet.</p>
+            <div className="rounded-2xl border border-dashed border-border p-12 text-center">
+              <p className="text-sm font-medium text-muted-foreground">
+                No runs yet.
+              </p>
             </div>
           )}
         </div>

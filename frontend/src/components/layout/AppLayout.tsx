@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
-import { UserCircle, LogOut, Plus } from "lucide-react";
+import { UserCircle, LogOut, Plus, Moon, Sun } from "lucide-react";
 import { useAuth } from "@/context/auth.context";
 import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
+import { useTheme } from "@/hooks/useTheme";
 import logo from "@/assets/stridetrack-logo.png";
 
 export function AppLayout() {
   const { logout, profile } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [addAthleteOpen, setAddAthleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -65,6 +67,20 @@ export function AppLayout() {
                 <Plus className="h-4 w-4" />
                 Add Athlete
               </button>
+
+              <button
+                onClick={toggleTheme}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-secondary"
+              >
+                {theme === "light" ? (
+                  <Moon className="h-4 w-4" />
+                ) : (
+                  <Sun className="h-4 w-4" />
+                )}
+                {theme === "light" ? "Dark Mode" : "Light Mode"}
+              </button>
+
+              <div className="mx-2 h-px bg-border" />
 
               <button
                 onClick={() => {
