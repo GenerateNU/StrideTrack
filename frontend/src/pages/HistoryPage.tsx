@@ -5,6 +5,7 @@ import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useEvents } from "@/hooks/useEvents";
 import { QueryLoading } from "@/components/QueryLoading";
 import { QueryError } from "@/components/QueryError";
+import { ChevronDown } from "lucide-react";
 
 type DateRange = "all" | "today" | "week" | "month";
 
@@ -19,7 +20,6 @@ function getDateRangeStart(range: DateRange): Date | null {
     d.setDate(d.getDate() - 7);
     return d;
   }
-  // month
   const d = new Date(now);
   d.setDate(d.getDate() - 30);
   return d;
@@ -70,11 +70,6 @@ export default function HistoryPage() {
     return groups;
   }, [filtered]);
 
-  const eventFilterOptions = [
-    { value: "all", label: "All" },
-    ...events.map((e) => ({ value: e.value, label: e.label })),
-  ];
-
   const dateFilterOptions: { value: DateRange; label: string }[] = [
     { value: "all", label: "All Time" },
     { value: "today", label: "Today" },
@@ -86,50 +81,61 @@ export default function HistoryPage() {
   if (runsError) return <QueryError error={runsError} refetch={runsRefetch} />;
 
   return (
-    <div className="space-y-4 py-4">
-      {/* Date filter */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
-        {dateFilterOptions.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => setDateRange(opt.value)}
-            className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              dateRange === opt.value
-                ? "text-primary-foreground"
-                : "bg-secondary text-secondary-foreground"
-            }`}
-            style={
-              dateRange === opt.value
-                ? { backgroundColor: "hsl(var(--primary))" }
-                : undefined
-            }
+    <div className="space-y-5 py-6">
+      {/* Filters row */}
+      <div className="flex items-center gap-3">
+        {/* Event type dropdown */}
+        <div className="relative flex-1">
+          <select
+            value={eventFilter}
+            onChange={(e) => setEventFilter(e.target.value)}
+            className="w-full appearance-none rounded-xl border border-input bg-card py-2.5 pl-4 pr-10 text-sm font-medium text-foreground focus:outline-none"
           >
-            {opt.label}
-          </button>
-        ))}
+            <option value="all">All Events</option>
+            {events.map((e) => (
+              <option key={e.value} value={e.value}>
+                {e.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        </div>
+
+        {/* Date range dropdown */}
+        <div className="relative flex-1">
+          <select
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value as DateRange)}
+            className="w-full appearance-none rounded-xl border border-input bg-card py-2.5 pl-4 pr-10 text-sm font-medium text-foreground focus:outline-none"
+          >
+            {dateFilterOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        </div>
       </div>
 
-      {/* Event filter */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
-        {eventFilterOptions.map((opt) => (
+      {/* Active filter indicator */}
+      {(eventFilter !== "all" || dateRange !== "all") && (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+          </span>
           <button
-            key={opt.value}
-            onClick={() => setEventFilter(opt.value)}
-            className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              eventFilter === opt.value
-                ? "text-primary-foreground"
-                : "bg-secondary text-secondary-foreground"
-            }`}
-            style={
-              eventFilter === opt.value
-                ? { backgroundColor: "hsl(var(--primary))" }
-                : undefined
-            }
+            onClick={() => {
+              setEventFilter("all");
+              setDateRange("all");
+            }}
+            className="text-xs font-medium"
+            style={{ color: "hsl(var(--primary))" }}
           >
-            {opt.label}
+            Clear filters
           </button>
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* Grouped runs */}
       {Array.from(grouped.entries()).map(([dateLabel, dateRuns]) => (
@@ -137,14 +143,16 @@ export default function HistoryPage() {
           <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {dateLabel}
           </p>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {dateRuns.map((run) => (
               <button
                 key={run.run_id}
                 onClick={() =>
-                  navigate(`/athletes/${run.athlete_id}/runs/${run.run_id}`)
+                  navigate(
+                    `/athletes/${run.athlete_id}/runs/${run.run_id}`
+                  )
                 }
-                className="flex w-full items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-left"
+                className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm shadow-foreground/[0.02]"
               >
                 <div>
                   <div className="text-sm font-semibold text-foreground">
@@ -178,9 +186,18 @@ export default function HistoryPage() {
       {filtered.length === 0 && (
         <div className="py-12 text-center">
           <p className="text-sm text-muted-foreground">No runs found.</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Runs will appear here once a GET endpoint is available.
-          </p>
+          {(eventFilter !== "all" || dateRange !== "all") && (
+            <button
+              onClick={() => {
+                setEventFilter("all");
+                setDateRange("all");
+              }}
+              className="mt-2 text-xs font-medium"
+              style={{ color: "hsl(var(--primary))" }}
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       )}
     </div>
