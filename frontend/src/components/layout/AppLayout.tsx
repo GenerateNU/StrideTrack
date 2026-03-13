@@ -68,7 +68,7 @@ export function AppLayout() {
       </header>
 
       {/* Desktop top bar — only profile menu, no logo (sidebar has it) */}
-      <div className="sticky top-0 z-40 hidden border-b border-border bg-card/95 backdrop-blur-sm md:block md:ml-56">
+      <div className="sticky top-0 z-40 hidden border-b border-border bg-card/95 backdrop-blur-sm md:block md:pl-56">
         <div className="flex items-center justify-end px-6 py-3">
           <div className="relative" ref={menuRef}>
             <button
@@ -98,7 +98,7 @@ export function AppLayout() {
       </div>
 
       {/* Content area */}
-      <main className="relative mx-auto max-w-2xl px-5 pb-28 md:ml-56 md:pb-8">
+      <main className="relative mx-auto max-w-2xl px-5 pb-28 md:pl-56 md:pb-8">
         <Outlet />
       </main>
 
