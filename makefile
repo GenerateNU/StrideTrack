@@ -16,7 +16,7 @@ else
 endif
 .SHELLFLAGS := -euo pipefail -c
 
-.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create test check-format-backend check-format-frontend check-format format-backend format-frontend format otel-up otel-down
+.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create test check-format-backend check-format-frontend check-format format-backend format-frontend format
 
 # Colors for output
 GREEN := \033[0;32m
@@ -112,23 +112,7 @@ network-create: ## Create Docker network for services
 		(MSYS_NO_PATHCONV=1 docker network create $(NETWORK_NAME) && \
 		printf "  $(GREEN)$(CHECKMARK)$(NC) Network $(NETWORK_NAME) created\n")
 
-# OTel stack runs in a separate Compose project so it never appears as "orphan" when you run main app only
-OTEL_PROJECT := stridetrack-otel
-OTEL_COMPOSE := -p $(OTEL_PROJECT) -f docker-compose.otel.yml
-
-otel-up: ## Start Jaeger (OpenTelemetry). Optional; use for local trace viewing. UI: http://localhost:16686
-	@printf "$(BLUE)Starting Jaeger (OTel)...\n$(NC)"
-	@docker compose $(OTEL_COMPOSE) up -d
-	@printf "  $(GREEN)$(CHECKMARK)$(NC) Jaeger UI: http://localhost:16686\n"
-	@printf "\n"
-
-otel-down: ## Stop Jaeger (OpenTelemetry)
-	@printf "$(BLUE)Stopping Jaeger...\n$(NC)"
-	@docker compose $(OTEL_COMPOSE) down
-	@printf "  $(GREEN)$(CHECKMARK)$(NC) Jaeger stopped\n"
-	@printf "\n"
-
-up: network-create ## Start all services (bun x supabase + App)
+up: network-create ## Start all services (bun x supabase + App + Jaeger)
 	@printf "$(BLUE)Starting bun x supabase...\n$(NC)"
 	@bun x supabase start --exclude vector
 	@printf "\n"
@@ -139,7 +123,7 @@ up: network-create ## Start all services (bun x supabase + App)
 	@printf "  $(CYAN)bun x supabase Studio:$(NC) http://localhost:54323\n"
 	@printf "  $(CYAN)API:$(NC) http://localhost:8000\n"
 	@printf "  $(CYAN)Frontend:$(NC) http://localhost:5173\n"
-	@printf "  $(CYAN)Optional OTel:$(NC) make otel-up then Jaeger UI at http://localhost:16686\n"
+	@printf "  $(CYAN)Jaeger UI:$(NC) http://localhost:16686\n"
 	@printf "\n"
 
 down: ## Stop all services
