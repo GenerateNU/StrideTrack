@@ -6,21 +6,16 @@ if (endpoint && endpoint.trim()) {
   const base = endpoint.trim().replace(/\/$/, "");
   const url = base.includes("/v1/traces") ? base : `${base}/v1/traces`;
 
-  const { BatchSpanProcessor, WebTracerProvider } = await import(
-    "@opentelemetry/sdk-trace-web"
-  );
-  const { OTLPTraceExporter } = await import(
-    "@opentelemetry/exporter-trace-otlp-http"
-  );
-  const { registerInstrumentations } = await import(
-    "@opentelemetry/instrumentation"
-  );
-  const { FetchInstrumentation } = await import(
-    "@opentelemetry/instrumentation-fetch"
-  );
-  const { XMLHttpRequestInstrumentation } = await import(
-    "@opentelemetry/instrumentation-xml-http-request"
-  );
+  const { BatchSpanProcessor, WebTracerProvider } =
+    await import("@opentelemetry/sdk-trace-web");
+  const { OTLPTraceExporter } =
+    await import("@opentelemetry/exporter-trace-otlp-http");
+  const { registerInstrumentations } =
+    await import("@opentelemetry/instrumentation");
+  const { FetchInstrumentation } =
+    await import("@opentelemetry/instrumentation-fetch");
+  const { XMLHttpRequestInstrumentation } =
+    await import("@opentelemetry/instrumentation-xml-http-request");
   const { Resource } = await import("@opentelemetry/resources");
 
   const resource = new Resource({
@@ -36,7 +31,7 @@ if (endpoint && endpoint.trim()) {
         new OTLPTraceExporter({
           url,
           headers: {},
-        }),
+        })
       ),
     ],
   });
@@ -55,4 +50,3 @@ if (endpoint && endpoint.trim()) {
     ],
   });
 }
-
