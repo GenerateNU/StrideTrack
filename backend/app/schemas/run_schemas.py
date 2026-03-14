@@ -1,4 +1,5 @@
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -36,3 +37,17 @@ class StepFrequencyData(BaseModel):
     foot: Literal["left", "right"]
     label: str
     step_frequency_hz: float
+
+
+class RunCreate(BaseModel):
+    athlete_id: UUID
+    event_type: str
+    elapsed_ms: int = Field(..., gt=0)
+
+
+class RunCreateResponse(BaseModel):
+    run_id: UUID
+    athlete_id: UUID
+    event_type: str
+    elapsed_ms: int
+    created_at: str

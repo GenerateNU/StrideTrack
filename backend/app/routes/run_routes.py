@@ -2,11 +2,11 @@ import logging
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from supabase._async.client import AsyncClient
 
 from app.core.supabase import get_async_supabase
-from app.repositories.run_repository import RunRepository
+from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRepository
 from app.schemas.run_schemas import (
     LROverlayData,
     RunResponse,
@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/run", tags=["Run"])
 
 
-# Dependency injection
 async def get_run_service(
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> RunService:
@@ -83,3 +82,14 @@ async def get_step_frequency(
     """Get step frequency data for a specific run."""
     logger.info(f"Route: GET /athletes/{run_id}/metrics/step-frequency")
     return await service.transform_step_frequency(run_id)
+
+
+@router.post("", response_model=RunCreateResponse, status_code=status.HTTP_201_CREATED)
+async def create_run(
+    data: RunCreate, service: RunService = Depends(get_run_service)
+) -> RunCreateResponse:
+    """Create a new run."""
+    logger.info(f"Route: POST /run for athlete {data.athlete_id}")
+    run = await service.create_run(data)
+    logger.info(f"Route: Created run {run.run_id}")
+    return run
