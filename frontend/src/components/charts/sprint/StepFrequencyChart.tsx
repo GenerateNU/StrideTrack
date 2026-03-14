@@ -13,6 +13,8 @@ import { chartColors } from "@/lib/chartColors";
 import { useStepFrequencyData } from "@/hooks/useRunMetrics";
 import "@/index.css";
 import { CustomTooltip } from "@/components/charts/CustomToolTip";
+import { QueryLoading } from "@/components/QueryLoading";
+import { QueryError } from "@/components/QueryError";
 
 export const StepFrequencyChart = ({ runId }: { runId: string }) => {
   const {
@@ -21,6 +23,13 @@ export const StepFrequencyChart = ({ runId }: { runId: string }) => {
     stepFrequencyError,
     stepFrequencyRefetch,
   } = useStepFrequencyData(runId);
+
+  if (stepFrequencyLoading) return <QueryLoading />;
+  if (stepFrequencyError)
+    return (
+      <QueryError error={stepFrequencyError} refetch={stepFrequencyRefetch} />
+    );
+
   const strideNums = [...new Set(stepFrequencyData.map((d) => d.stride_num))];
 
   const chartData = strideNums.map((strideNum) => {
@@ -37,7 +46,6 @@ export const StepFrequencyChart = ({ runId }: { runId: string }) => {
     };
   });
 
-  // Acceleration phase = first 40% of strides
   const accelEndStride = strideNums[Math.floor(strideNums.length * 0.4)] ?? 0;
 
   return (

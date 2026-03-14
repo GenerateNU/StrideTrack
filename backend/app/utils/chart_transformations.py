@@ -1,5 +1,7 @@
 from typing import Literal
 
+import pandas as pd
+
 from app.schemas.run_schemas import (
     LROverlayData,
     RunResponse,
@@ -42,7 +44,9 @@ def transform_data_for_stacked_bar(data: list[RunResponse]) -> list[StackedBarDa
     )
 
 
-def transform_data_for_step_frequency(data: list[RunResponse]) -> list[StepFrequencyData]:
+def transform_data_for_step_frequency(
+    data: list[RunResponse],
+) -> list[StepFrequencyData]:
     """Transform each data point in run for Step Frequency line chart."""
     df = pd.DataFrame(data)
     result_df = calculate_step_frequency(df)
@@ -60,7 +64,8 @@ def transform_data_for_step_frequency(data: list[RunResponse]) -> list[StepFrequ
         key=lambda x: (x["stride_num"], x["foot"]),
     )
 
-#old implementation
+
+# old implementation
 # def transform_data_for_step_frequency(
 #     data: list[RunResponse],
 # ) -> list[StepFrequencyData]:

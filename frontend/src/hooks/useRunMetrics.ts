@@ -23,7 +23,7 @@ export function useRunMetrics(runId: string | null) {
     queryFn: async () => {
       if (!runId) return [];
       const response = await api.get<RunMetric[]>(
-        `/run/athletes/${runId}/metrics`
+        `/api/run/athletes/${runId}/metrics`
       );
       return validateResponse(response.data, z.array(runMetricSchema));
     },
@@ -47,7 +47,7 @@ export function useLROverlayData(
     queryFn: async () => {
       if (!runId) return [];
       const response = await api.get<LROverlayData[]>(
-        `/run/athletes/${runId}/metrics/lr-overlay`,
+        `/api/run/athletes/${runId}/metrics/lr-overlay`,
         { params: { metric } }
       );
       return validateResponse(response.data, z.array(lrOverlaySchema));
@@ -68,7 +68,7 @@ export function useStackedBarData(runId: string | null) {
     queryFn: async () => {
       if (!runId) return [];
       const response = await api.get<StackedBarData[]>(
-        `/run/athletes/${runId}/metrics/stacked-bar`
+        `/api/run/athletes/${runId}/metrics/stacked-bar`
       );
       return validateResponse(response.data, z.array(stackedBarSchema));
     },
@@ -87,8 +87,8 @@ export function useSprintDrift(runId: string | null) {
     queryKey: ["sprint-drift", runId],
     queryFn: async () => {
       if (!runId) return null;
-      const response = await apiClient.get<SprintDriftData>(
-        `/run/athletes/${runId}/metrics/sprint-drift`
+      const response = await api.get<SprintDriftData>(
+        `/api/run/athletes/${runId}/metrics/sprint-drift`
       );
       return validateResponse(response.data, sprintDriftSchema);
     },
@@ -108,8 +108,8 @@ export function useStepFrequencyData(runId: string | null) {
     queryKey: ["step-frequency", runId],
     queryFn: async () => {
       if (!runId) return [];
-      const response = await apiClient.get<StepFrequencyData[]>(
-        `/run/athletes/${runId}/metrics/step-frequency`
+      const response = await api.get<StepFrequencyData[]>(
+        `/api/run/athletes/${runId}/metrics/step-frequency`
       );
       return validateResponse(response.data, z.array(stepFrequencySchema));
     },
