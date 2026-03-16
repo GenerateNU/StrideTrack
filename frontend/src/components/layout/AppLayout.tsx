@@ -32,7 +32,7 @@ export function AppLayout() {
       <Sidebar />
 
       {/* Mobile header — hidden on desktop since sidebar has logo */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card/95 px-5 py-4 backdrop-blur-sm md:hidden">
+      <header className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between border-b border-border bg-card/95 px-5 py-4 backdrop-blur-sm md:hidden">
         <img src={logo} alt="StrideTrack" className="h-9 w-auto" />
         <div className="relative" ref={menuRef}>
           <button
@@ -91,7 +91,7 @@ export function AppLayout() {
       </div>
 
       {/* Content area */}
-      <main className="relative mx-auto flex-1 w-full max-w-2xl px-5 pb-20 md:pl-56 md:pb-8">
+      <main className="relative mx-auto flex-1 w-full max-w-2xl px-5 pb-20 pt-[4.25rem] md:pl-56 md:pb-8 md:pt-0">
         <Outlet />
       </main>
 
