@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import type { RunMetric } from "@/hooks/useRunMetrics.hooks";
+import type { RunMetric } from "@/types/runMetrics.types";
 
 interface StepDataTableProps {
   metrics: RunMetric[];

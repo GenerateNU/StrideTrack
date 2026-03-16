@@ -1,4 +1,4 @@
-import { useLROverlayData } from "@/hooks/useRunMetrics";
+import { useLROverlayData } from "@/hooks/useRunMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 import {
   LineChart,
