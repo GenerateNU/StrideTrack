@@ -21,7 +21,7 @@ export function useRunMetrics(runId: string | null) {
   const query = useQuery({
     queryKey: ["run-metrics", runId],
     queryFn: async () => {
-      if (!runId) return [];
+      if (!runId) return null;
       const response = await api.get<RunMetric[]>(
         `/api/run/athletes/${runId}/metrics`
       );
@@ -31,7 +31,7 @@ export function useRunMetrics(runId: string | null) {
   });
 
   return {
-    metrics: query.data ?? [],
+    metrics: query.data ?? null,
     metricsIsLoading: query.isLoading,
     metricsError: query.error,
     metricsRefetch: query.refetch,
@@ -45,7 +45,7 @@ export function useLROverlayData(
   const query = useQuery({
     queryKey: ["lr-overlay", runId, metric],
     queryFn: async () => {
-      if (!runId) return [];
+      if (!runId) return null;
       const response = await api.get<LROverlayData[]>(
         `/api/run/athletes/${runId}/metrics/lr-overlay`,
         { params: { metric } }
@@ -56,7 +56,7 @@ export function useLROverlayData(
   });
 
   return {
-    lrData: query.data ?? [],
+    lrData: query.data ?? null,
     lrLoading: query.isLoading,
     lrError: query.error,
   };
@@ -66,7 +66,7 @@ export function useStackedBarData(runId: string | null) {
   const query = useQuery({
     queryKey: ["stacked-bar", runId],
     queryFn: async () => {
-      if (!runId) return [];
+      if (!runId) return null;
       const response = await api.get<StackedBarData[]>(
         `/api/run/athletes/${runId}/metrics/stacked-bar`
       );
@@ -76,7 +76,7 @@ export function useStackedBarData(runId: string | null) {
   });
 
   return {
-    stackedData: query.data ?? [],
+    stackedData: query.data ?? null,
     stackedLoading: query.isLoading,
     stackedError: query.error,
   };
@@ -107,7 +107,7 @@ export function useStepFrequencyData(runId: string | null) {
   const query = useQuery({
     queryKey: ["step-frequency", runId],
     queryFn: async () => {
-      if (!runId) return [];
+      if (!runId) return null;
       const response = await api.get<StepFrequencyData[]>(
         `/api/run/athletes/${runId}/metrics/step-frequency`
       );
@@ -117,7 +117,7 @@ export function useStepFrequencyData(runId: string | null) {
   });
 
   return {
-    stepFrequencyData: query.data ?? [],
+    stepFrequencyData: query.data ?? null,
     stepFrequencyLoading: query.isLoading,
     stepFrequencyError: query.error,
     stepFrequencyRefetch: query.refetch,

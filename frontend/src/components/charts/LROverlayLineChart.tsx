@@ -21,6 +21,7 @@ export const LROverlayLineChart = ({
   metric,
 }: LROverlayLineChartProps) => {
   const { lrData } = useLROverlayData(runId, metric);
+  if (!lrData) return null;
 
   return (
     <ResponsiveContainer width="100%" height={300}>

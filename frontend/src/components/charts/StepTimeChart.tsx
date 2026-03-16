@@ -19,6 +19,8 @@ export const StepTimeChart = ({ runId }: { runId: string }) => {
   const { stackedData } = useStackedBarData(runId);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
+  if (!stackedData) return null;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onMouseMove = (state: any) => {
     if (state.activeTooltipIndex !== undefined) {

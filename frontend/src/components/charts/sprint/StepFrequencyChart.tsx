@@ -29,6 +29,7 @@ export const StepFrequencyChart = ({ runId }: { runId: string }) => {
     return (
       <QueryError error={stepFrequencyError} refetch={stepFrequencyRefetch} />
     );
+  if (!stepFrequencyData) return null;
 
   const strideNums = [...new Set(stepFrequencyData.map((d) => d.stride_num))];
 
