@@ -58,7 +58,7 @@ export default function AthleteProfilePage() {
   const hue = nameToHue(athlete.name);
 
   return (
-    <div className="py-6">
+    <div className="py-4">
       <button
         onClick={() => navigate("/")}
         className="mb-5 flex items-center gap-1 text-sm text-muted-foreground"

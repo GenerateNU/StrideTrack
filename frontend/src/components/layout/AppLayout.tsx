@@ -26,14 +26,7 @@ export function AppLayout() {
   }, [menuOpen]);
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
-      <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[500px] -translate-x-1/2 rounded-full opacity-[0.06] blur-[100px] md:left-[calc(50%+7rem)]"
-        style={{
-          background:
-            "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)",
-        }}
-      />
+    <div className="flex min-h-dvh flex-col bg-background text-foreground">
 
       {/* Desktop sidebar */}
       <Sidebar />
@@ -98,7 +91,7 @@ export function AppLayout() {
       </div>
 
       {/* Content area */}
-      <main className="relative mx-auto max-w-2xl px-5 pb-28 md:pl-56 md:pb-8">
+      <main className="relative mx-auto flex-1 w-full max-w-2xl px-5 pb-20 md:pl-56 md:pb-8">
         <Outlet />
       </main>
 

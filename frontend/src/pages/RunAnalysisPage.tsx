@@ -31,7 +31,7 @@ export default function RunAnalysisPage() {
   const athlete = athletes.find((a) => a.athlete_id === athleteId);
 
   return (
-    <div className="py-6">
+    <div className="py-4">
       <button
         onClick={() => navigate(`/athletes/${athleteId}`)}
         className="mb-5 flex items-center gap-1 text-sm text-muted-foreground"

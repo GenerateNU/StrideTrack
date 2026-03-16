@@ -81,7 +81,7 @@ export default function HistoryPage() {
   if (runsError) return <QueryError error={runsError} refetch={runsRefetch} />;
 
   return (
-    <div className="space-y-5 py-6">
+    <div className="space-y-4 py-4">
       {/* Filters row */}
       <div className="flex items-center gap-3">
         {/* Event type dropdown */}
