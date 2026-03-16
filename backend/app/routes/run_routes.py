@@ -22,6 +22,7 @@ async def get_run_service(
     repository = RunRepository(supabase)
     return RunService(repository)
 
+
 @router.get("", response_model=list[RunCreateResponse])
 async def list_runs(
     service: RunService = Depends(get_run_service),

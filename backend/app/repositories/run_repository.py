@@ -69,5 +69,7 @@ class RunRepository:
             .order("created_at", desc=True)
             .execute()
         )
-        logger.info(f"Repository: Found {len(response.data)} runs for athlete {athlete_id}")
+        logger.info(
+            f"Repository: Found {len(response.data)} runs for athlete {athlete_id}"
+        )
         return response.data

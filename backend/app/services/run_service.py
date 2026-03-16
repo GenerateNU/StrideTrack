@@ -9,7 +9,6 @@ from app.utils.chart_transformations import (
     transform_data_for_stacked_bar,
 )
 
-
 logger = logging.getLogger(__name__)
 
 

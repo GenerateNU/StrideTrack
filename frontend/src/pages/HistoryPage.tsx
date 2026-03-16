@@ -148,9 +148,7 @@ export default function HistoryPage() {
               <button
                 key={run.run_id}
                 onClick={() =>
-                  navigate(
-                    `/athletes/${run.athlete_id}/runs/${run.run_id}`
-                  )
+                  navigate(`/athletes/${run.athlete_id}/runs/${run.run_id}`)
                 }
                 className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm shadow-foreground/[0.02]"
               >

@@ -27,7 +27,6 @@ export function AppLayout() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background text-foreground">
-
       {/* Desktop sidebar */}
       <Sidebar />
 
