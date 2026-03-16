@@ -45,7 +45,6 @@ export default function VisualizationsPage() {
         <h1 className="text-3xl font-bold mb-8 text-foreground">
           Performance Metrics
         </h1>
-
         <div className="space-y-8">
           {/* Universal Metrics */}
           <h2 className="text-2xl font-bold text-foreground">
