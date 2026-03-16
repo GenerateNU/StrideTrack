@@ -22,6 +22,28 @@ async def get_run_service(
     repository = RunRepository(supabase)
     return RunService(repository)
 
+@router.get("", response_model=list[RunCreateResponse])
+async def list_runs(
+    service: RunService = Depends(get_run_service),
+) -> list[RunCreateResponse]:
+    """Get all runs, ordered by most recent first."""
+    logger.info("Route: GET /run")
+    runs = await service.get_all_runs()
+    logger.info(f"Route: Returning {len(runs)} runs")
+    return runs
+
+
+@router.get("/athlete/{athlete_id}", response_model=list[RunCreateResponse])
+async def list_runs_by_athlete(
+    athlete_id: UUID,
+    service: RunService = Depends(get_run_service),
+) -> list[RunCreateResponse]:
+    """Get all runs for a specific athlete."""
+    logger.info(f"Route: GET /run/athlete/{athlete_id}")
+    runs = await service.get_runs_by_athlete_id(athlete_id)
+    logger.info(f"Route: Returning {len(runs)} runs for athlete {athlete_id}")
+    return runs
+
 
 @router.get("/athletes/{run_id}/metrics", response_model=list[RunResponse])
 async def get_run_metric_record(

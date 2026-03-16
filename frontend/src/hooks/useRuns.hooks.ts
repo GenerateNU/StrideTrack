@@ -18,26 +18,13 @@ export function useGetAllRuns() {
   const query = useQuery({
     queryKey: ["runs"],
     queryFn: async () => {
-      try {
-        const response = await api.get<Run[]>("/runs");
-        const parsed = z.array(runResponseSchema).safeParse(response.data);
-        if (!parsed.success) {
-          throw new Error("Invalid response format");
-        }
-        return parsed.data;
-      } catch (error: unknown) {
-        if (
-          error &&
-          typeof error === "object" &&
-          "response" in error &&
-          (error as { response?: { status?: number } }).response?.status === 404
-        ) {
-          return [];
-        }
-        throw error;
+      const response = await api.get<Run[]>("/run");
+      const parsed = z.array(runResponseSchema).safeParse(response.data);
+      if (!parsed.success) {
+        throw new Error("Invalid response format");
       }
+      return parsed.data;
     },
-    retry: false,
   });
 
   return {
