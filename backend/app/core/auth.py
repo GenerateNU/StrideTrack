@@ -3,6 +3,7 @@ import os
 from uuid import UUID
 
 import jwt
+from jwt import PyJWKClient
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from supabase._async.client import AsyncClient
@@ -22,8 +23,12 @@ logger = logging.getLogger(__name__)
 
 security = HTTPBearer()
 
-SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "production")
+
+# JWKS client for verifying Supabase JWTs (works for both HS256 and ES256)
+JWKS_URL = f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json"
+jwks_client = PyJWKClient(JWKS_URL)
 
 # Dev user UUID - matches seed.sql
 DEV_AUTH_USER_ID = UUID("00000000-0000-0000-0000-000000000099")
@@ -47,15 +52,15 @@ async def get_current_profile(
     else:
         # --- NORMAL JWT FLOW ---
         try:
+            signing_key = jwks_client.get_signing_key_from_jwt(token)
             payload = jwt.decode(
                 token,
-                SUPABASE_JWT_SECRET,
-                algorithms=["HS256"],
+                signing_key.key,
+                algorithms=["ES256", "HS256"],
                 audience="authenticated",
             )
             auth_user_id = UUID(payload["sub"])
             email = payload.get("email", "")
-            # Google OAuth puts name in user_metadata
             user_metadata = payload.get("user_metadata", {})
             name = user_metadata.get("full_name") or user_metadata.get("name") or email
 
