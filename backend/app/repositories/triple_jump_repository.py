@@ -16,7 +16,7 @@ class TripleJumpRepository:
         logger.info(f"Repository: Fetching triple jump metrics for run: {run_id}")
 
         response = (
-            await self.supabase.table("RUN_METRICS")
+            await self.supabase.table("run_metrics")
             .select(
                 "stride_num, ic_time, to_time, gct_ms, flight_ms, step_time_ms, foot"
             )
