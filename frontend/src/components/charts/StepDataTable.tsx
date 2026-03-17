@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { RunMetric } from "@/types/runMetrics.types";
+import { QueryLoading } from "@/components/QueryLoading";
 
 interface StepDataTableProps {
   metrics: RunMetric[];
@@ -11,11 +12,7 @@ export function StepDataTable({ metrics, isLoading }: StepDataTableProps) {
   const [expanded, setExpanded] = useState(false);
 
   if (isLoading) {
-    return (
-      <div className="rounded-2xl border border-border bg-card p-5">
-        <p className="text-sm text-muted-foreground">Loading step data...</p>
-      </div>
-    );
+    return <QueryLoading />;
   }
 
   if (metrics.length === 0) return null;

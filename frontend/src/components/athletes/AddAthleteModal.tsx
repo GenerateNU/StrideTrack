@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
+import { useCreateAthlete } from "@/hooks/useCreateAthlete.hooks";
 
 interface AddAthleteModalProps {
   open: boolean;
@@ -9,25 +8,11 @@ interface AddAthleteModalProps {
 }
 
 export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
-  const queryClient = useQueryClient();
+  const { createAthlete, createAthleteIsLoading, createAthleteError } =
+    useCreateAthlete();
   const [name, setName] = useState("");
   const [heightIn, setHeightIn] = useState("");
   const [weightLbs, setWeightLbs] = useState("");
-
-  const createAthlete = useMutation({
-    mutationFn: async (payload: {
-      name: string;
-      height_in: number | null;
-      weight_lbs: number | null;
-    }) => {
-      const response = await api.post("/athletes", payload);
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["athletes"] });
-      resetAndClose();
-    },
-  });
 
   const resetAndClose = () => {
     setName("");
@@ -36,13 +21,18 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
     onClose();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name.trim()) return;
-    createAthlete.mutate({
-      name: name.trim(),
-      height_in: heightIn ? parseFloat(heightIn) : null,
-      weight_lbs: weightLbs ? parseFloat(weightLbs) : null,
-    });
+    try {
+      await createAthlete({
+        name: name.trim(),
+        height_in: heightIn ? parseFloat(heightIn) : null,
+        weight_lbs: weightLbs ? parseFloat(weightLbs) : null,
+      });
+      resetAndClose();
+    } catch {
+      // error is captured in createAthleteError
+    }
   };
 
   if (!open) return null;
@@ -108,17 +98,17 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
 
         <button
           onClick={handleSubmit}
-          disabled={!name.trim() || createAthlete.isPending}
+          disabled={!name.trim() || createAthleteIsLoading}
           className="mt-6 w-full rounded-xl py-3.5 text-sm font-semibold transition-all disabled:opacity-40"
           style={{
             backgroundColor: "hsl(var(--primary))",
             color: "hsl(var(--primary-foreground))",
           }}
         >
-          {createAthlete.isPending ? "Adding..." : "Add Athlete"}
+          {createAthleteIsLoading ? "Adding..." : "Add Athlete"}
         </button>
 
-        {createAthlete.isError && (
+        {createAthleteError && (
           <p className="mt-2 text-center text-xs text-destructive">
             Failed to add athlete. Please try again.
           </p>

@@ -2,6 +2,8 @@ import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useGetAllRuns } from "@/hooks/useRuns.hooks";
+import { QueryLoading } from "@/components/QueryLoading";
+import { QueryError } from "@/components/QueryError";
 import { ArrowLeft, Activity, Calendar } from "lucide-react";
 
 function nameToHue(name: string): number {
@@ -15,8 +17,9 @@ function nameToHue(name: string): number {
 export default function AthleteProfilePage() {
   const { athleteId } = useParams<{ athleteId: string }>();
   const navigate = useNavigate();
-  const { athletes } = useGetAllAthletes();
-  const { runs } = useGetAllRuns();
+  const { athletes, athletesIsLoading, athletesError, athletesRefetch } =
+    useGetAllAthletes();
+  const { runs, runsIsLoading, runsError, runsRefetch } = useGetAllRuns();
   const [tab, setTab] = useState<"summary" | "runs">("summary");
 
   const athlete = athletes.find((a) => a.athlete_id === athleteId);
@@ -46,6 +49,12 @@ export default function AthleteProfilePage() {
   }, [athleteRuns]);
 
   const latestRun = athleteRuns[0] ?? null;
+
+  if (athletesIsLoading || runsIsLoading) return <QueryLoading />;
+  if (athletesError)
+    return <QueryError error={athletesError} refetch={athletesRefetch} />;
+  if (runsError)
+    return <QueryError error={runsError} refetch={runsRefetch} />;
 
   if (!athlete) {
     return (

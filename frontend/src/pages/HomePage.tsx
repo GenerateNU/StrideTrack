@@ -19,11 +19,11 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { athletes, athletesIsLoading, athletesError, athletesRefetch } =
     useGetAllAthletes();
-  const { runs } = useGetAllRuns();
+  const { runs, runsIsLoading: runsLoading } = useGetAllRuns();
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  if (athletesIsLoading) return <QueryLoading />;
+  if (athletesIsLoading || runsLoading) return <QueryLoading />;
   if (athletesError)
     return <QueryError error={athletesError} refetch={athletesRefetch} />;
 

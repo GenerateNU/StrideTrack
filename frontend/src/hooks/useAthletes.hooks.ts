@@ -1,3 +1,5 @@
+// TODO: Scope to authenticated coach — currently returns all athletes regardless of user.
+// Future ticket: pass coach_id as query param or use auth-scoped backend endpoint.
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import api from "@/lib/api";

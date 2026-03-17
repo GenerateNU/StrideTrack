@@ -1,18 +1,10 @@
+// TODO: Scope to authenticated coach — currently returns all runs regardless of user.
+// Future ticket: pass coach_id as query param or use auth-scoped backend endpoint.
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import api from "@/lib/api";
-
-const runResponseSchema = z.object({
-  run_id: z.string(),
-  athlete_id: z.string(),
-  event_type: z.string(),
-  elapsed_ms: z.number().nullable().optional(),
-  created_at: z.string(),
-});
-
-type Run = z.infer<typeof runResponseSchema>;
-
-export type { Run };
+import { runResponseSchema } from "@/types/run.types";
+import type { Run } from "@/types/run.types";
 
 export function useGetAllRuns() {
   const query = useQuery({

@@ -28,7 +28,12 @@ function getDateRangeStart(range: DateRange): Date | null {
 export default function HistoryPage() {
   const navigate = useNavigate();
   const { runs, runsIsLoading, runsError, runsRefetch } = useGetAllRuns();
-  const { athletes } = useGetAllAthletes();
+  const {
+    athletes,
+    athletesIsLoading: athletesLoading,
+    athletesError,
+    athletesRefetch,
+  } = useGetAllAthletes();
   const events = useEvents();
   const [eventFilter, setEventFilter] = useState<string>("all");
   const [dateRange, setDateRange] = useState<DateRange>("all");
@@ -77,7 +82,8 @@ export default function HistoryPage() {
     { value: "month", label: "This Month" },
   ];
 
-  if (runsIsLoading) return <QueryLoading />;
+  if (runsIsLoading || athletesLoading) return <QueryLoading />;
+  if (athletesError) return <QueryError error={athletesError} refetch={athletesRefetch} />;
   if (runsError) return <QueryError error={runsError} refetch={runsRefetch} />;
 
   return (
