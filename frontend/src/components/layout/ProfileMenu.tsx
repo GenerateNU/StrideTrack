@@ -18,7 +18,9 @@ export function ProfileMenu({
   className = "absolute right-0 top-full mt-2 w-60",
 }: ProfileMenuProps) {
   return (
-    <div className={`${className} rounded-2xl border border-border bg-card p-2 shadow-xl shadow-foreground/5`}>
+    <div
+      className={`${className} rounded-2xl border border-border bg-card p-2 shadow-xl shadow-foreground/5`}
+    >
       <div className="px-3 py-3">
         <p className="text-sm font-semibold text-foreground">
           {profile?.name ?? "Coach"}
