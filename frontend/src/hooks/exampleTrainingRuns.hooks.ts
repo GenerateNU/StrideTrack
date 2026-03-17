@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import api from "@/lib/api.ts"
+import api from "@/lib/api.ts";
 import {
   trainingRunResponseSchema,
   trainingRunCreateSchema,
@@ -39,9 +39,7 @@ export function useGetTrainingRun(id: string | null) {
     queryFn: async () => {
       if (!id) return null;
 
-      const response = await api.get<TrainingRunResponse>(
-        `${BASE_PATH}/${id}`
-      );
+      const response = await api.get<TrainingRunResponse>(`${BASE_PATH}/${id}`);
       return validateResponse(response.data, trainingRunResponseSchema);
     },
     enabled: !!id,

@@ -71,7 +71,12 @@ export const JumpHeightChart = ({ runId }: { runId: string }) => {
             fontSize: 10,
           }}
         />
-        <Bar dataKey="height" fill={chartColors.primary} radius={[4, 4, 0, 0]} name="Jump Height" />
+        <Bar
+          dataKey="height"
+          fill={chartColors.primary}
+          radius={[4, 4, 0, 0]}
+          name="Jump Height"
+        />
       </BarChart>
     </ResponsiveContainer>
   );

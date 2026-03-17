@@ -111,9 +111,7 @@ export default function VisualizationsPage() {
         <h2 className="text-2xl font-bold mb-6 text-foreground">Bosco Test</h2>
         <div className="space-y-8">
           <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-            <h3 className="text-xl font-bold mb-3 text-primary">
-              Jump Height
-            </h3>
+            <h3 className="text-xl font-bold mb-3 text-primary">Jump Height</h3>
             <JumpHeightChart runId={HARDCODED_BOSCO_RUN_ID} />
           </div>
 
@@ -138,8 +136,6 @@ export default function VisualizationsPage() {
             <FatigueIndexKPI runId={HARDCODED_BOSCO_RUN_ID} />
           </div>
         </div>
-
-
       </div>
     </div>
   );
