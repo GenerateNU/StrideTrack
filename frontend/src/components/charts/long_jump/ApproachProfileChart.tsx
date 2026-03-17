@@ -1,7 +1,6 @@
 import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
 import { useLjApproachProfile } from "@/hooks/useLongJumpMetrics.hooks";
-import { chartColors } from "@/lib/chartColors";
 import {
   CartesianGrid,
   Line,
@@ -13,8 +12,11 @@ import {
   YAxis,
 } from "recharts";
 
+const LEFT_COLOR = "#3b82f6";
+const RIGHT_COLOR = "#f97316";
+
 const PHASE_COLORS: Record<string, string> = {
-  approach: chartColors.primary,
+  approach: "hsl(var(--primary))",
   antepenultimate: "#f59e0b",
   penultimate: "#f97316",
   takeoff: "#ef4444",
@@ -45,7 +47,7 @@ interface CustomDotProps {
 const CustomDot = (props: CustomDotProps) => {
   const { cx, cy, payload } = props;
   if (cx === undefined || cy === undefined || !payload) return null;
-  const color = PHASE_COLORS[payload.phase] ?? chartColors.primary;
+  const color = PHASE_COLORS[payload.phase] ?? "hsl(var(--primary))";
   const isHighlighted = payload.phase !== "approach";
   return (
     <circle
@@ -108,20 +110,10 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
         ))}
       </div>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart
-          data={rows}
-          margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
-        >
+        <LineChart data={rows} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis
-            dataKey="label"
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-          />
-          <YAxis
-            unit="ms"
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-            domain={["auto", "auto"]}
-          />
+          <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+          <YAxis unit="ms" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} domain={["auto", "auto"]} />
           <Tooltip
             contentStyle={{
               background: "var(--card)",
@@ -129,10 +121,10 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={(value: number, name: string) => [
-              `${value} ms`,
+            formatter={((value: unknown, name: unknown) => [
+              value != null ? `${String(value)} ms` : "N/A",
               name === "left" ? "Left" : "Right",
-            ]}
+            ]) as never}
           />
           <ReferenceLine
             x={`S${finalStrideIndex}`}
@@ -145,24 +137,8 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
               fill: "#f59e0b",
             }}
           />
-          <Line
-            type="monotone"
-            dataKey="left"
-            stroke={chartColors.left}
-            strokeWidth={2}
-            dot={<CustomDot />}
-            connectNulls
-            name="left"
-          />
-          <Line
-            type="monotone"
-            dataKey="right"
-            stroke={chartColors.right}
-            strokeWidth={2}
-            dot={<CustomDot />}
-            connectNulls
-            name="right"
-          />
+          <Line type="monotone" dataKey="left" stroke={LEFT_COLOR} strokeWidth={2} dot={<CustomDot />} connectNulls name="left" />
+          <Line type="monotone" dataKey="right" stroke={RIGHT_COLOR} strokeWidth={2} dot={<CustomDot />} connectNulls name="right" />
         </LineChart>
       </ResponsiveContainer>
       <p className="text-xs text-muted-foreground mt-2 text-center">

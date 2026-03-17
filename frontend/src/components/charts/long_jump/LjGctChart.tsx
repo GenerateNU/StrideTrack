@@ -103,10 +103,10 @@ export const LjGctChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={(value: number | undefined, name: string) => [
-              value != null ? `${value} ms` : "N/A",
+            formatter={((value: unknown, name: unknown) => [
+              value != null ? `${String(value)} ms` : "N/A",
               name === "left" ? "Left" : "Right",
-            ]}
+            ]) as never}
           />
           <Legend formatter={(value) => (value === "left" ? "Left" : "Right")} wrapperStyle={{ fontSize: 12 }} />
           {meanGct !== null && (

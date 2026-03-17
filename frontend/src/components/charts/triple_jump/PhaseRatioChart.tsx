@@ -79,10 +79,10 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={(value: number | undefined, name: string) => [
-              value != null ? `${value.toFixed(1)}%` : "N/A",
-              name.charAt(0).toUpperCase() + name.slice(1),
-            ]}
+            formatter={((value: unknown, name: unknown) => [
+              value != null ? `${Number(value).toFixed(1)}%` : "N/A",
+              String(name).charAt(0).toUpperCase() + String(name).slice(1),
+            ]) as never}
           />
           <Legend
             formatter={(v) => v.charAt(0).toUpperCase() + v.slice(1)}

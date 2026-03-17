@@ -38,13 +38,9 @@ const CustomDot = (props: CustomDotProps) => {
   const isTakeoff = payload.phase === "takeoff";
   const isPenultimate = payload.phase === "penultimate";
   if (isTakeoff)
-    return (
-      <circle cx={cx} cy={cy} r={8} fill="#ef4444" stroke="#fff" strokeWidth={2} />
-    );
+    return <circle cx={cx} cy={cy} r={8} fill="#ef4444" stroke="#fff" strokeWidth={2} />;
   if (isPenultimate)
-    return (
-      <circle cx={cx} cy={cy} r={5} fill="#f97316" stroke="#fff" strokeWidth={1.5} />
-    );
+    return <circle cx={cx} cy={cy} r={5} fill="#f97316" stroke="#fff" strokeWidth={1.5} />;
   return <circle cx={cx} cy={cy} r={3} fill="var(--primary)" opacity={0.6} />;
 };
 
@@ -98,10 +94,10 @@ export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={(value: number | undefined, name: string) => [
-              value != null ? `${value} ms` : "N/A",
+            formatter={((value: unknown, name: unknown) => [
+              value != null ? `${String(value)} ms` : "N/A",
               name === "left" ? "Left" : "Right",
-            ]}
+            ]) as never}
           />
           <Legend formatter={(v) => (v === "left" ? "Left" : "Right")} wrapperStyle={{ fontSize: 12 }} />
           {takeoffLabel && (
