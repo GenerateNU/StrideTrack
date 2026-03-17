@@ -1,7 +1,6 @@
 import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
 import { useLjApproachProfile } from "@/hooks/useLongJumpMetrics.hooks";
-import { chartColors } from "@/lib/chartColors";
 import {
   CartesianGrid,
   Legend,
@@ -13,6 +12,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+
+const LEFT_COLOR = "#3b82f6";
+const RIGHT_COLOR = "#f97316";
 
 interface ChartRow {
   label: string;
@@ -90,20 +92,10 @@ export const LjGctChart = ({ runId }: { runId: string }) => {
   return (
     <div className="w-full">
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart
-          data={rows}
-          margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
-        >
+        <LineChart data={rows} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis
-            dataKey="label"
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-          />
-          <YAxis
-            unit="ms"
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-            domain={["auto", "auto"]}
-          />
+          <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
+          <YAxis unit="ms" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} domain={["auto", "auto"]} />
           <Tooltip
             contentStyle={{
               background: "var(--card)",
@@ -111,15 +103,12 @@ export const LjGctChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={(value: number, name: string) => [
-              `${value} ms`,
+            formatter={(value: number | undefined, name: string) => [
+              value != null ? `${value} ms` : "N/A",
               name === "left" ? "Left" : "Right",
             ]}
           />
-          <Legend
-            formatter={(value) => (value === "left" ? "Left" : "Right")}
-            wrapperStyle={{ fontSize: 12 }}
-          />
+          <Legend formatter={(value) => (value === "left" ? "Left" : "Right")} wrapperStyle={{ fontSize: 12 }} />
           {meanGct !== null && (
             <ReferenceLine
               y={meanGct}
@@ -146,24 +135,8 @@ export const LjGctChart = ({ runId }: { runId: string }) => {
               }}
             />
           )}
-          <Line
-            type="monotone"
-            dataKey="left"
-            stroke={chartColors.left}
-            strokeWidth={2}
-            dot={<CustomDot />}
-            connectNulls
-            name="left"
-          />
-          <Line
-            type="monotone"
-            dataKey="right"
-            stroke={chartColors.right}
-            strokeWidth={2}
-            dot={<CustomDot />}
-            connectNulls
-            name="right"
-          />
+          <Line type="monotone" dataKey="left" stroke={LEFT_COLOR} strokeWidth={2} dot={<CustomDot />} connectNulls name="left" />
+          <Line type="monotone" dataKey="right" stroke={RIGHT_COLOR} strokeWidth={2} dot={<CustomDot />} connectNulls name="right" />
         </LineChart>
       </ResponsiveContainer>
       <p className="text-xs text-muted-foreground mt-2 text-center">

@@ -4,7 +4,6 @@ import {
   useTjStepSeries,
   useTripleJumpMetrics,
 } from "@/hooks/useTripleJumpMetrics.hooks";
-import { chartColors } from "@/lib/chartColors";
 import {
   CartesianGrid,
   Legend,
@@ -16,6 +15,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+
+const LEFT_COLOR = "#3b82f6";
+const RIGHT_COLOR = "#f97316";
 
 interface ChartRow {
   index: number;
@@ -109,8 +111,8 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
             borderRadius: 6,
             fontSize: 12,
           }}
-          formatter={(value: number, name: string) => [
-            `${value} ms`,
+          formatter={(value: number | undefined, name: string) => [
+            value != null ? `${value} ms` : "N/A",
             name === dataKeys.left ? leftLabel : rightLabel,
           ]}
         />
@@ -135,7 +137,7 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
         <Line
           type="monotone"
           dataKey={dataKeys.left}
-          stroke={chartColors.left}
+          stroke={LEFT_COLOR}
           strokeWidth={2}
           dot={{ r: 3 }}
           connectNulls
@@ -144,7 +146,7 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
         <Line
           type="monotone"
           dataKey={dataKeys.right}
-          stroke={chartColors.right}
+          stroke={RIGHT_COLOR}
           strokeWidth={2}
           dot={{ r: 3 }}
           connectNulls

@@ -79,8 +79,8 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={(value: number, name: string) => [
-              `${value.toFixed(1)}%`,
+            formatter={(value: number | undefined, name: string) => [
+              value != null ? `${value.toFixed(1)}%` : "N/A",
               name.charAt(0).toUpperCase() + name.slice(1),
             ]}
           />
@@ -92,7 +92,7 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
             <LabelList
               dataKey="hop"
               position="center"
-              formatter={(v: number) => `${v.toFixed(0)}%`}
+              formatter={(v: unknown) => `${Number(v).toFixed(0)}%`}
               style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
             />
           </Bar>
@@ -100,7 +100,7 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
             <LabelList
               dataKey="step"
               position="center"
-              formatter={(v: number) => `${v.toFixed(0)}%`}
+              formatter={(v: unknown) => `${Number(v).toFixed(0)}%`}
               style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
             />
           </Bar>
@@ -108,7 +108,7 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
             <LabelList
               dataKey="jump"
               position="center"
-              formatter={(v: number) => `${v.toFixed(0)}%`}
+              formatter={(v: unknown) => `${Number(v).toFixed(0)}%`}
               style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
             />
           </Bar>
@@ -132,14 +132,10 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
             </div>
             <div className="text-xl font-bold text-foreground">
               {data?.ft_ms ?? "—"}
-              <span className="text-xs font-normal text-muted-foreground ml-1">
-                ms
-              </span>
+              <span className="text-xs font-normal text-muted-foreground ml-1">ms</span>
             </div>
             <div className="text-xs text-muted-foreground">
-              {data?.ratio_pct != null
-                ? `${data.ratio_pct.toFixed(1)}% of total`
-                : "—"}
+              {data?.ratio_pct != null ? `${data.ratio_pct.toFixed(1)}% of total` : "—"}
             </div>
           </div>
         ))}
