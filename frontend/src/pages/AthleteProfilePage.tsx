@@ -53,8 +53,7 @@ export default function AthleteProfilePage() {
   if (athletesIsLoading || runsIsLoading) return <QueryLoading />;
   if (athletesError)
     return <QueryError error={athletesError} refetch={athletesRefetch} />;
-  if (runsError)
-    return <QueryError error={runsError} refetch={runsRefetch} />;
+  if (runsError) return <QueryError error={runsError} refetch={runsRefetch} />;
 
   if (!athlete) {
     return (

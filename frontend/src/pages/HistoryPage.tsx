@@ -83,7 +83,8 @@ export default function HistoryPage() {
   ];
 
   if (runsIsLoading || athletesLoading) return <QueryLoading />;
-  if (athletesError) return <QueryError error={athletesError} refetch={athletesRefetch} />;
+  if (athletesError)
+    return <QueryError error={athletesError} refetch={athletesRefetch} />;
   if (runsError) return <QueryError error={runsError} refetch={runsRefetch} />;
 
   return (
