@@ -1,0 +1,21 @@
+name: Deploy Supabase Migrations
+
+on:
+  push:
+    branches: [main]
+    paths: ["supabase/migrations/**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Push Migrations
+        run: supabase db push --db-url "${{ secrets.SUPABASE_DB_URL }}"
