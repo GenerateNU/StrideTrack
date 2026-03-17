@@ -2,7 +2,7 @@ import logging
 from typing import Literal
 from uuid import UUID
 
-from app.repositories.run_repository import RunRepository
+from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRepository
 from app.schemas.run_schemas import LROverlayData, RunResponse, StackedBarData
 from app.utils.chart_transformations import (
     transform_data_for_lr_overlay,
@@ -49,3 +49,10 @@ class RunService:
 
         logger.info(f"Service: Transformed run {run_id} for stacked bar chart")
         return transformed
+
+    async def create_run(self, data: RunCreate) -> RunCreateResponse:
+        """Create a new run."""
+        logger.info(f"Service: Creating run for athlete {data.athlete_id}")
+        run = await self.repository.create(data)
+        logger.info(f"Service: Created run {run.run_id}")
+        return run

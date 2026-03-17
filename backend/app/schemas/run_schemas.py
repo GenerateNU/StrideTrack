@@ -1,4 +1,5 @@
 from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
@@ -24,3 +25,17 @@ class StackedBarData(BaseModel):
     label: str
     gct_ms: float
     flight_ms: float
+
+
+class RunCreate(BaseModel):
+    athlete_id: UUID
+    event_type: str
+    elapsed_ms: int = Field(..., gt=0)
+
+
+class RunCreateResponse(BaseModel):
+    run_id: UUID
+    athlete_id: UUID
+    event_type: str
+    elapsed_ms: int
+    created_at: str
