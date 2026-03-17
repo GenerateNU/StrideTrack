@@ -83,21 +83,20 @@ export function Sidebar() {
           </button>
 
           {menuOpen && (
-            <div className="absolute bottom-full left-2 right-2 mb-2">
-              <ProfileMenu
-                profile={profile}
-                theme={theme}
-                toggleTheme={toggleTheme}
-                onAddAthlete={() => {
-                  setMenuOpen(false);
-                  setAddAthleteOpen(true);
-                }}
-                onLogout={() => {
-                  setMenuOpen(false);
-                  logout();
-                }}
-              />
-            </div>
+            <ProfileMenu
+              profile={profile}
+              theme={theme}
+              toggleTheme={toggleTheme}
+              className="absolute bottom-full left-2 right-2 mb-2"
+              onAddAthlete={() => {
+                setMenuOpen(false);
+                setAddAthleteOpen(true);
+              }}
+              onLogout={() => {
+                setMenuOpen(false);
+                logout();
+              }}
+            />
           )}
         </div>
       </aside>
