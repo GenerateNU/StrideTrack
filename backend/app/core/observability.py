@@ -17,11 +17,13 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from app.core.config import settings
 
-# To add custom context to spans:
-# from opentelemetry import trace
-# current_span = trace.get_current_span()
-# current_span.set_attribute("user_id", user_id)
-# current_span.set_attribute("tenant_id", tenant_id)
+# Use this tracer for custom spans (e.g. in routes/services)
+TRACER_NAME = "stridetrack.backend"
+
+
+def get_tracer(name: str = TRACER_NAME, version: str = "0.1.0") -> trace.Tracer:
+    """Return a tracer for custom spans. Use in routes/services for clearer trace names."""
+    return trace.get_tracer(name, version)
 
 
 class JsonFormatter(logging.Formatter):
@@ -51,7 +53,8 @@ def setup_observability() -> tuple[
     if settings.otel_endpoint:
         resource = Resource.create(
             {
-                "service.name": settings.app_name,
+                "service.name": "stridetrack-backend",
+                "service.namespace": "stridetrack",
                 "service.version": "0.1.0",
                 "deployment.environment": settings.environment,
             }
@@ -60,13 +63,21 @@ def setup_observability() -> tuple[
         # Setup tracing
         trace_provider = TracerProvider(resource=resource)
         trace_provider.add_span_processor(
-            BatchSpanProcessor(OTLPSpanExporter(endpoint=settings.otel_endpoint))
+            BatchSpanProcessor(
+                OTLPSpanExporter(
+                    endpoint=settings.otel_endpoint,
+                    insecure=True,
+                )
+            )
         )
         trace.set_tracer_provider(trace_provider)
 
         # Setup metrics
         metric_reader = PeriodicExportingMetricReader(
-            OTLPMetricExporter(endpoint=settings.otel_endpoint)
+            OTLPMetricExporter(
+                endpoint=settings.otel_endpoint,
+                insecure=True,
+            )
         )
         meter_provider = MeterProvider(
             resource=resource, metric_readers=[metric_reader]

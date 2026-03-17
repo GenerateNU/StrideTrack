@@ -1,5 +1,11 @@
-import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
 import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
+import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
+import { GctIncreaseChart } from "@/components/charts/hurdles/GctIncreaseChart";
+import { HurdleSplitChart } from "@/components/charts/hurdles/HurdleSplitChart";
+import { LandingGctChart } from "@/components/charts/hurdles/LandingGctChart";
+import { StepsBetweenHurdlesChart } from "@/components/charts/hurdles/StepsBetweenHurdlesChart";
+import { TakeoffFtChart } from "@/components/charts/hurdles/TakeoffFtChart";
+import { TakeoffGctChart } from "@/components/charts/hurdles/TakeoffGctChart";
 import { StepTimeChart } from "@/components/charts/StepTimeChart";
 import { JumpHeightChart } from "@/components/charts/bosco/JumpHeightChart";
 import { RsiChart } from "@/components/charts/bosco/RsiChart";
@@ -8,6 +14,7 @@ import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
 
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 const HARDCODED_BOSCO_RUN_ID = "b1a2c3d4-5678-9abc-def0-111111111111";
+const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
 
 export default function VisualizationsPage() {
   return (
@@ -42,6 +49,61 @@ export default function VisualizationsPage() {
             </h2>
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
               <StepTimeChart runId={HARDCODED_RUN_ID} />
+            </div>
+          </div>
+
+          {/* Hurdle Metrics */}
+          <h1 className="text-3xl font-bold mb-8 text-foreground">
+            Hurdle Metrics
+          </h1>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Hurdle Splits
+            </h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <HurdleSplitChart runId={HARDCODED_HURDLE_RUN_ID} />
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">Takeoff GCT</h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <TakeoffGctChart runId={HARDCODED_HURDLE_RUN_ID} />
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">Landing GCT</h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <LandingGctChart runId={HARDCODED_HURDLE_RUN_ID} />
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Takeoff Flight Time
+            </h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <TakeoffFtChart runId={HARDCODED_HURDLE_RUN_ID} />
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Steps Between Hurdles
+            </h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <StepsBetweenHurdlesChart runId={HARDCODED_HURDLE_RUN_ID} />
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              GCT Increase Hurdle-to-Hurdle
+            </h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <GctIncreaseChart runId={HARDCODED_HURDLE_RUN_ID} />
             </div>
           </div>
         </div>
