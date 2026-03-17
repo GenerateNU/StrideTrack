@@ -25,5 +25,6 @@ jobs:
         with:
           version: latest
 
+      
       - name: Run seed file
-        run: supabase db execute --file supabase/seed.sql --db-url "${{ secrets.SUPABASE_DB_URL }}"
+        run: supabase db execute --db-url "${{ secrets.SUPABASE_DB_URL }}" < supabase/seed.sql
