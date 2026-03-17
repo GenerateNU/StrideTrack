@@ -34,10 +34,16 @@ def transform_stride_cycles_to_bosco_tests(df: pd.DataFrame) -> dict:
 
     total_time_s = (df["next_ic_time"].iloc[-1] - df["ic_time"].iloc[0]) / 1000
     jump_frequency = num_jumps / total_time_s
-
+    rsi_per_jump = (df["flight_ms"] / df["gct_ms"]).tolist()
+    first_gct = df["gct_ms"].iloc[0]
+    fatigue_index_pct = (
+        (df["gct_ms"].iloc[-1] - first_gct) / first_gct * 100 if first_gct != 0 else 0.0
+    )
     return {
         "jump_heights": jump_heights_m,
         "mean_jump_height": mean_jump_height,
         "peak_jump_height": peak_jump_height,
         "jump_frequency": jump_frequency,
+        "rsi_per_jump": rsi_per_jump,
+        "fatigue_index_pct": fatigue_index_pct,
     }

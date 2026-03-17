@@ -1,0 +1,26 @@
+import { useQuery } from "@tanstack/react-query";
+import { boscoMetricsSchema } from "@/types/bosco.types.ts";
+import type { BoscoMetricsResponse } from "@/types/bosco.types.ts";
+import { apiClient } from "@/axios.config";
+import { validateResponse } from "@/utils/validation";
+
+export function useBoscoMetrics(runId: string | null) {
+  const query = useQuery({
+    queryKey: ["bosco-metrics", runId],
+    queryFn: async () => {
+      if (!runId) return null;
+
+      const response = await apiClient.get<BoscoMetricsResponse>(
+        `/api/bosco/metrics/${runId}`
+      );
+      return validateResponse(response.data, boscoMetricsSchema);
+    },
+    enabled: !!runId,
+  });
+
+  return {
+    boscoMetrics: query.data ?? null,
+    boscoIsLoading: query.isLoading,
+    boscoError: query.error,
+  };
+}

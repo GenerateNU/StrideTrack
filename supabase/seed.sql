@@ -203,9 +203,9 @@ INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_tim
 
     -- Insert Bosco RUN record
 INSERT INTO RUN (run_id, athlete_id, event_type, name) VALUES
-    ('b1a2c3d4-5678-9abc-def0-111111111111', '00000000-0000-0000-0000-000000000002', 'bosco_two_foot', 'Ben Bosco Test 1'),
-    ('b2a2c3d4-5678-9abc-def0-222222222222', '00000000-0000-0000-0000-000000000003', 'bosco_two_foot', 'Michael Bosco Test 1'),
-    ('b3a2c3d4-5678-9abc-def0-333333333333', '00000000-0000-0000-0000-000000000003', 'bosco_two_foot', 'Michael Bosco Test 2');
+    ('b1a2c3d4-5678-9abc-def0-111111111111', '00000000-0000-0000-0000-000000000002', 'bosco_test', 'Ben Bosco Test 1'),
+    ('b2a2c3d4-5678-9abc-def0-222222222222', '00000000-0000-0000-0000-000000000003', 'bosco_test', 'Michael Bosco Test 1'),
+    ('b3a2c3d4-5678-9abc-def0-333333333333', '00000000-0000-0000-0000-000000000003', 'bosco_test', 'Michael Bosco Test 2');
 
 -- Insert Bosco RUN_METRICS 
 INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms) VALUES

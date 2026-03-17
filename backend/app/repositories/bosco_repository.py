@@ -20,7 +20,7 @@ class Bosco_Repository:
 
         logger.info(f"Repository: Fetching all run metrics for bosco run {run_id}")
         response = (
-            await self.supabase.table("run_metrics")
+            await self.supabase.table("RUN_METRICS")
             .select(
                 "stride_num, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms"
             )
@@ -36,15 +36,15 @@ class Bosco_Repository:
         logger.info(f"Repository: Fetched all run metrics for bosco run {run_id}")
         return pd.DataFrame(response.data)
 
-    def get_bosco_runs_by_athlete_id(self, athlete_id: str) -> list[Run]:
+    async def get_bosco_runs_by_athlete_id(self, athlete_id: str) -> list[Run]:
         """Fetches all Bosco test runs for a given athlete"""
 
         logger.info(f"Repository: Fetching all bosco runs for athlete {athlete_id}")
         response = (
-            self.supabase.table("RUN")
+            await self.supabase.table("RUN")
             .select("run_id, athlete_id, event_type, name")
             .eq("athlete_id", athlete_id)
-            .eq("event_type", "bosco_two_foot")
+            .eq("event_type", "bosco_test")
             .execute()
         )
 

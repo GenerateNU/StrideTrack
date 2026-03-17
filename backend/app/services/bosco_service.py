@@ -22,6 +22,8 @@ class BoscoService:
             peak_jump_height=round(metrics["peak_jump_height"], 4),
             peak_jump_index=int(metrics["jump_heights"].idxmax()) + 1,
             jump_frequency=round(metrics["jump_frequency"], 3),
+            rsi_per_jump=[round(rsi, 3) for rsi in metrics["rsi_per_jump"]],
+            fatigue_index_pct=round(metrics["fatigue_index_pct"], 2),
         )
 
     def get_bosco_runs_for_athlete(self, athlete_id: str) -> list[Run]:
