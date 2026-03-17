@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { boscoMetricsSchema } from "@/types/bosco.types.ts";
 import type { BoscoMetricsResponse } from "@/types/bosco.types.ts";
-import { apiClient } from "@/axios.config";
+import apiClient from "@/lib/api.ts";
 import { validateResponse } from "@/utils/validation";
 
 export function useBoscoMetrics(runId: string | null) {
