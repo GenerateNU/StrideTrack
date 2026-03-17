@@ -28,3 +28,4 @@ class BoscoMetricsResponse(BaseModel):
     jump_frequency: float
     rsi_per_jump: list[float]
     fatigue_index_pct: float
+    flight_per_jump: list[float]

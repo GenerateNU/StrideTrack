@@ -46,4 +46,5 @@ def transform_stride_cycles_to_bosco_tests(df: pd.DataFrame) -> dict:
         "jump_frequency": jump_frequency,
         "rsi_per_jump": rsi_per_jump,
         "fatigue_index_pct": fatigue_index_pct,
+        "flight_per_jump": df["flight_ms"].tolist(),
     }

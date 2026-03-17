@@ -9,6 +9,7 @@ export const boscoMetricsSchema = z.object({
   jump_frequency: z.number(),
   rsi_per_jump: z.array(z.number()),
   fatigue_index_pct: z.number(),
+  flight_per_jump: z.array(z.number()),
 });
 
 export type BoscoMetricsResponse = z.infer<typeof boscoMetricsSchema>;

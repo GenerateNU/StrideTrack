@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
 from app.core.supabase import get_async_supabase
+from app.routes import bosco_routes as bosco_router
 from app.routes.athlete_routes import router as athlete_router
 from app.routes.auth_routes import router as auth_router
 from app.routes.csv_routes import router as csv_router
@@ -28,3 +29,4 @@ api_router.include_router(csv_router)
 api_router.include_router(auth_router)
 api_router.include_router(athlete_router)
 api_router.include_router(run_router)
+api_router.include_router(bosco_router)

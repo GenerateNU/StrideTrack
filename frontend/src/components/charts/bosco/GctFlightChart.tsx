@@ -13,10 +13,10 @@ import {
 import type { BoscoMetricsResponse } from "@/types/bosco.types";
 
 function buildChartData(metrics: BoscoMetricsResponse) {
-  return metrics.jump_heights.map((_, index) => ({
+  return metrics.flight_per_jump.map((flight, index) => ({
     jump_num: index + 1,
-    gct_ms: metrics.jump_heights[index],
-    flight_ms: metrics.rsi_per_jump[index],
+    flight_ms: flight,
+    jump_height_cm: parseFloat((metrics.jump_heights[index] * 100).toFixed(1)),
   }));
 }
 
@@ -75,18 +75,18 @@ export const GctFlightChart = ({ runId }: { runId: string }) => {
         />
         <Line
           type="monotone"
-          dataKey="gct_ms"
+          dataKey="flight_ms"
           stroke={chartColors.primary}
           strokeWidth={2}
-          name="Ground Contact Time"
+          name="Flight Time"
           dot={{ fill: chartColors.primary }}
         />
         <Line
           type="monotone"
-          dataKey="flight_ms"
+          dataKey="jump_height_cm"
           stroke={chartColors.foreground}
           strokeWidth={2}
-          name="Flight Time"
+          name="Jump Height (cm)"
           dot={{ fill: chartColors.foreground }}
         />
       </LineChart>
