@@ -10,7 +10,7 @@ on:
 jobs:
   seed:
     runs-on: ubuntu-latest
-    environment: production
+    environment: supabase-production
     steps:
       - name: Validate confirmation
         run: |
