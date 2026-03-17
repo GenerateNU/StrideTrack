@@ -1,10 +1,11 @@
 """Factory for creating test CSV data."""
 
 from io import BytesIO
+from uuid import uuid4
 
 
 class CSVFactory:
-    """Factory for creating CSV test data and files."""
+    """Factory for creating CSV test data and files. Always generates unique UUIDs."""
 
     @staticmethod
     def create_valid_csv_content() -> str:
@@ -66,7 +67,7 @@ not_a_number,0,4095
 
     @staticmethod
     def create_form_data(
-        athlete_id: str = "00000000-0000-0000-0000-000000000001",
+        athlete_id: str | None = None,
         event_type: str = "sprint_100m",
         name: str | None = "Test Run",
     ) -> dict:
@@ -74,15 +75,16 @@ not_a_number,0,4095
         Creates form data for CSV upload.
 
         Args:
-            athlete_id: UUID of athlete
+            athlete_id: UUID of athlete. If None, generates a random UUID.
+                        NOTE: the athlete must exist in the DB for the upload to succeed.
             event_type: Type of event from event_type_enum
             name: Optional name for the run
 
         Returns:
             Dictionary of form fields
         """
-        data = {
-            "athlete_id": athlete_id,
+        data: dict = {
+            "athlete_id": athlete_id or str(uuid4()),
             "event_type": event_type,
         }
         if name is not None:
