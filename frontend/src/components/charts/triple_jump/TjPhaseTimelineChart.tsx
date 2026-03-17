@@ -26,14 +26,31 @@ interface ChartRow {
 }
 
 export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
-  const { stepSeriesData, stepSeriesLoading, stepSeriesError } =
-    useTjStepSeries(runId);
-  const { tjMetrics, tjMetricsLoading, tjMetricsError } =
+  const {
+    stepSeriesData,
+    stepSeriesLoading,
+    stepSeriesError,
+    refetchStepSeriesData,
+  } = useTjStepSeries(runId);
+  const { tjMetrics, tjMetricsLoading, tjMetricsError, refetchTjMetrics } =
     useTripleJumpMetrics(runId);
 
   if (stepSeriesLoading || tjMetricsLoading) return <QueryLoading />;
-  if (stepSeriesError || tjMetricsError || !stepSeriesData || !tjMetrics)
-    return <QueryError />;
+  if (stepSeriesError)
+    return (
+      <QueryError
+        error={stepSeriesError as Error}
+        refetch={() => void refetchStepSeriesData()}
+      />
+    );
+  if (tjMetricsError)
+    return (
+      <QueryError
+        error={tjMetricsError as Error}
+        refetch={() => void refetchTjMetrics()}
+      />
+    );
+  if (!stepSeriesData || !tjMetrics) return null;
 
   const strideNums = [...new Set(stepSeriesData.map((d) => d.stride_num))].sort(
     (a, b) => a - b

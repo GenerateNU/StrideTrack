@@ -16,11 +16,22 @@ const PHASE_COLORS = { hop: "#3b82f6", step: "#8b5cf6", jump: "#10b981" };
 const IDEAL_RATIOS = { hop: 35, step: 30, jump: 35 };
 
 export const PhaseRatioChart = ({ runId }: { runId: string }) => {
-  const { phaseRatioData, phaseRatioLoading, phaseRatioError } =
-    useTjPhaseRatio(runId);
+  const {
+    phaseRatioData,
+    phaseRatioLoading,
+    phaseRatioError,
+    refetchPhaseRatioData,
+  } = useTjPhaseRatio(runId);
 
   if (phaseRatioLoading) return <QueryLoading />;
-  if (phaseRatioError || !phaseRatioData) return <QueryError />;
+  if (phaseRatioError)
+    return (
+      <QueryError
+        error={phaseRatioError as Error}
+        refetch={() => void refetchPhaseRatioData()}
+      />
+    );
+  if (!phaseRatioData) return null;
 
   const chartData = [
     {

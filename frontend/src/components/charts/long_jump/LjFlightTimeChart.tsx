@@ -1,11 +1,12 @@
 import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
-import { useLjApproachProfile } from "@/hooks/useLongJumpMetrics.hooks";
-import { useLongJumpMetrics } from "@/hooks/useLongJumpMetrics.hooks";
+import {
+  useLjApproachProfile,
+  useLongJumpMetrics,
+} from "@/hooks/useLongJumpMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 import {
   CartesianGrid,
-  DotProps,
   Legend,
   Line,
   LineChart,
@@ -23,7 +24,9 @@ interface ChartRow {
   phase: string;
 }
 
-interface CustomDotProps extends DotProps {
+interface CustomDotProps {
+  cx?: number;
+  cy?: number;
   payload?: ChartRow;
 }
 
@@ -32,7 +35,7 @@ const CustomDot = (props: CustomDotProps) => {
   if (cx === undefined || cy === undefined || !payload) return null;
   const isTakeoff = payload.phase === "takeoff";
   const isPenultimate = payload.phase === "penultimate";
-  if (isTakeoff) {
+  if (isTakeoff)
     return (
       <circle
         cx={cx}
@@ -43,8 +46,7 @@ const CustomDot = (props: CustomDotProps) => {
         strokeWidth={2}
       />
     );
-  }
-  if (isPenultimate) {
+  if (isPenultimate)
     return (
       <circle
         cx={cx}
@@ -55,22 +57,27 @@ const CustomDot = (props: CustomDotProps) => {
         strokeWidth={1.5}
       />
     );
-  }
   return <circle cx={cx} cy={cy} r={3} fill="var(--primary)" opacity={0.6} />;
 };
 
 export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
-  const { approachData, approachLoading, approachError } =
+  const { approachData, approachLoading, approachError, refetchApproachData } =
     useLjApproachProfile(runId);
   const { ljMetrics, ljMetricsLoading } = useLongJumpMetrics(runId);
 
   if (approachLoading || ljMetricsLoading) return <QueryLoading />;
-  if (approachError || !approachData) return <QueryError />;
+  if (approachError)
+    return (
+      <QueryError
+        error={approachError as Error}
+        refetch={() => void refetchApproachData()}
+      />
+    );
+  if (!approachData) return null;
 
   const strideNums = [...new Set(approachData.map((d) => d.stride_num))].sort(
     (a, b) => a - b
   );
-
   const rows: ChartRow[] = strideNums.map((stride) => {
     const leftStep = approachData.find(
       (d) => d.stride_num === stride && d.foot === "left"
@@ -78,12 +85,11 @@ export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
     const rightStep = approachData.find(
       (d) => d.stride_num === stride && d.foot === "right"
     );
-    const phase = leftStep?.phase ?? rightStep?.phase ?? "approach";
     return {
       label: `S${stride}`,
       left: leftStep?.gct_ms ?? null,
       right: rightStep?.gct_ms ?? null,
-      phase,
+      phase: leftStep?.phase ?? rightStep?.phase ?? "approach",
     };
   });
 

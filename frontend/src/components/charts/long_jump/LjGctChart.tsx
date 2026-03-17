@@ -4,7 +4,6 @@ import { useLjApproachProfile } from "@/hooks/useLongJumpMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 import {
   CartesianGrid,
-  DotProps,
   Legend,
   Line,
   LineChart,
@@ -21,7 +20,10 @@ interface ChartRow {
   right: number | null;
   phase: string;
 }
-interface CustomDotProps extends DotProps {
+
+interface CustomDotProps {
+  cx?: number;
+  cy?: number;
   payload?: ChartRow;
 }
 
@@ -46,11 +48,18 @@ const CustomDot = (props: CustomDotProps) => {
 };
 
 export const LjGctChart = ({ runId }: { runId: string }) => {
-  const { approachData, approachLoading, approachError } =
+  const { approachData, approachLoading, approachError, refetchApproachData } =
     useLjApproachProfile(runId);
 
   if (approachLoading) return <QueryLoading />;
-  if (approachError || !approachData) return <QueryError />;
+  if (approachError)
+    return (
+      <QueryError
+        error={approachError as Error}
+        refetch={() => void refetchApproachData()}
+      />
+    );
+  if (!approachData) return null;
 
   const strideNums = [...new Set(approachData.map((d) => d.stride_num))].sort(
     (a, b) => a - b
