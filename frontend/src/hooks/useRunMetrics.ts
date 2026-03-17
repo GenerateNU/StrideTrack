@@ -10,7 +10,7 @@ import type {
   LROverlayData,
   StackedBarData,
 } from "@/types/runMetrics.types.ts";
-import { apiClient } from "@/axios.config";
+import api from "@/lib/api";
 import { validateResponse } from "@/utils/validation";
 
 export function useRunMetrics(runId: string | null) {
@@ -18,9 +18,8 @@ export function useRunMetrics(runId: string | null) {
     queryKey: ["run-metrics", runId],
     queryFn: async () => {
       if (!runId) return [];
-
-      const response = await apiClient.get<RunMetric[]>(
-        `/api/run/athletes/${runId}/metrics`
+      const response = await api.get<RunMetric[]>(
+        `/run/athletes/${runId}/metrics`
       );
       return validateResponse(response.data, z.array(runMetricSchema));
     },
@@ -43,8 +42,8 @@ export function useLROverlayData(
     queryKey: ["lr-overlay", runId, metric],
     queryFn: async () => {
       if (!runId) return [];
-      const response = await apiClient.get<LROverlayData[]>(
-        `/api/run/athletes/${runId}/metrics/lr-overlay`,
+      const response = await api.get<LROverlayData[]>(
+        `/run/athletes/${runId}/metrics/lr-overlay`,
         { params: { metric } }
       );
       return validateResponse(response.data, z.array(lrOverlaySchema));
@@ -64,8 +63,8 @@ export function useStackedBarData(runId: string | null) {
     queryKey: ["stacked-bar", runId],
     queryFn: async () => {
       if (!runId) return [];
-      const response = await apiClient.get<StackedBarData[]>(
-        `/api/run/athletes/${runId}/metrics/stacked-bar`
+      const response = await api.get<StackedBarData[]>(
+        `/run/athletes/${runId}/metrics/stacked-bar`
       );
       return validateResponse(response.data, z.array(stackedBarSchema));
     },

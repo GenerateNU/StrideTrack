@@ -2,11 +2,11 @@ import logging
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from supabase._async.client import AsyncClient
 
 from app.core.supabase import get_async_supabase
-from app.repositories.run_repository import RunRepository
+from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRepository
 from app.schemas.run_schemas import LROverlayData, RunResponse, StackedBarData
 from app.services.run_service import RunService
 
@@ -55,3 +55,14 @@ async def get_stacked_bar(
     """Get stacked bar chart data for a specific run."""
     logger.info(f"Route: GET /athletes/{run_id}/metrics/stacked-bar")
     return await service.transform_stacked_bar(run_id)
+
+
+@router.post("", response_model=RunCreateResponse, status_code=status.HTTP_201_CREATED)
+async def create_run(
+    data: RunCreate, service: RunService = Depends(get_run_service)
+) -> RunCreateResponse:
+    """Create a new run."""
+    logger.info(f"Route: POST /run for athlete {data.athlete_id}")
+    run = await service.create_run(data)
+    logger.info(f"Route: Created run {run.run_id}")
+    return run
