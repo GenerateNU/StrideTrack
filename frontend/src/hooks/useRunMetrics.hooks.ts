@@ -18,6 +18,7 @@ export function useRunMetrics(runId: string | null) {
     queryKey: ["run-metrics", runId],
     queryFn: async () => {
       if (!runId) return [];
+
       const response = await api.get<RunMetric[]>(
         `/run/athletes/${runId}/metrics`
       );

@@ -46,3 +46,30 @@ class RunRepository:
             raise Exception("Failed to create run")
         logger.info(f"Repository: Created run {response.data[0]['run_id']}")
         return RunCreateResponse(**response.data[0])
+
+    async def get_all(self) -> list[dict]:
+        """Get all runs, ordered by most recent first."""
+        logger.info("Repository: Fetching all runs")
+        response = (
+            await self.supabase.table("run")
+            .select("run_id, athlete_id, event_type, elapsed_ms, created_at")
+            .order("created_at", desc=True)
+            .execute()
+        )
+        logger.info(f"Repository: Found {len(response.data)} runs")
+        return response.data
+
+    async def get_by_athlete_id(self, athlete_id: UUID) -> list[dict]:
+        """Get all runs for a specific athlete, ordered by most recent first."""
+        logger.info(f"Repository: Fetching runs for athlete {athlete_id}")
+        response = (
+            await self.supabase.table("run")
+            .select("run_id, athlete_id, event_type, elapsed_ms, created_at")
+            .eq("athlete_id", str(athlete_id))
+            .order("created_at", desc=True)
+            .execute()
+        )
+        logger.info(
+            f"Repository: Found {len(response.data)} runs for athlete {athlete_id}"
+        )
+        return response.data
