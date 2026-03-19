@@ -5,4 +5,9 @@ export const config = {
     bypassAuth: import.meta.env.VITE_ENVIRONMENT === "development",
     devTokenKey: "dev-token",
   },
+
+  observability: {
+    otelExporterOtlpEndpoint:
+      import.meta.env.VITE_OTEL_EXPORTER_OTLP_ENDPOINT ?? undefined,
+  },
 } as const;

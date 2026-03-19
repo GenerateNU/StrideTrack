@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { apiClient } from "@/axios.config";
+import api from "@/lib/api.ts"
 import {
   trainingRunResponseSchema,
   trainingRunCreateSchema,
@@ -17,7 +17,7 @@ export function useGetAllTrainingRuns() {
   const query = useQuery({
     queryKey: ["training-runs"],
     queryFn: async () => {
-      const response = await apiClient.get<TrainingRunResponse[]>(BASE_PATH);
+      const response = await api.get<TrainingRunResponse[]>(BASE_PATH);
       return validateResponse(
         response.data,
         z.array(trainingRunResponseSchema)
@@ -39,7 +39,7 @@ export function useGetTrainingRun(id: string | null) {
     queryFn: async () => {
       if (!id) return null;
 
-      const response = await apiClient.get<TrainingRunResponse>(
+      const response = await api.get<TrainingRunResponse>(
         `${BASE_PATH}/${id}`
       );
       return validateResponse(response.data, trainingRunResponseSchema);
@@ -61,7 +61,7 @@ export function useCreateTrainingRun() {
   const mutation = useMutation({
     mutationFn: async (data: TrainingRunCreate) => {
       const validated = trainingRunCreateSchema.parse(data);
-      const response = await apiClient.post<TrainingRunResponse>(
+      const response = await api.post<TrainingRunResponse>(
         BASE_PATH,
         validated
       );
@@ -91,7 +91,7 @@ export function useUpdateTrainingRun() {
       data: TrainingRunUpdate;
     }) => {
       const validated = trainingRunUpdateSchema.parse(data);
-      const response = await apiClient.patch<TrainingRunResponse>(
+      const response = await api.patch<TrainingRunResponse>(
         `${BASE_PATH}/${id}`,
         validated
       );
@@ -117,7 +117,7 @@ export function useDeleteTrainingRun() {
 
   const mutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiClient.delete(`${BASE_PATH}/${id}`);
+      await api.delete(`${BASE_PATH}/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["training-runs"] });

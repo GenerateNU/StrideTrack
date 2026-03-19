@@ -49,5 +49,5 @@ class RunCreateResponse(BaseModel):
     run_id: UUID
     athlete_id: UUID
     event_type: str
-    elapsed_ms: int
+    elapsed_ms: int | None = None
     created_at: str

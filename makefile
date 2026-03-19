@@ -112,7 +112,7 @@ network-create: ## Create Docker network for services
 		(MSYS_NO_PATHCONV=1 docker network create $(NETWORK_NAME) && \
 		printf "  $(GREEN)$(CHECKMARK)$(NC) Network $(NETWORK_NAME) created\n")
 
-up: network-create ## Start all services (bun x supabase + App + SigNoz)
+up: network-create ## Start all services (bun x supabase + App + Jaeger)
 	@printf "$(BLUE)Starting bun x supabase...\n$(NC)"
 	@bun x supabase start --exclude vector
 	@printf "\n"
@@ -123,6 +123,7 @@ up: network-create ## Start all services (bun x supabase + App + SigNoz)
 	@printf "  $(CYAN)bun x supabase Studio:$(NC) http://localhost:54323\n"
 	@printf "  $(CYAN)API:$(NC) http://localhost:8000\n"
 	@printf "  $(CYAN)Frontend:$(NC) http://localhost:5173\n"
+	@printf "  $(CYAN)Jaeger UI:$(NC) http://localhost:16686\n"
 	@printf "\n"
 
 down: ## Stop all services

@@ -1,6 +1,16 @@
 import { z } from "zod";
 import type { EventTypeEnum } from "@/types/event.types";
 
+export const runResponseSchema = z.object({
+  run_id: z.string(),
+  athlete_id: z.string(),
+  event_type: z.string(),
+  elapsed_ms: z.number().nullable().optional(),
+  created_at: z.string(),
+});
+
+export type Run = z.infer<typeof runResponseSchema>;
+
 export const createRunPayloadSchema = z.object({
   athlete_id: z.string(),
   event_type: z.string(),
