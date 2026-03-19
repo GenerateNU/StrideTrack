@@ -1,7 +1,7 @@
-from app.dependencies import get_supabase_with_user_token
 from fastapi import APIRouter, Depends
 from supabase import Client
 
+from app.core.supabase import get_async_supabase
 from app.repositories.bosco_repository import BoscoRepository
 from app.schemas.bosco_schemas import BoscoMetricsResponse
 from app.services.bosco_service import BoscoService
@@ -10,7 +10,7 @@ router = APIRouter(prefix="/bosco", tags=["bosco"])
 
 
 def get_bosco_service(
-    supabase: Client = Depends(get_supabase_with_user_token),
+    supabase: Client = Depends(get_async_supabase),
 ) -> BoscoService:
     repository = BoscoRepository(supabase)
     return BoscoService(repository)

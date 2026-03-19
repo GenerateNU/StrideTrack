@@ -108,6 +108,7 @@ export default function VisualizationsPage() {
           </div>
         </div>
 
+        {/* Bosco Metrics */}
         <h2 className="text-2xl font-bold mb-6 text-foreground">Bosco Test</h2>
         <div className="space-y-8">
           <div className="bg-card border border-border rounded-lg p-6 shadow-sm">

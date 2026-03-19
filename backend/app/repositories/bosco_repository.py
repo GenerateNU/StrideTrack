@@ -9,7 +9,7 @@ from app.schemas.bosco_schemas import Run, RunMetrics
 logger = logging.getLogger(__name__)
 
 
-class Bosco_Repository:
+class BoscoRepository:
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
         self.metrics_table = "run_metrics"

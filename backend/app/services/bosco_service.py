@@ -1,9 +1,8 @@
-from app.transformations.bosco_transformations import (
-    transform_stride_cycles_to_bosco_tests,
-)
-
 from app.repositories.bosco_repository import BoscoRepository
 from app.schemas.bosco_schemas import BoscoMetricsResponse, Run
+from app.utils.bosco_transformations import (
+    transform_stride_cycles_to_bosco_tests,
+)
 
 
 class BoscoService:
