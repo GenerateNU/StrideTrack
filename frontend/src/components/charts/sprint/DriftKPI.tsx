@@ -1,4 +1,4 @@
-import { useSprintDrift } from "@/hooks/useRunMetrics";
+import { useSprintDrift } from "@/hooks/useRunMetrics.hooks";
 import { QueryLoading } from "@/components/QueryLoading";
 import { QueryError } from "@/components/QueryError";
 

@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { chartColors } from "@/lib/chartColors";
-import { useStepFrequencyData } from "@/hooks/useRunMetrics";
+import { useStepFrequencyData } from "@/hooks/useRunMetrics.hooks";
 import "@/index.css";
 import { CustomTooltip } from "@/components/charts/CustomToolTip";
 import { QueryLoading } from "@/components/QueryLoading";

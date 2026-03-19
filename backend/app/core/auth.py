@@ -3,9 +3,9 @@ import os
 from uuid import UUID
 
 import jwt
-from jwt import PyJWKClient
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jwt import PyJWKClient
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import (
