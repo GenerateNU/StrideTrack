@@ -20,7 +20,7 @@ class BoscoRepository:
 
         logger.info(f"Repository: Fetching all run metrics for bosco run {run_id}")
         response = (
-            await self.supabase.table("RUN_METRICS")
+            await self.supabase.table("run_metrics")
             .select(
                 "stride_num, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms"
             )
@@ -41,7 +41,7 @@ class BoscoRepository:
 
         logger.info(f"Repository: Fetching all bosco runs for athlete {athlete_id}")
         response = (
-            await self.supabase.table("RUN")
+            await self.supabase.table("run")
             .select("run_id, athlete_id, event_type, name")
             .eq("athlete_id", athlete_id)
             .eq("event_type", "bosco_test")

@@ -22,7 +22,7 @@ async def get_bosco_metrics(
     service: BoscoService = Depends(get_bosco_service),
 ) -> BoscoMetricsResponse:
     """Returns computed Bosco test metrics for a given run."""
-    return service.get_bosco_metrics(run_id)
+    return await service.get_bosco_metrics(run_id)
 
 
 @router.get("/runs/{athlete_id}")
@@ -31,4 +31,4 @@ async def get_bosco_runs(
     service: BoscoService = Depends(get_bosco_service),
 ) -> list[dict]:
     """Returns all Bosco test runs for a given athlete."""
-    return service.get_bosco_runs_for_athlete(athlete_id)
+    return await service.get_bosco_runs_for_athlete(athlete_id)

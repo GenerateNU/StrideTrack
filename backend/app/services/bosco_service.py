@@ -9,9 +9,9 @@ class BoscoService:
     def __init__(self, repository: BoscoRepository) -> None:
         self.repository = repository
 
-    def get_bosco_metrics(self, run_id: str) -> BoscoMetricsResponse:
+    async def get_bosco_metrics(self, run_id: str) -> BoscoMetricsResponse:
         """Fetches run metrics and applies bosco transformations"""
-        df = self.repository.get_run_metrics_by_run_id(run_id)
+        df = await self.repository.get_run_metrics_by_run_id(run_id)
         metrics = transform_stride_cycles_to_bosco_tests(df)
 
         return BoscoMetricsResponse(
@@ -26,6 +26,6 @@ class BoscoService:
             flight_per_jump=[round(flight, 3) for flight in metrics["flight_per_jump"]],
         )
 
-    def get_bosco_runs_for_athlete(self, athlete_id: str) -> list[Run]:
+    async def get_bosco_runs_for_athlete(self, athlete_id: str) -> list[Run]:
         """Returns all Bosco test runs for a given athlete."""
-        return self.repository.get_bosco_runs_by_athlete_id(athlete_id)
+        return await self.repository.get_bosco_runs_by_athlete_id(athlete_id)
