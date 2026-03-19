@@ -23,7 +23,7 @@ export function useRunMetrics(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<RunMetric[]>(
-        `/api/run/athletes/${runId}/metrics`
+        `/run/athletes/${runId}/metrics`
       );
       return validateResponse(response.data, z.array(runMetricSchema));
     },
@@ -47,7 +47,7 @@ export function useLROverlayData(
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<LROverlayData[]>(
-        `/api/run/athletes/${runId}/metrics/lr-overlay`,
+        `/run/athletes/${runId}/metrics/lr-overlay`,
         { params: { metric } }
       );
       return validateResponse(response.data, z.array(lrOverlaySchema));
@@ -68,7 +68,7 @@ export function useStackedBarData(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<StackedBarData[]>(
-        `/api/run/athletes/${runId}/metrics/stacked-bar`
+        `/run/athletes/${runId}/metrics/stacked-bar`
       );
       return validateResponse(response.data, z.array(stackedBarSchema));
     },
@@ -88,7 +88,7 @@ export function useSprintDrift(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<SprintDriftData>(
-        `/api/run/athletes/${runId}/metrics/sprint-drift`
+        `/run/athletes/${runId}/metrics/sprint-drift`
       );
       return validateResponse(response.data, sprintDriftSchema);
     },
@@ -109,7 +109,7 @@ export function useStepFrequencyData(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<StepFrequencyData[]>(
-        `/api/run/athletes/${runId}/metrics/step-frequency`
+        `/run/athletes/${runId}/metrics/step-frequency`
       );
       return validateResponse(response.data, z.array(stepFrequencySchema));
     },
