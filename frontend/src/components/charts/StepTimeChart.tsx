@@ -11,7 +11,7 @@ import {
 } from "recharts";
 import { useState } from "react";
 import { chartColors } from "@/lib/chartColors";
-import { useStackedBarData } from "@/hooks/useRunMetrics";
+import { useStackedBarData } from "@/hooks/useRunMetrics.hooks";
 import "@/index.css";
 import { CustomTooltip } from "@/components/charts/CustomToolTip";
 

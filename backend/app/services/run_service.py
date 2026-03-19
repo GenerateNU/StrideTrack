@@ -56,3 +56,17 @@ class RunService:
         run = await self.repository.create(data)
         logger.info(f"Service: Created run {run.run_id}")
         return run
+
+    async def get_all_runs(self) -> list[RunCreateResponse]:
+        """Get all runs."""
+        logger.info("Service: Getting all runs")
+        runs = await self.repository.get_all()
+        logger.info(f"Service: Retrieved {len(runs)} runs")
+        return [RunCreateResponse(**run) for run in runs]
+
+    async def get_runs_by_athlete_id(self, athlete_id: UUID) -> list[RunCreateResponse]:
+        """Get all runs for a specific athlete."""
+        logger.info(f"Service: Getting runs for athlete {athlete_id}")
+        runs = await self.repository.get_by_athlete_id(athlete_id)
+        logger.info(f"Service: Retrieved {len(runs)} runs for athlete {athlete_id}")
+        return [RunCreateResponse(**run) for run in runs]
