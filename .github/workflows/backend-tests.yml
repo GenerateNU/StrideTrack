@@ -12,6 +12,7 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    environment: supabase-testing
     steps:
       - uses: actions/checkout@v4
 
