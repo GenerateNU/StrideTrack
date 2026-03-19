@@ -16,9 +16,10 @@ Pattern reference:
   - Arrange → Act → Assert
 """
 
+from uuid import uuid4
+
 import pytest
 from fastapi.testclient import TestClient
-from uuid import uuid4
 
 from tests.factories.example_factory import ExampleFactory
 
@@ -75,9 +76,7 @@ class TestGetTrainingRun:
         assert data["id"] == run_id
         assert data["athlete_name"] == "Get Test Athlete"
 
-    def test_get_nonexistent_run_returns_404(
-        self, test_client: TestClient
-    ) -> None:
+    def test_get_nonexistent_run_returns_404(self, test_client: TestClient) -> None:
         fake_id = str(uuid4())
 
         response = test_client.get(f"{BASE}/{fake_id}")
@@ -143,9 +142,7 @@ class TestCreateTrainingRun:
 
         assert response.status_code == 422
 
-    def test_create_invalid_distance_returns_422(
-        self, test_client: TestClient
-    ) -> None:
+    def test_create_invalid_distance_returns_422(self, test_client: TestClient) -> None:
         run_data = ExampleFactory.create()
         run_data["distance_meters"] = 0  # must be > 0
 
@@ -170,7 +167,8 @@ class TestUpdateTrainingRun:
         created_ids["training_run_ids"].append(run_id)
 
         response = test_client.patch(
-            f"{BASE}/{run_id}", json={"athlete_name": "After Update", "distance_meters": 1600}
+            f"{BASE}/{run_id}",
+            json={"athlete_name": "After Update", "distance_meters": 1600},
         )
 
         assert response.status_code == 200
@@ -178,9 +176,7 @@ class TestUpdateTrainingRun:
         assert data["athlete_name"] == "After Update"
         assert data["distance_meters"] == 1600
 
-    def test_update_nonexistent_run_returns_404(
-        self, test_client: TestClient
-    ) -> None:
+    def test_update_nonexistent_run_returns_404(self, test_client: TestClient) -> None:
         fake_id = str(uuid4())
 
         response = test_client.patch(
@@ -213,9 +209,7 @@ class TestDeleteTrainingRun:
         get_resp = test_client.get(f"{BASE}/{run_id}")
         assert get_resp.status_code == 404
 
-    def test_delete_nonexistent_run_returns_404(
-        self, test_client: TestClient
-    ) -> None:
+    def test_delete_nonexistent_run_returns_404(self, test_client: TestClient) -> None:
         fake_id = str(uuid4())
 
         response = test_client.delete(f"{BASE}/{fake_id}")
