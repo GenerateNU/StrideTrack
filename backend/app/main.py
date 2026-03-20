@@ -62,8 +62,10 @@ app.add_exception_handler(ExpiredTokenException, expired_token_handler)
 app.add_exception_handler(DevUserNotAllowedException, dev_user_not_allowed_handler)
 app.add_exception_handler(NotACoachException, not_a_coach_handler)
 
+
 @app.get("/")
 def read_root() -> RootResponse:
     return RootResponse(message="StrideTrack API")
+
 
 app.include_router(api_router)

@@ -16,7 +16,7 @@ else
 endif
 .SHELLFLAGS := -euo pipefail -c
 
-.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create test check-format-backend check-format-frontend check-format format-backend format-frontend format
+.PHONY: help check-deps init-env init-bun db-reset db-migrate up down restart build rebuild logs clean network-create test unit-test int-test check-format-backend check-format-frontend check-format format-backend format-frontend format
 
 # Colors for output
 GREEN := \033[0;32m
@@ -172,19 +172,35 @@ clean: ## Remove all containers, networks, and volumes
 	@printf "  $(GREEN)$(CHECKMARK)$(NC) Cleanup complete\n"
 	@printf "\n"
 
-test: ## Run backend tests in container
+unit-test: ## Run unit tests locally (no Supabase required)
+	@printf "$(BLUE)Running unit tests...\n$(NC)"
+	@cd backend && uv run pytest tests/unit/ -v --tb=short
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Unit tests complete\n"
+	@printf "\n"
+
+int-test: ## Run integration tests in container against local Supabase (requires: make up)
+	@if ! docker ps --format '{{.Names}}' 2>/dev/null | grep -q 'supabase_kong_StrideTrack'; then \
+		printf "$(RED)$(CROSSMARK) Supabase is not running.\n$(NC)"; \
+		printf "  Run $(CYAN)make up$(NC) first, then retry $(CYAN)make int-test$(NC)\n\n"; \
+		exit 1; \
+	fi
 	@printf "$(BLUE)Building test container...\n$(NC)"
 	@docker build -f backend/Dockerfile.test -t $(PROJECT_NAME)-test backend/
-	@printf "$(BLUE)Running tests...\n$(NC)"
+	@printf "$(BLUE)Running integration tests...\n$(NC)"
 	$(eval SERVICE_KEY := $(shell bun x supabase status -o json 2>/dev/null | grep -o '"SERVICE_ROLE_KEY": "[^"]*"' | cut -d'"' -f4))
 	@docker run --rm \
 		--network supabase_network_StrideTrack \
 		-e SUPABASE_URL=http://supabase_kong_StrideTrack:8000 \
 		-e SUPABASE_SERVICE_ROLE_KEY="$(SERVICE_KEY)" \
 		-e ENVIRONMENT=test \
-		$(PROJECT_NAME)-test
-	@printf "  $(GREEN)$(CHECKMARK)$(NC) Tests complete\n"
+		-e OTEL_SDK_DISABLED=true \
+		$(PROJECT_NAME)-test uv run pytest tests/integration/ -v --tb=short
+	@printf "  $(GREEN)$(CHECKMARK)$(NC) Integration tests complete\n"
 	@printf "\n"
+
+test: ## Run all tests (unit + integration against local Supabase)
+	@$(MAKE) unit-test
+	@$(MAKE) int-test
 
 check-format-backend: ## Check code linting and formatting in the backend with Ruff
 	@printf "$(BLUE)Checking Backend Linting...\n$(NC)"

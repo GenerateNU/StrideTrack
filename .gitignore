@@ -212,4 +212,7 @@ node_modules
 # Mise
 mise.toml
 
+# Claude Code
 CLAUDE.md
+.mcp.json
+.cgcignore
