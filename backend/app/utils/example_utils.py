@@ -1,11 +1,3 @@
-"""
-Example utility functions demonstrating patterns used across the utils layer.
-
-These are intentionally simple to serve as clear reference implementations
-for how utility functions should be structured and tested.
-"""
-
-
 def clamp(value: float, low: float, high: float) -> float:
     """
     Clamp a value between a minimum and maximum.

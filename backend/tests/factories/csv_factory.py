@@ -1,5 +1,3 @@
-"""Factory for creating test CSV data."""
-
 from io import BytesIO
 from uuid import uuid4
 

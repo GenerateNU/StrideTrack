@@ -1,14 +1,3 @@
-"""
-Example unit tests demonstrating the unit testing pattern for utility functions.
-
-This file is the reference template. Copy it when adding tests for a new util module:
-  1. Import the functions you want to test
-  2. Group tests by function in a class named Test<FunctionName>
-  3. Mark each class with @pytest.mark.unit
-  4. Cover: happy path, edge cases, and error cases
-  5. No fixtures, no DB, no network — pure Python only
-"""
-
 import pytest
 
 from app.utils.example_utils import clamp, normalize, percent_change

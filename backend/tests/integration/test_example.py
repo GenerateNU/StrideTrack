@@ -1,21 +1,3 @@
-"""
-Integration tests for the example stack: routes → service → repository.
-
-Covers all CRUD operations on the training_runs table via:
-  GET    /api/example/training-runs
-  GET    /api/example/training-runs/{id}
-  POST   /api/example/training-runs
-  PATCH  /api/example/training-runs/{id}
-  DELETE /api/example/training-runs/{id}
-
-Pattern reference:
-  - Mark each class @pytest.mark.integration
-  - Register every created ID in created_ids immediately after creation
-  - Cleanup is automatic via the cleanup_created autouse fixture in conftest.py
-  - Use factories — never hardcode data
-  - Arrange → Act → Assert
-"""
-
 from uuid import uuid4
 
 import pytest
