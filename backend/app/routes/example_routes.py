@@ -58,8 +58,8 @@ async def create_training_run(
 ) -> ExampleRunCreate:
     """Create a new training run."""
     logger.info(f"Route: POST /training-runs for athlete {data.athlete_name}")
-    run = await service.create_run(data.model_dump(exclude_unset=True))
-    logger.info(f"Route: Created training run {run['id']}")
+    run = await service.create_run(data)
+    logger.info(f"Route: Created training run {run.id}")
     return run
 
 
@@ -71,7 +71,7 @@ async def update_training_run(
 ) -> ExampleRunUpdate:
     """Update a training run."""
     logger.info(f"Route: PATCH /training-runs/{run_id}")
-    run = await service.update_run(run_id, data.model_dump(exclude_unset=True))
+    run = await service.update_run(run_id, data)
     logger.info(f"Route: Updated training run {run_id}")
     return run
 

@@ -1,0 +1,54 @@
+name: Backend Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-tests.yml"
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    environment: supabase-testing
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: cd backend && uv sync
+
+      - name: Run unit tests
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ENVIRONMENT: test
+          OTEL_SDK_DISABLED: "true"
+        run: cd backend && uv run pytest tests/unit/ -v --tb=short
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    environment: supabase-testing
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: cd backend && uv sync
+
+      - name: Run integration tests with coverage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ENVIRONMENT: test
+          OTEL_SDK_DISABLED: "true"
+        run: |
+          cd backend
+          uv run pytest tests/integration/ -v --tb=short \
+            --cov=app/services --cov=app/utils \
+            --cov-report=term-missing
