@@ -1,5 +1,6 @@
 import logging
 from typing import Literal
+from app.core.exceptions import NotFoundException
 from uuid import UUID
 
 from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRepository
@@ -15,11 +16,23 @@ logger = logging.getLogger(__name__)
 class RunService:
     """Service for run metric related business logic."""
 
-    def __init__(self, repository: RunRepository) -> None:
+    def __init__(self, repository: RunRepository, coach_id: UUID) -> None:
         self.repository = repository
+        self.coach_id = coach_id
 
     async def get_metrics_by_run_id(self, run_id: UUID) -> list[RunResponse]:
         """Get all run metrics for a specific run."""
+
+        # Verify run belongs to an athlete under this coach
+        run_check = await self.repository.supabase.table("run") \
+            .select("run_id, athletes!inner(coach_id)") \
+            .eq("run_id", str(run_id)) \
+            .eq("athletes.coach_id", str(self.coach_id)) \
+            .execute()
+
+        if not run_check.data:
+            raise NotFoundException("Run", str(run_id))
+
         logger.info(f"Service: Getting metrics for run {run_id}")
 
         # Convert UUID to string for Supabase query
@@ -52,6 +65,16 @@ class RunService:
 
     async def create_run(self, data: RunCreate) -> RunCreateResponse:
         """Create a new run."""
+
+        athlete_check = await self.repository.supabase.table("athletes") \
+            .select("athlete_id") \
+            .eq("athlete_id", str(data.athlete_id)) \
+            .eq("coach_id", str(self.coach_id)) \
+            .execute()
+
+        if not athlete_check.data:
+            raise NotFoundException("Athlete", str(data.athlete_id))
+
         logger.info(f"Service: Creating run for athlete {data.athlete_id}")
         run = await self.repository.create(data)
         logger.info(f"Service: Created run {run.run_id}")

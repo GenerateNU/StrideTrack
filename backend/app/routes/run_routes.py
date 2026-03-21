@@ -10,6 +10,9 @@ from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRep
 from app.schemas.run_schemas import LROverlayData, RunResponse, StackedBarData
 from app.services.run_service import RunService
 
+from app.schemas.coach_schemas import Coach
+from app.core.auth import get_current_coach
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/run", tags=["Run"])
@@ -17,10 +20,11 @@ router = APIRouter(prefix="/run", tags=["Run"])
 
 # Dependency injection
 async def get_run_service(
+    coach: Coach = Depends(get_current_coach),
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> RunService:
     repository = RunRepository(supabase)
-    return RunService(repository)
+    return RunService(repository, coach_id=coach.coach_id)
 
 
 @router.get("/athletes/{run_id}/metrics", response_model=list[RunResponse])

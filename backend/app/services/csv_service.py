@@ -2,6 +2,7 @@ import logging
 
 import pandas as pd
 from fastapi import HTTPException
+from uuid import UUID
 
 from app.repositories.csv_repository import CSVRepository
 from app.schemas.csv_schemas import CSVUploadResponse
@@ -11,12 +12,23 @@ logger = logging.getLogger(__name__)
 
 
 class CSVService:
-    def __init__(self, repository: CSVRepository) -> None:
+    def __init__(self, repository: CSVRepository, coach_id: UUID) -> None:
         self.repository = repository
+        self.coach_id = coach_id
 
     async def ingest_stride_csv(
         self, raw_df: pd.DataFrame, athlete_id: str, event_type: str, name: str = None
     ) -> CSVUploadResponse:
+
+        # Athlete Check
+        athlete_check = await self.repository.supabase.table("athletes") \
+            .select("athlete_id") \
+            .eq("athlete_id", athlete_id) \
+            .eq("coach_id", str(self.coach_id)) \
+            .execute()
+        if not athlete_check.data:
+            raise HTTPException(status_code=404, detail="Athlete not found")
+
         # Transform
         try:
             transformed_df = transform_feet_to_stride_cycles(raw_df)

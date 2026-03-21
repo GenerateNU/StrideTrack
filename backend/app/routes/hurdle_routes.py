@@ -16,6 +16,8 @@ from app.schemas.hurdle_schemas import (
     TakeoffGctBarData,
 )
 from app.services.hurdle_service import HurdleService
+from app.schemas.coach_schemas import Coach
+from app.core.auth import get_current_coach
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +26,11 @@ router = APIRouter(prefix="/run", tags=["Run"])
 
 # Dependency injection
 async def get_hurdle_service(
+    coach: Coach = Depends(get_current_coach),
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> HurdleService:
     repository = HurdleRepository(supabase)
-    return HurdleService(repository)
+    return HurdleService(repository, coach_id=coach.coach_id)
 
 
 @router.get(
