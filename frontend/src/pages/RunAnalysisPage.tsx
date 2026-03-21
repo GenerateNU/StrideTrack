@@ -1,8 +1,5 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useRunMetrics } from "@/hooks/useRunMetrics.hooks";
-import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
-import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
-import { StepDataTable } from "@/components/charts/StepDataTable";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { getChartsForEventType } from "@/config/runVisualizations";
 import { ArrowLeft } from "lucide-react";
 
 function SectionHeader({ title }: { title: string }) {
@@ -23,10 +20,12 @@ export default function RunAnalysisPage() {
     runId: string;
   }>();
   const navigate = useNavigate();
-  const { metrics, metricsIsLoading } = useRunMetrics(runId ?? null);
+  const location = useLocation();
 
   // ADD HERE: Replace with dedicated GET /api/run/:runId and GET /api/athletes/:athleteId
   // endpoints once they exist. Currently we only have the runId from the URL.
+  const eventType: string = location.state?.eventType ?? "default";
+  const charts = getChartsForEventType(eventType);
   return (
       <div className="flex h-full flex-col pt-4">
         <div className="mb-6">
@@ -40,30 +39,28 @@ export default function RunAnalysisPage() {
           <h2 className="text-xl font-bold text-foreground">Run Analysis</h2>
           {/* ADD HERE: Display run event_type, date, elapsed_ms once GET /api/run/:runId exists */}
         </div>
-
+        
         {runId ? (
-          <div className="flex flex-1 flex-col gap-6">
-            <div className="flex-1 rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
-              <SectionHeader title="Ground Contact Time — L vs R" />
+        <div className="flex flex-1 flex-col gap-6">
+          {charts.map(({ title, component: ChartComponent }) => (
+            <div
+              key={title}
+              className="flex-1 rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]"
+            >
+              <SectionHeader title={title} />
               <div className="h-[calc(100%-2rem)]">
-                <GroundContactTimeChart runId={runId} />
+                <ChartComponent runId={runId} />
               </div>
             </div>
-
-            <div className="flex-1 rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
-              <SectionHeader title="Flight Time — L vs R" />
-              <div className="h-[calc(100%-2rem)]">
-                <FlightTimeChart runId={runId} />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-border p-12 text-center">
-            <p className="text-sm font-medium text-muted-foreground">
-              Run not found.
-            </p>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-border p-12 text-center">
+          <p className="text-sm font-medium text-muted-foreground">
+            Run not found.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
