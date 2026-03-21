@@ -11,13 +11,15 @@ import {
 } from "recharts";
 import { useState } from "react";
 import { chartColors } from "@/lib/chartColors";
-import { useStackedBarData } from "@/hooks/useRunMetrics";
+import { useStackedBarData } from "@/hooks/useRunMetrics.hooks";
 import "@/index.css";
 import { CustomTooltip } from "@/components/charts/CustomToolTip";
 
 export const StepTimeChart = ({ runId }: { runId: string }) => {
   const { stackedData } = useStackedBarData(runId);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  if (!stackedData) return null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onMouseMove = (state: any) => {

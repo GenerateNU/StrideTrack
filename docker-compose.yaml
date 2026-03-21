@@ -8,6 +8,9 @@ services:
       - "8000:8000"
     env_file:
       - ./backend/.env
+    environment:
+      # When running in Docker, reach OTel collector on host (optional: only used if backend/.env has OTEL_ENDPOINT set)
+      - OTEL_ENDPOINT=host.docker.internal:4317
     volumes:
       - ./backend:/app
       - backend-venv:/app/.venv
@@ -23,11 +26,26 @@ services:
       - "5173:5173"
     env_file:
       - ./frontend/.env
+    environment:
+      # When running in Docker, Vite proxy uses this to reach Jaeger on the host
+      - OTEL_PROXY_TARGET=http://host.docker.internal:4318
     volumes:
       - ./frontend:/app
       - frontend-node-modules:/app/node_modules
     depends_on:
       - backend
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  jaeger:
+    image: jaegertracing/jaeger:2.15.1
+    command:
+      - "--set=receivers.otlp.protocols.grpc.endpoint=0.0.0.0:4317"
+      - "--set=receivers.otlp.protocols.http.endpoint=0.0.0.0:4318"
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "16686:16686" # Jaeger UI
 
 volumes:
   backend-venv:

@@ -69,7 +69,8 @@ backend/
 - Automatic request tracing via `FastAPIInstrumentor`
 - HTTPX instrumentation for Supabase calls
 - Logs automatically correlated with traces (trace_id, span_id)
-- OTLP export to collector at `otel-collector:4317`
+- OTLP export to local Jaeger (gRPC `localhost:4317`, HTTP `localhost:4318`)
+- Jaeger UI available at `http://localhost:16686` when running the dev stack
 
 **Logging:**
 
@@ -120,6 +121,16 @@ make logs SERVICE=backend  # View logs
 
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
+
+**Running tests:**
+
+```bash
+make unit-test   # Unit tests — no services needed
+make int-test    # Integration tests — requires: make up
+make test        # Both
+```
+
+See [TESTING.md](./TESTING.md) for the full guide: test patterns, cleanup contract, FK dependency order, and how to write new tests.
 
 ## Environment Variables
 

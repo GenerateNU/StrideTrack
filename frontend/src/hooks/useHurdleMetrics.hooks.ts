@@ -1,4 +1,4 @@
-import { apiClient } from "@/axios.config";
+import api from "@/lib/api.ts";
 import type {
   GctIncreaseData,
   HurdleSplitBarData,
@@ -27,8 +27,8 @@ export function useHurdleSplits(runId: string | null) {
         return null;
       }
 
-      const response = await apiClient.get<HurdleSplitBarData[]>(
-        `/api/run/athletes/${runId}/metrics/hurdles/splits`
+      const response = await api.get<HurdleSplitBarData[]>(
+        `/run/athletes/${runId}/metrics/hurdles/splits`
       );
 
       return validateResponse(response.data, z.array(hurdleSplitBarSchema));
@@ -52,8 +52,8 @@ export function useStepsBetweenHurdles(runId: string | null) {
         return null;
       }
 
-      const response = await apiClient.get<StepsBetweenHurdlesData[]>(
-        `/api/run/athletes/${runId}/metrics/hurdles/steps-between`
+      const response = await api.get<StepsBetweenHurdlesData[]>(
+        `/run/athletes/${runId}/metrics/hurdles/steps-between`
       );
 
       return validateResponse(
@@ -80,8 +80,8 @@ export function useTakeoffGct(runId: string | null) {
         return null;
       }
 
-      const response = await apiClient.get<TakeoffGctBarData[]>(
-        `/api/run/athletes/${runId}/metrics/hurdles/takeoff-gct`
+      const response = await api.get<TakeoffGctBarData[]>(
+        `/run/athletes/${runId}/metrics/hurdles/takeoff-gct`
       );
 
       return validateResponse(response.data, z.array(takeoffGctBarSchema));
@@ -105,8 +105,8 @@ export function useLandingGct(runId: string | null) {
         return null;
       }
 
-      const response = await apiClient.get<LandingGctBarData[]>(
-        `/api/run/athletes/${runId}/metrics/hurdles/landing-gct`
+      const response = await api.get<LandingGctBarData[]>(
+        `/run/athletes/${runId}/metrics/hurdles/landing-gct`
       );
 
       return validateResponse(response.data, z.array(landingGctBarSchema));
@@ -130,8 +130,8 @@ export function useTakeoffFt(runId: string | null) {
         return null;
       }
 
-      const response = await apiClient.get<TakeoffFtBarData[]>(
-        `/api/run/athletes/${runId}/metrics/hurdles/takeoff-ft`
+      const response = await api.get<TakeoffFtBarData[]>(
+        `/run/athletes/${runId}/metrics/hurdles/takeoff-ft`
       );
 
       return validateResponse(response.data, z.array(takeoffFtBarSchema));
@@ -155,8 +155,8 @@ export function useGctIncrease(runId: string | null) {
         return null;
       }
 
-      const response = await apiClient.get<GctIncreaseData[]>(
-        `/api/run/athletes/${runId}/metrics/hurdles/gct-increase`
+      const response = await api.get<GctIncreaseData[]>(
+        `/run/athletes/${runId}/metrics/hurdles/gct-increase`
       );
 
       return validateResponse(response.data, z.array(gctIncreaseSchema));
