@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { AthleteSelector } from "@/components/athletes/AthleteSelector";
 import EventSelector from "@/components/events/EventSelector";
 import { useCreateRun } from "@/hooks/useCreateRun.hooks";
@@ -55,15 +56,16 @@ export default function RecordingPage() {
   }, []);
 
   // Save the run to the database, then reset
+  const navigate = useNavigate();
   const handleSave = async () => {
     if (!athleteId || !eventType) return;
     try {
-      await createRun({
+      const result = await createRun({
         athlete_id: athleteId,
         event_type: eventType,
         elapsed_ms: elapsedMs,
       });
-      resetAll();
+      navigate(`/athletes/${athleteId}/runs/${result.run_id}`);
     } catch (error) {
       console.error("Failed to save run:", error);
     }
