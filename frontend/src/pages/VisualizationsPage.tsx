@@ -7,6 +7,8 @@ import { StepsBetweenHurdlesChart } from "@/components/charts/hurdles/StepsBetwe
 import { TakeoffFtChart } from "@/components/charts/hurdles/TakeoffFtChart";
 import { TakeoffGctChart } from "@/components/charts/hurdles/TakeoffGctChart";
 import { StepTimeChart } from "@/components/charts/StepTimeChart";
+import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
+import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
 
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
@@ -45,6 +47,22 @@ export default function VisualizationsPage() {
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
               <StepTimeChart runId={HARDCODED_RUN_ID} />
             </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Step Frequency - (Hz)
+            </h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <StepFrequencyChart runId={HARDCODED_RUN_ID} />
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Sprint Drift
+            </h2>
+            <SprintDriftKPIs runId={HARDCODED_RUN_ID} />
           </div>
 
           {/* Hurdle Metrics */}

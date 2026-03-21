@@ -27,6 +27,18 @@ class StackedBarData(BaseModel):
     flight_ms: float
 
 
+class SprintDriftData(BaseModel):
+    gct_drift_pct: float
+    ft_drift_pct: float
+
+
+class StepFrequencyData(BaseModel):
+    stride_num: int
+    foot: Literal["left", "right"]
+    label: str
+    step_frequency_hz: float
+
+
 class RunCreate(BaseModel):
     athlete_id: UUID
     event_type: str

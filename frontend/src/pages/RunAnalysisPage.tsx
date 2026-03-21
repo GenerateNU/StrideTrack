@@ -55,7 +55,7 @@ export default function RunAnalysisPage() {
             <FlightTimeChart runId={runId} />
           </div>
 
-          <StepDataTable metrics={metrics} isLoading={metricsIsLoading} />
+          <StepDataTable metrics={metrics ?? []} isLoading={metricsIsLoading} />
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center">
