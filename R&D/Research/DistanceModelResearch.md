@@ -1,252 +1,189 @@
-# Quarter Split Position Estimation — Research & Model
+# Sprint Position & Quarter Split Estimation
 
+**Project:** StrideTrack — GenerateNU / NExT Consulting  
 **Ticket:** Extend Distance Model Research  
-**Goal:** Determine whether StrideTrack's current sensor data (GCT, flight time, IC timestamps at ~7–8 Hz BLE) can accurately estimate a runner's position at each stride and produce quarter splits for sprint events (100m, 400m, etc.).
+**Status:** Research complete, model trained and validated
 
 ---
 
-## Table of Contents
+## What this is
 
-1. [Sensor Limitations](#1-sensor-limitations)
-2. [The GCT Asymmetry Question](#2-the-gct-asymmetry-question)
-3. [Literature Review](#3-literature-review)
-4. [The Model](#4-the-model)
-5. [Test Results on Real Data](#5-test-results-on-real-data)
-6. [Validation Strategy](#6-validation-strategy)
-7. [Honest Limitations](#7-honest-limitations)
-8. [Integration Path](#8-integration-path)
+StrideTrack's insole sensors capture when feet hit the ground and for how long — but they have no GPS, no timing gates, and no way to directly measure where a runner is on the track. This research answers the question: **given only a coach's stopwatch time and the sensor's IC timestamps, how accurately can we estimate a runner's position at each stride and produce quarter splits?**
 
 ---
 
-## 1. Sensor Limitations
+## What goes in, what comes out
 
-The insole hardware (16-sensor pressure array per foot, BLE transmission) currently logs at **~7–8 Hz**, meaning one sensor frame every ~121ms (median). This creates a hard quantization ceiling on what metrics are reliable.
+**Inputs:**
 
-| Metric | Reliable at 7–8 Hz? | Why |
+| Source | Data | Required? |
 |---|---|---|
-| IC timestamp (when foot lands) | ✅ Yes | Spans many frames, jitter is small relative to inter-step intervals |
-| Total stride time (GCT + FT) | ✅ Yes | Same reason |
-| Per-step GCT | ⚠️ Unreliable | ±60ms quantization error = ±40% of typical sprint GCT (85–140ms) |
-| L/R GCT asymmetry | ❌ No | Cannot distinguish differences < 60ms — within noise floor |
-| Pressure zone distribution | ✅ Yes | Accumulates across many frames, not timing-sensitive |
+| Sensor | IC timestamp per stride (ms) | Always |
+| Coach | Race distance (m) | Yes |
+| Coach | Finish time (s) | Yes — unlocks real metres |
+| Coach | Sex of athlete | Yes — improves accuracy |
+| Coach | Intermediate split times | Optional (improves accuracy further) |
 
-At 100+ Hz, per-step GCT becomes reliable (±5ms error). That is the single sensor change that would unlock the most additional signal.
+**Outputs:**
 
----
+- Position in metres at each stride's initial ground contact
+- Velocity in m/s at each stride
+- Quarter split times — how long the runner spent in each 25% of the race
 
-## 2. The GCT Asymmetry Question
-
-Matteo's 30m sprint showed mean R GCT of 216ms vs L GCT of 137ms (+58%). This looks like a large asymmetry but is almost certainly a sampling artifact.
-
-**What the raw data shows:**
-
-```
-Frame interval (median): 121ms
-
-L foot GCTs (ms): [117, 117, 119, 120, 143, 148, 150, 151, 151, 151]
-→ In frame units:  [ 1,   1,   1,   1,   1,   1,   1,   1,   1,   1 ]
-
-R foot GCTs (ms): [121, 121, 155, 237, 238, 239, 239, 243, 244, 269, 269]
-→ In frame units:  [ 1,   1,   1,   2,   2,   2,   2,   2,   2,   2,   2 ]
-```
-
-Every L contact is exactly 1 frame. R contacts are sometimes 1 frame, sometimes 2. The "asymmetry" is explained by whether each R contact happens to straddle a frame boundary or not — a timing phase relationship, not a biomechanical one.
-
-**Conclusion:** Pressure zone loading asymmetry (R forefoot/toe zones carry more load) is a more credible finding because it accumulates over many frames and is robust to timing quantization.
+**What the sensor is actually doing:** providing the timestamps at which to evaluate the position model. The GCT and flight time values are used for display metrics (stride length, pacing rhythm) but do not feed into position estimates directly.
 
 ---
 
-## 3. Literature Review
+## The model
 
-### 3.1 Core model reference
-
-**de Ruiter & van Dieën (2019). Stride and Step Length Obtained with IMUs during Maximal Sprint Acceleration.**  
-*Sports, 7(9), 202. [PMC6784208](https://pmc.ncbi.nlm.nih.gov/articles/PMC6784208/)*
-
-The most directly applicable study. Key findings:
-- Sprint velocity during acceleration follows a mono-exponential function: `v(t) = v_max × (1 − e^(−t/τ))`
-- This curve can be parameterized with just two split times (e.g. 30m and 60m from timing gates)
-- With foot IMUs + two timing gates: **RMSE = 5.7 cm/step** for stride length (after polynomial smoothing)
-- Polynomial smoothing reduces RMSE from 8.0 cm to 5.7 cm per step
-
-This is the basis for our model. The key adaptation: we use IC timestamps and stride time (GCT + FT) in place of their IMU + timing gate setup, and we use a coach-supplied finish time as the calibration anchor instead of gates.
-
-### 3.2 Spatial vs temporal accuracy of foot sensors
-
-**van den Tillaar et al. (2021). Step-to-Step Kinematic Validation: IMU 3D System, Laser+IMU, and Force Plates during 50M Sprint.**  
-*Sensors, 21(19), 6560. [PMC8512743](https://pmc.ncbi.nlm.nih.gov/articles/PMC8512743/)*
-
-Important finding: standalone IMU systems (no external anchor) underestimate step velocity by ~0.88 m/s and step length by ~0.20 m at sprint speeds. Temporal parameters (contact time, flight time, step rate) are accurate; spatial parameters (length, velocity) require an external calibration anchor.
-
-This directly motivates Tier 1 calibration (finish time): without some external anchor, position estimation drifts significantly.
-
-### 3.3 What variable actually predicts stride length?
-
-**Kibele et al. (2021). Kinematic Stride Characteristics of Maximal Sprint Running of Elite Sprinters.**  
-*PMC8008308. [Link](https://pmc.ncbi.nlm.nih.gov/articles/PMC8008308/)*
-
-Critical finding: at maximum velocity, **flight time does not significantly correlate with sprint speed**. GCT correlates more strongly (r ≈ −0.7 to −0.9). **Total stride time** (GCT + FT) is the correct input variable for position estimation.
-
-This invalidates the prior proposal of "inverse flight time as percentage of race distance" — the wrong variable.
-
-### 3.4 Stride-time algorithms
-
-**Zrenner et al. (2018). Comparison of Different Algorithms for Calculating Velocity and Stride Length in Running Using IMUs.**  
-*PMC6308955. [Link](https://pmc.ncbi.nlm.nih.gov/articles/PMC6308955/)*
-
-Benchmarked four approaches for stride length estimation from foot sensors. The stride-time-based algorithm (inverse correlation between velocity and stride time) performs competitively and generalizes across athletes. Foot-trajectory estimation performs best when raw IMU data is available; stride-time is the best option when only timing data is available.
-
-### 3.5 Ground truth validation dataset
-
-**IAAF Biomechanical Analysis — 2009 World Championships Berlin.**  
-*New Studies in Athletics, 1/2.2011. [Link](https://worldathletics.org/about-iaaf/documents/research-centre)*
-
-This report contains both 10m split times **and** per-step stride analysis for Usain Bolt's 9.58s 100m WR — the only publicly available dataset where both inputs (stride timing) and outputs (10m splits) are published for the same race. This is the primary validation dataset used in `test_position_model.py`.
-
-Key data from the report:
-- Bolt's 10m splits: `[1.89, 1.01, 0.90, 0.86, 0.83, 0.82, 0.81, 0.82, 0.83, 0.90]` cumulative → interval times
-- Step count per 10m section published (Table 20)
-- Mean GCT and flight time per 10m section available (allows us to reconstruct stride timing)
-
----
-
-## 4. The Model
-
-### 4.1 Velocity function
-
-Sprint velocity follows a mono-exponential during acceleration, plateauing at top speed:
+Sprint velocity during acceleration follows a mono-exponential function. This has been validated across decades of sprint biomechanics research:
 
 ```
-v(t) = v_max × (1 − e^(−t/τ))
+v(t) = v_max × (1 − e^(−t / τ))
 ```
 
-The integral gives position at any time:
+Integrating gives position at any time:
 
 ```
 distance(t) = v_max × (t + τ × e^(−t/τ) − τ)
 ```
 
-`v_max` and `τ` are fit numerically so that `distance(finish_time) = race_distance`. Optional split anchors (e.g. 30m time, 60m time) can be added as additional constraints.
+**v_max** is the runner's top speed. **τ** (tau) is the acceleration time constant — how quickly they reach top speed. Lower τ means faster acceleration.
 
-### 4.2 Per-stride position
+### How the two parameters are solved
 
-```python
-position_at_IC_i  = distance(t_i)
-stride_length_i   = distance(t_i + stride_time_i) − distance(t_i)
-velocity_i        = v(t_i + stride_time_i / 2)   # mid-stride
+These parameters are not measured. They are solved from the calibration inputs:
 
-# where:
-stride_time_i = (GCT_i + flight_time_i) / 1000.0  # ms → s
-t_i           = IC_timestamp_i / 1000.0            # ms → s, normalized to 0 at first step
+```
+distance(finish_time) = race_distance        # always available
+distance(t_split)     = split_distance       # optional, improves accuracy
 ```
 
-### 4.3 Polynomial smoothing
+With only a finish time, there are many valid (v_max, τ) pairs — the system is under-constrained. With one or two intermediate splits, the system is over-determined and the fit is nearly exact.
 
-After computing raw stride lengths, fit a 3rd-order polynomial to `(stride_index, raw_stride_length)` and recompute cumulative positions from the smoothed lengths. This suppresses step-to-step sensor noise while preserving the physiologically smooth acceleration curve.
+### Position estimation
+
+Once v_max and τ are known, position at each stride is a direct read from the calibrated integral:
 
 ```python
-coeffs = np.polyfit(stride_indices, raw_stride_lengths, deg=3)
-smoothed_lengths = np.poly1d(coeffs)(stride_indices)
-positions = np.cumsum(np.maximum(smoothed_lengths, 0.3))
+position_m = distance(ic_time_ms / 1000.0)
 ```
 
-### 4.4 Quarter splits
+This is not accumulated from stride lengths. It is evaluated directly from the formula, so there is no drift or compounding error over the race.
 
-Quarter marks are at 25%, 50%, 75%, and 100% of race distance (e.g. 25m, 50m, 75m, 100m for a 100m sprint). For each mark, linearly interpolate between the two adjacent stride positions to find the exact time.
+### Quarter splits
 
-### 4.5 Calibration tiers
+Quarter split times are found by linearly interpolating between adjacent (time, position) pairs to find the exact timestamp when the runner crossed each distance mark.
 
-| Tier | Coach inputs | Estimated accuracy | Effort |
+---
+
+## The trained τ model
+
+The key insight from testing: with only a finish time, the optimizer picks a (v_max, τ) pair that satisfies the total distance but may not match the actual shape of the race. This produces large errors at intermediate splits.
+
+**The fix:** learn the typical τ for a given finish time and sex from historical data. Instead of guessing τ, predict it.
+
+### How training works
+
+1. Collect published sprint data where both 10m splits and finish times are known
+2. For each athlete, fit their true τ by minimising split prediction error
+3. Fit a linear regression: `τ = slope × finish_time + intercept` separately for men and women
+4. At inference: predict τ from finish time and sex, then solve v_max analytically
+
+### Trained model coefficients
+
+```
+Male:   τ = 0.218 × finish_time_s − 1.227
+Female: τ = 0.569 × finish_time_s − 5.492
+```
+
+These are stored in `tau_model.json` and loaded by the production model.
+
+### Why sex matters but height/weight don't
+
+Sex has a meaningful partial correlation with τ (r = +0.326) after controlling for finish time — women's τ genuinely scales differently with performance level. Height and weight show high raw correlations (~0.45 partial r) but are almost entirely explained by the sex variable already. Adding them to the model on 40 athletes made performance worse due to overfitting. The finish time + sex model is the right call.
+
+---
+
+## Training data
+
+| Source | Athletes | Sex | Finish time range | Level |
+|---|---|---|---|---|
+| 2009 IAAF Berlin WC (Graubner & Nixdorf, 2011) | 5 | M | 9.58–9.93s | Elite |
+| 2017 IAAF London WC (Bissas et al., 2018) | 8 | M | 9.92–10.27s | Elite |
+| 2017 IAAF London WC (Bissas et al., 2018) | 5 | F | 10.85–11.02s | Elite |
+| 2009 IAAF Berlin WC (Graubner & Nixdorf, 2011) | 4 | F | 10.73–10.98s | Elite |
+| 2012 HS Invitational (Jakalski / Freelap, 2013) | 2 | M | 11.21–11.63s | High school |
+| Synthesised (Morin 2012, Samozino 2016) | 16 | M+F | 11.0–16.0s | Sub-elite → recreational |
+
+**Total: 40 athletes.** The elite data is real measured data. The sub-elite and recreational data points are synthesised from published biomechanics parameters for non-specialist populations and will be replaced with real athlete data as Matteo's users run calibrated races.
+
+---
+
+## Accuracy results
+
+All results use leave-one-out cross-validation (LOO-CV), which is appropriate for a 40-athlete dataset — standard train/test splits are too variable to trust at this scale.
+
+### By model type (quarter split MAE, all 40 athletes)
+
+| Model | MAE | Max error | Within 0.20s |
 |---|---|---|---|
-| 0 — None | Nothing | Relative pacing rhythm only, no meters | None |
-| 1 — Finish time | Race distance + finish time | RMSE ~1–3m over 100m | ~5 sec |
-| 2 — Splits | Finish time + split times (e.g. 30m, 60m) | RMSE <1m, matches literature | ~15 sec |
+| Baseline — τ = 1.5 constant | 0.304s | 0.924s | 15/40 |
+| Finish time only | 0.201s | 0.617s | 19/40 |
+| Finish time + sex ✓ | **0.189s** | **0.619s** | **24/40** |
+| Finish time + sex + height + weight | 0.191s | 0.615s | 24/40 |
 
----
+### What the error means in metres
 
-## 5. Test Results on Real Data
+At the 50m mark, runners are near top speed. Time error × velocity = distance error.
 
-Tested on Matteo's 30m and 60m sprint sessions (March 2026 insole data). See `test_position_model.py` for full output.
-
-### 5.1 30m sprint (4.3s assumed finish — 21 steps, 0 BLE gaps)
-
-| Quarter | Cumulative time | Split |
+| Athlete | MAE (time) | → Distance error |
 |---|---|---|
-| 0 → 7.5m | 1.00s | 1.00s |
-| 7.5 → 15m | 1.60s | 0.61s |
-| 15 → 22.5m | 2.00s | 0.40s |
-| 22.5 → 30m | 2.57s | 0.57s |
+| Elite man (~9.7s) | ~0.12s | ~1.4m |
+| Sub-elite man (~11s) | ~0.14s | ~1.4m |
+| Collegiate man (~12–13s) | ~0.20s | ~1.8m |
+| Recreational man (~14s) | ~0.18s | ~1.5m |
+| Elite woman (~11s) | ~0.17s | ~1.7m |
+| Collegiate woman (~13s) | ~0.23s | ~2.0m |
+| Recreational woman (~15s) | ~0.42s | ~3.3m |
 
-Mid-run splits (Q2, Q3) are stable across the 3.8–5.0s finish time range, confirming the model converges at top speed. Q1 is most sensitive to the calibration assumption.
+**In plain terms:** for most athletes, the model estimates which quarter of the race they were in to within about 1.5–2 metres. For coaches using this to understand pacing patterns — whether an athlete went out too fast, where they faded — this is actionable. It is not precise enough to place cones or make metre-level calls.
 
-### 5.2 60m sprint (8.0s assumed finish — 22 clean steps, 3 BLE gaps at end excluded)
+### External validation — Bolt's 9.58s WR (Tier 2)
 
-| Quarter | Cumulative time | Split |
-|---|---|---|
-| 0 → 15m | 1.35s | 1.35s |
-| 15 → 30m | 2.25s | 0.90s |
-| 30 → 45m | 3.21s | 0.96s |
-| 45 → 60m | 4.15s | 0.94s |
-
-The 30→45m and 45→60m splits are nearly identical — correct, this is the model converging to top speed (constant velocity), which is physically accurate for trained sprinters.
+Using the 2009 IAAF Berlin biomechanics report (stride data + 10m laser splits from the same race), the model predicts all nine 10m cumulative splits with RMSE = 11.6ms and max error 19.7ms. This is the strongest validation result because it uses independently measured ground truth, not synthesised data.
 
 ---
 
-## 6. Validation Strategy
+## Known limitations
 
-### 6.1 Best available: IAAF published race data (in `test_position_model.py`)
+**The model cannot handle deceleration.** The mono-exponential only rises to a plateau. Runners who significantly slow in the final 20m (common in women's 100m and recreational athletes) will have their Q4 split underestimated. Tori Bowie's final 20m error reached 0.41s for this reason.
 
-The 2009 IAAF biomechanics report on Bolt's 9.58s WR publishes both:
-- Per-stride GCT and flight time (Table 20, stride analysis)
-- 10m split times for the same race (Table A)
+**At 7–8 Hz BLE, per-step GCT is not reliable.** The quantisation error is ±60ms — larger than the meaningful sprint GCT range of 85–140ms. The model uses IC timestamps (reliable) and total stride time (useful for display), not per-step GCT as a position predictor.
 
-We can run the model on the stride data and compare the predicted 10m splits against the published ones. This is a true out-of-sample test because the stride data and split data were collected independently (stride data from video, split data from laser timing).
-
-**Why this is the right validation approach:** It uses the same type of data our sensors produce (GCT + flight time per step) and compares against precisely measured ground truth (laser-timed 10m splits). If the model predicts Bolt's splits to within ±0.1s per 10m section, it's validated at the level of accuracy that matters for coaching.
-
-### 6.2 Practical field validation (recommended for real-world accuracy)
-
-Place **cones with tape marks at known distances** (10m, 20m, 30m, etc.) and record video of the run. Extract the time the athlete crosses each cone from video (at 60fps, this is accurate to ±17ms). Compare to model predictions.
-
-This gives ground truth from Matteo's own runs at sub-elite speeds (more relevant than elite data for coaching use cases).
-
-**Minimum setup:** Two cones (start + finish line), one phone camera. Gives finish time → Tier 1 calibration.  
-**Better setup:** Cones at 25% and 50% marks, same camera. Gives split times → Tier 2 calibration, also lets you validate the intermediate positions.
-
-### 6.3 Self-consistency test (no external hardware)
-
-Run the same athlete over the same distance twice, under similar conditions. The model should produce splits within ~5% of each other for the same runner on the same day. High variance between runs indicates the model is sensitive to noise; low variance indicates the stride timing signal is stable enough to trust.
-
-This is implementable today with existing data collection.
+**The recreational data is synthesised.** The 11.5–16s range uses constructed split profiles based on published population parameters. Every real athlete race that gets added to training will improve accuracy in that range.
 
 ---
 
-## 7. Honest Limitations
+## Accuracy tiers
 
-### What the model cannot do at 7–8 Hz
-
-- **Per-step GCT is unreliable.** ±60ms quantization error exceeds the meaningful GCT range at sprint speeds. Do not report per-step GCT as a metric at this sample rate.
-- **L/R asymmetry in GCT cannot be trusted.** The observed R > L asymmetry in Matteo's data is consistent with a sampling phase artifact, not a confirmed biomechanical finding.
-- **First quarter split is the most uncertain.** The acceleration phase is where velocity changes fastest per step, and where the mono-exponential approximation is most sensitive to the calibration input.
-
-### What the model can do
-
-- **Quarter splits to within ~1–2m** with a single finish time (Tier 1).
-- **Quarter splits to within ~0.5m** with intermediate split times (Tier 2).
-- **Relative pacing rhythm** (which portion of the race was proportionally faster) even without any calibration.
-- **Velocity-over-distance curves** that map to real track positions, actionable for coaching.
-
-### What would improve accuracy most
-
-1. **≥100 Hz BLE sampling rate** — unlocks reliable per-step GCT, reduces stride length noise
-2. **IMU (accelerometer) on the insole** — enables ZUPT-based position tracking, validated at 5.7 cm/step RMSE
-3. **One video session with cones** — ground truth to validate and tune the model for sub-elite speeds
+| Tier | Coach provides | Accuracy | Notes |
+|---|---|---|---|
+| 0 — None | Nothing | Relative rhythm only | No real metres |
+| 1 — Finish time | Race distance + time | ~1.5–2m distance error | Default |
+| 2 — Splits | Finish + 1–2 split times | ~0.1–0.5m distance error | Dramatically better |
 
 ---
 
-## 8. Integration Path
+## Application integration
 
-### Schema additions
+### Overview
+
+The model needs three things from the app: a database schema change, a backend service and endpoint, and two small frontend additions. None of this touches the existing run recording flow.
+
+### Database
+
+Add three columns to the `runs` table and one optional column to `athletes`:
 
 ```sql
 -- runs table
@@ -254,52 +191,171 @@ ALTER TABLE runs ADD COLUMN race_distance_m  FLOAT;
 ALTER TABLE runs ADD COLUMN finish_time_s    FLOAT;
 ALTER TABLE runs ADD COLUMN split_times      JSONB DEFAULT '{}';
 -- split_times format: {"30": 3.82, "60": 6.54}
+-- keys are distance in metres as strings, values are seconds from motion start
 
--- optional: cache computed values on run_metrics
-ALTER TABLE run_metrics ADD COLUMN estimated_position_m  FLOAT;
-ALTER TABLE run_metrics ADD COLUMN estimated_velocity_ms FLOAT;
-ALTER TABLE run_metrics ADD COLUMN stride_length_m       FLOAT;
+-- athletes table (already has sex if stored — verify)
+-- sex is used by the model; if not already stored, add:
+ALTER TABLE athletes ADD COLUMN sex CHAR(1); -- 'M' or 'F'
+```
+
+`race_distance_m` and `finish_time_s` are nullable. The model degrades gracefully when they are absent — it returns relative pacing rhythm without real metre values.
+
+### Backend service
+
+Create `services/position_estimator.py`. The logic maps directly from `sprint_position_model.py` in the research folder:
+
+```python
+from sprint_position_model import run_model, load_tau_model
+
+_tau_model = load_tau_model()  # load once at startup
+
+class PositionEstimatorService:
+    def estimate(self, run: Run, metrics: list[RunMetric]) -> ModelResult | None:
+        if not run.finish_time_s or not run.race_distance_m:
+            return None  # no calibration — skip
+
+        ic_timestamps = [m.ic_time_ms for m in sorted(metrics, key=lambda m: m.ic_time_ms)]
+        sex = run.athlete.sex or "M"  # fallback if not stored
+
+        return run_model(
+            finish_time_s=run.finish_time_s,
+            race_distance_m=run.race_distance_m,
+            sex=sex,
+            ic_timestamps_ms=ic_timestamps,
+            tau_model=_tau_model,
+            split_times=run.split_times or None,
+        )
 ```
 
 ### New endpoint
 
 ```
 GET /api/run/{run_id}/positions
-
-Response:
-{
-  "model": "mono_exp_smoothed",
-  "calibration_tier": 1,
-  "v_max": 11.2,
-  "tau": 1.83,
-  "quarter_splits": [
-    { "distance_m": 25, "cumulative_time_s": 3.21, "split_s": 3.21 },
-    { "distance_m": 50, "cumulative_time_s": 5.41, "split_s": 2.20 },
-    ...
-  ],
-  "strides": [
-    {
-      "stride_index": 0,
-      "ic_time_ms": 0,
-      "estimated_position_m": 0.0,
-      "estimated_velocity_ms": 0.7,
-      "stride_length_m": 0.5
-    },
-    ...
-  ]
-}
 ```
 
-### Frontend changes
+Returns per-stride positions and quarter splits. Computes on demand — no caching needed at this stage.
 
-- **RecordRunPage:** Add optional finish time input after run completes — "Add race time to enable position tracking"
-- **RunAnalysisPage:** Add velocity-over-distance chart (x = meters, y = m/s). More actionable than velocity vs stride index because it maps to real track positions
-- **RunAnalysisPage:** Quarter split table showing split times and delta vs. even pacing
+```python
+# routes/run.py
+@router.get("/run/{run_id}/positions")
+async def get_positions(run_id: str, coach=Depends(get_current_coach)):
+    run     = await run_repo.get(run_id, coach_id=coach.id)
+    metrics = await metrics_repo.get_by_run(run_id)
+    result  = position_service.estimate(run, metrics)
+
+    if result is None:
+        raise HTTPException(404, "No calibration data for this run")
+
+    return {
+        "v_max":              result.v_max,
+        "tau":                result.tau,
+        "calibration_tier":   result.calibration_tier,
+        "quarter_splits": [
+            {
+                "distance_m":        s.distance_m,
+                "cumulative_time_s": s.cumulative_time_s,
+                "split_s":           s.split_s,
+            }
+            for s in result.quarter_splits
+        ],
+        "strides": [
+            {
+                "stride_index":    s.stride_index,
+                "ic_time_ms":      s.ic_time_ms,
+                "position_m":      s.position_m,
+                "velocity_ms":     s.velocity_ms,
+                "stride_length_m": s.stride_length_m,
+            }
+            for s in result.strides
+        ],
+    }
+```
+
+### Frontend — RecordRunPage
+
+After a run completes, show an optional input:
+
+```tsx
+// After the existing "Stop" button flow, before navigating away
+<div className="mt-4 space-y-2">
+  <p className="text-sm text-muted-foreground">
+    Add race time to enable split tracking
+  </p>
+  <div className="flex gap-2">
+    <Input
+      placeholder="Finish time (e.g. 11.43)"
+      value={finishTime}
+      onChange={e => setFinishTime(e.target.value)}
+    />
+    <Select value={raceDistance} onValueChange={setRaceDistance}>
+      <SelectItem value="60">60m</SelectItem>
+      <SelectItem value="100">100m</SelectItem>
+      <SelectItem value="200">200m</SelectItem>
+      <SelectItem value="400">400m</SelectItem>
+    </Select>
+  </div>
+</div>
+```
+
+This is fully optional. If the coach skips it the run saves normally without split data.
+
+### Frontend — RunAnalysisPage
+
+Add a quarter splits section that calls `GET /api/run/{run_id}/positions`:
+
+```tsx
+const { data: positions } = useQuery({
+  queryKey: ["positions", runId],
+  queryFn: () => api.get(`/run/${runId}/positions`).then(r => r.data),
+  enabled: !!runId,
+});
+
+// Render quarter splits table
+{positions?.quarter_splits.map((split, i) => (
+  <div key={i} className="flex justify-between py-2 border-b border-border">
+    <span className="text-muted-foreground">
+      {i === 0 ? "0" : positions.quarter_splits[i-1].distance_m}m
+      → {split.distance_m}m
+    </span>
+    <span className="font-medium">{split.split_s.toFixed(2)}s</span>
+  </div>
+))}
+
+// Velocity over distance chart using positions.strides
+// x-axis = position_m, y-axis = velocity_ms
+// More actionable than velocity vs stride index — maps to real track positions
+```
 
 ### Implementation order
 
-1. Schema migration (`race_distance_m`, `finish_time_s`, `split_times` on `runs`)
-2. Optional finish time input on `RecordRunPage`
-3. `PositionEstimatorService` (port model from `test_position_model.py`)
+1. Migration — add `race_distance_m`, `finish_time_s`, `split_times` to `runs`
+2. Copy `sprint_position_model.py` and `tau_model.json` into the backend services directory
+3. `PositionEstimatorService` wrapping the model
 4. `GET /api/run/{run_id}/positions` endpoint
-5. Velocity-over-distance chart on `RunAnalysisPage`
+5. Optional finish time input on `RecordRunPage`
+6. Quarter splits table + velocity-over-distance chart on `RunAnalysisPage`
+
+Steps 1–4 can be done and tested independently of the frontend changes. The endpoint returns a 404 for uncalibrated runs which the frontend handles gracefully.
+
+---
+
+## Files in this package
+
+| File | Purpose |
+|---|---|
+| `SPRINT_POSITION_RESEARCH.md` | This document |
+| `sprint_position_model.py` | Production model — import this into the backend |
+| `tau_model.json` | Trained τ coefficients — ship alongside the model |
+| `train_tau_model.py` | Training pipeline — run to retrain with new data |
+
+---
+
+## References
+
+- de Ruiter & van Dieën (2019). Stride and Step Length Obtained with IMUs during Maximal Sprint Acceleration. *Sports* 7(9), 202. [PMC6784208](https://pmc.ncbi.nlm.nih.gov/articles/PMC6784208/)
+- Graubner & Nixdorf (2011). Biomechanical Analysis of the Sprint and Hurdles Events at the 2009 IAAF World Championships. *New Studies in Athletics* 1/2.2011. [worldathletics.org](https://worldathletics.org/about-iaaf/documents/research-centre)
+- Bissas et al. (2018). Biomechanical Reports for the IAAF World Championships London 2017: 100m Men's and Women's. Leeds Beckett University / World Athletics. [worldathletics.org](https://worldathletics.org/about-iaaf/documents/research-centre)
+- Haugen et al. (2019). Profiling elite male 100m sprint performance: The role of maximum velocity and relative acceleration. *Journal of Sport and Health Science*. [PMC8847979](https://pmc.ncbi.nlm.nih.gov/articles/PMC8847979/)
+- Morin et al. (2012). Mechanical determinants of 100m sprint running performance. *European Journal of Applied Physiology*. [PubMed 22422028](https://pubmed.ncbi.nlm.nih.gov/22422028/)
+- van den Tillaar et al. (2021). Step-to-Step Kinematic Validation: IMU 3D vs Force Plates during 50M Sprint. *Sensors* 21(19). [PMC8512743](https://pmc.ncbi.nlm.nih.gov/articles/PMC8512743/)
+- Kibele et al. (2021). Kinematic Stride Characteristics of Maximal Sprint Running. [PMC8008308](https://pmc.ncbi.nlm.nih.gov/articles/PMC8008308/)

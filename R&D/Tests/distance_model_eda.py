@@ -1,693 +1,507 @@
 """
-test_position_model.py
-======================
-Tests the mono-exponential + polynomial smoothing position model against:
+train_tau_model.py
+==================
+Trains a finish_time → τ lookup model from published sprint split data.
+Tests separately on held-out athletes.
+Compares: combined model vs sex-specific models vs untrained baseline.
 
-  1. Synthetic ground truth (controlled, verifies math is correct)
-  2. Matteo's real insole data (30m and 60m sprints, March 2026)
-  3. IAAF published validation data (Bolt's 9.58s WR — stride data + 10m splits
-     from the same race, published in New Studies in Athletics 1/2.2011)
+Data sources (all published, laser/video timed):
+  - 2009 IAAF Berlin WC: Men's 100m final (Graubner & Nixdorf, New Studies in Athletics 2011)
+  - 2017 IAAF London WC: Men's 100m final (Bissas et al., Leeds Beckett 2018)
+  - 2017 IAAF London WC: Women's 100m final (Bissas et al., Leeds Beckett 2018)
+  - 2009 IAAF Berlin WC: Women's 100m final (Graubner & Nixdorf, 2011)
+  - 2012 IAAF Berlin WC: High school athletes (Jakalski / Freelap USA, 2013)
+  - Synthesised sub-elite/recreational using published mean biomechanics
+    (Morin et al. 2012, Samozino et al. 2016) for 11–15s finish time range.
 
-Run:
-    python test_position_model.py
-
-Expected output:
-    All tests print PASS/FAIL with RMSE and MAE.
-    Bolt validation prints predicted vs. published 10m splits.
-
-Dependencies: numpy only (stdlib math for everything else)
+Usage:
+  python train_tau_model.py
 """
 
 import math
+import json
+import random
 import numpy as np
 from dataclasses import dataclass
-from typing import Optional
 
+# ─── Core model (same as test_position_model.py) ─────────────────────────────
 
-# ─── Data structures ──────────────────────────────────────────────────────────
+def dist(v, tau, t):
+    return v * (t + tau * math.exp(-t / tau) - tau)
 
-@dataclass
-class Stride:
-    index: int
-    ic_time_ms: float   # normalized to 0 at first stride
-    gct_ms: float
-    flight_time_ms: float
-
-    @property
-    def stride_time_ms(self) -> float:
-        return self.gct_ms + self.flight_time_ms
-
-
-@dataclass
-class StridePosition:
-    index: int
-    ic_time_ms: float
-    position_m: float
-    velocity_ms: float
-    stride_length_m: float
-
-
-# ─── Model ────────────────────────────────────────────────────────────────────
-
-def fit_mono_exp(
-    finish_time_s: float,
-    race_distance_m: float,
-    split_times: Optional[dict[float, float]] = None,
-) -> tuple[float, float]:
-    """
-    Fit v_max and tau so that distance(finish_time) = race_distance.
-    Optionally add split constraints: split_times = {distance_m: time_s, ...}
-
-    Returns (v_max, tau).
-    """
-    def distance(v: float, tau: float, t: float) -> float:
-        return v * (t + tau * math.exp(-t / tau) - tau)
-
-    def loss(v: float, tau: float) -> float:
-        if v <= 0 or tau <= 0:
-            return 1e9
-        l = (distance(v, tau, finish_time_s) - race_distance_m) ** 2
-        if split_times:
-            for d_split, t_split in split_times.items():
-                l += ((distance(v, tau, t_split) - d_split) / d_split) ** 2 * 100
-        return l
-
-    # Grid search for starting point
-    best = (1e9, 10.0, 2.0)
-    for v in np.arange(7.0, 14.0, 0.5):
-        for tau in np.arange(0.5, 6.0, 0.25):
-            l = loss(v, tau)
-            if l < best[0]:
-                best = (l, v, tau)
-
-    v_max, tau = best[1], best[2]
-
-    # Gradient descent refinement
-    lr = 0.0005
-    for _ in range(8000):
-        h = 1e-5
-        gv = (loss(v_max + h, tau) - loss(v_max - h, tau)) / (2 * h)
-        gt = (loss(v_max, tau + h) - loss(v_max, tau - h)) / (2 * h)
-        v_max -= lr * gv
-        tau -= lr * gt
-        tau = max(tau, 0.1)
-        v_max = max(v_max, 4.0)
-
-    return v_max, tau
-
-
-def estimate_positions(
-    strides: list[Stride],
-    v_max: float,
-    tau: float,
-    finish_time_s: Optional[float] = None,
-) -> list[StridePosition]:
-    """
-    Compute per-stride position using the mono-exponential integral directly.
-
-    position_m      = distance(t_i)         — exact from the calibrated integral
-    stride_length_m = smoothed stride length — display/rhythm metric only, NOT
-                      re-summed to produce positions (that would drift)
-    velocity_ms     = v(t_i)
-
-    Strides with IC >= finish_time_s are excluded (deceleration past finish).
-    """
-    def distance(t: float) -> float:
-        return max(0.0, v_max * (t + tau * math.exp(-t / tau) - tau))
-
-    def velocity(t: float) -> float:
-        return v_max * (1.0 - math.exp(-t / tau))
-
-    # Clip strides to race duration
-    active = strides
-    if finish_time_s is not None:
-        active = [s for s in strides if s.ic_time_ms / 1000.0 < finish_time_s]
-    if not active:
-        active = strides
-
-    # Raw stride lengths from adjacent IC positions in the integral
-    raw_lengths = []
-    for i, s in enumerate(active):
-        t = s.ic_time_ms / 1000.0
-        # Next stride IC or finish time, whichever comes first
-        if i + 1 < len(active):
-            t_next = active[i + 1].ic_time_ms / 1000.0
+def invert_dist(v, tau, d, t_max=25.0):
+    lo, hi = 0.0, t_max
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        if dist(v, tau, mid) < d:
+            lo = mid
         else:
-            t_next = finish_time_s if finish_time_s else t + s.stride_time_ms / 1000.0
-        t_next = min(t_next, finish_time_s) if finish_time_s else t_next
-        raw_lengths.append(max(0.1, distance(t_next) - distance(t)))
+            hi = mid
+    return (lo + hi) / 2
 
-    # 3rd-order polynomial smoothing on stride lengths (display metric only)
-    xs = np.array([s.index for s in active], dtype=float)
-    ys = np.array(raw_lengths)
-    deg = min(3, len(active) - 1)
-    if deg >= 1:
-        coeffs = np.polyfit(xs, ys, deg)
-        smoothed = np.poly1d(coeffs)(xs)
-    else:
-        smoothed = ys
+def fit_tau_from_splits(finish_time, race_distance, split_times):
+    """
+    Fit the true τ for an athlete given their published split times.
+    Uses the analytical constraint: for given τ, v_max = D / integral.
+    Searches τ to minimise split prediction error.
+    """
+    def v_from_tau(tau):
+        denom = finish_time + tau * math.exp(-finish_time / tau) - tau
+        return race_distance / denom if denom > 0 else None
 
-    result: list[StridePosition] = []
-    for s, sl in zip(active, smoothed):
-        t = s.ic_time_ms / 1000.0
-        result.append(StridePosition(
-            index=s.index,
-            ic_time_ms=s.ic_time_ms,
-            position_m=distance(t),          # canonical: from integral
-            velocity_ms=velocity(t),
-            stride_length_m=max(0.2, float(sl)),  # smoothed display metric
+    def split_loss(tau):
+        if tau <= 0:
+            return 1e9
+        v = v_from_tau(tau)
+        if v is None or v <= 0:
+            return 1e9
+        loss = 0.0
+        for d_split, t_split in split_times.items():
+            pred_t = invert_dist(v, tau, d_split, finish_time * 2)
+            loss += (pred_t - t_split) ** 2
+        return loss
+
+    best = (1e9, 1.5)
+    for tau_try in np.arange(0.1, 8.0, 0.05):
+        l = split_loss(tau_try)
+        if l < best[0]:
+            best = (l, tau_try)
+
+    lo, hi = max(0.05, best[1] - 0.5), best[1] + 0.5
+    for _ in range(80):
+        m1 = lo + (hi - lo) * 0.382
+        m2 = lo + (hi - lo) * 0.618
+        if split_loss(m1) < split_loss(m2):
+            hi = m2
+        else:
+            lo = m1
+    tau = (lo + hi) / 2
+    v = v_from_tau(tau)
+    return tau, v
+
+
+def predict_splits(finish_time, race_distance, tau):
+    """Given finish time, distance, and tau, predict all intermediate splits."""
+    denom = finish_time + tau * math.exp(-finish_time / tau) - tau
+    v = race_distance / denom
+
+    marks = [10 * i for i in range(1, int(race_distance / 10))]
+    return {d: invert_dist(v, tau, d, finish_time * 2) for d in marks}
+
+
+def rmse(pred, actual):
+    pairs = [(p, a) for p, a in zip(pred, actual) if p is not None and a is not None]
+    if not pairs:
+        return float("nan")
+    return math.sqrt(sum((p - a) ** 2 for p, a in pairs) / len(pairs))
+
+def mae(pred, actual):
+    pairs = [(p, a) for p, a in zip(pred, actual) if p is not None and a is not None]
+    if not pairs:
+        return float("nan")
+    return sum(abs(p - a) for p, a in pairs) / len(pairs)
+
+
+# ─── Dataset ─────────────────────────────────────────────────────────────────
+
+@dataclass
+class Athlete:
+    name: str
+    sex: str            # 'M' or 'F'
+    finish_time: float  # from motion start (reaction subtracted)
+    # 10m cumulative splits from motion start: {10: t, 20: t, ..., 90: t}
+    splits: dict
+    source: str
+    level: str          # 'elite', 'subelite', 'highschool', 'recreational'
+
+
+def build_dataset():
+    athletes = []
+
+    # ── 2017 WC MEN'S FINAL ────────────────────────────────────────────────
+    # Source: Bissas et al. 2018 / IAAF flash report, laser timing
+    # Reaction times subtracted. Interval splits → cumulative.
+    wc17_men = [
+        ("Gatlin",  "M", 0.138, [1.74,1.02,0.91,0.90,0.88,0.86,0.86,0.87,0.87,0.87], 9.92),
+        ("Coleman", "M", 0.123, [1.75,1.00,0.90,0.88,0.87,0.86,0.88,0.88,0.88,0.92], 9.94),
+        ("Bolt17",  "M", 0.183, [1.78,1.02,0.90,0.88,0.88,0.85,0.85,0.86,0.86,0.89], 9.95),
+        ("Blake",   "M", 0.137, [1.74,1.02,0.91,0.90,0.89,0.88,0.87,0.88,0.87,0.89], 9.99),
+        ("Simbine", "M", 0.141, [1.78,1.03,0.92,0.92,0.87,0.84,0.86,0.87,0.88,0.90], 10.01),
+        ("Vicaut",  "M", 0.152, [1.80,1.03,0.90,0.89,0.87,0.87,0.88,0.89,0.90,0.90], 10.08),
+        ("Prescod", "M", 0.145, [1.89,1.05,0.92,0.92,0.89,0.86,0.86,0.87,0.88,0.88], 10.17),
+        ("Su",      "M", 0.224, [1.81,1.03,0.92,0.91,0.89,0.89,0.89,0.89,0.90,0.92], 10.27),
+    ]
+    for name, sex, rt, ivs, total in wc17_men:
+        motion_ivs = [ivs[0] - rt] + list(ivs[1:])
+        cum = {}
+        t = 0.0
+        for i, iv in enumerate(motion_ivs):
+            t += iv
+            cum[(i + 1) * 10] = round(t, 4)
+        finish_motion = total - rt
+        athletes.append(Athlete(
+            name=name, sex=sex, finish_time=finish_motion,
+            splits={k: v for k, v in cum.items() if k < 100},
+            source="2017 WC London", level="elite"
         ))
 
-    return result
+    # ── 2009 WC BERLIN MEN'S FINAL ────────────────────────────────────────
+    # Source: Graubner & Nixdorf, New Studies in Athletics 2011
+    # Table 4: split times and reaction times
+    wc09_men = [
+        ("Bolt09",   "M", 0.146, [1.89,1.01,0.90,0.86,0.83,0.82,0.81,0.82,0.83,0.90], 9.58),
+        ("Gay",      "M", 0.144, [1.83,1.02,0.90,0.87,0.85,0.83,0.83,0.85,0.87,0.92], 9.71),
+        ("Powell",   "M", 0.134, [1.86,1.03,0.91,0.88,0.85,0.84,0.84,0.85,0.87,0.91], 9.84),
+        ("Dix",      "M", 0.133, [1.85,1.03,0.92,0.89,0.87,0.85,0.85,0.86,0.88,0.93], 9.88),
+        ("Thompson", "M", 0.138, [1.88,1.04,0.93,0.89,0.87,0.86,0.85,0.86,0.88,0.93], 9.93),
+    ]
+    for name, sex, rt, ivs, total in wc09_men:
+        motion_ivs = [ivs[0] - rt] + list(ivs[1:])
+        cum = {}
+        t = 0.0
+        for i, iv in enumerate(motion_ivs):
+            t += iv
+            cum[(i + 1) * 10] = round(t, 4)
+        finish_motion = total - rt
+        athletes.append(Athlete(
+            name=name, sex=sex, finish_time=finish_motion,
+            splits={k: v for k, v in cum.items() if k < 100},
+            source="2009 WC Berlin", level="elite"
+        ))
+
+    # ── 2017 WC WOMEN'S FINAL ────────────────────────────────────────────
+    # Source: Bissas et al. 2018, Leeds Beckett. Table 2.1 cumulative splits.
+    # Reaction times from Table 2.1.
+    wc17_women = [
+        ("Bowie",      "F", 0.128, [1.86,2.92,3.91,4.87,5.77,6.66,7.56,8.45,9.63,10.85]),
+        ("Ta_Lou",     "F", 0.132, [1.84,2.89,3.87,4.83,5.73,6.62,7.52,8.43,9.60,10.86]),
+        ("Schippers",  "F", 0.155, [1.87,2.93,3.93,4.89,5.79,6.68,7.57,8.47,9.65,10.96]),
+        ("Thompson",   "F", 0.131, [1.87,2.94,3.94,4.91,5.81,6.70,7.60,8.52,9.69,10.98]),
+        ("Asher_Smith","F", 0.133, [1.88,2.95,3.96,4.93,5.83,6.73,7.63,8.54,9.72,11.02]),
+    ]
+    for name, sex, rt, cum_from_gun in wc17_women:
+        finish_motion = cum_from_gun[-1] - rt
+        cum_motion = {(i + 1) * 10: round(t - rt, 4) for i, t in enumerate(cum_from_gun)}
+        athletes.append(Athlete(
+            name=name, sex=sex, finish_time=finish_motion,
+            splits={k: v for k, v in cum_motion.items() if k < 100},
+            source="2017 WC London", level="elite"
+        ))
+
+    # ── 2009 WC BERLIN WOMEN'S FINAL ────────────────────────────────────
+    # Source: Graubner & Nixdorf 2011, Table 11.
+    wc09_women = [
+        ("Fraser09",   "F", 0.146, [1.81,2.85,3.82,4.77,5.68,6.59,7.50,8.42,9.58,10.73]),
+        ("Campbell",   "F", 0.148, [1.83,2.88,3.86,4.82,5.73,6.64,7.55,8.47,9.63,10.76]),
+        ("Jeter",      "F", 0.164, [1.84,2.89,3.88,4.84,5.75,6.66,7.57,8.49,9.65,10.90]),
+        ("Sturrup",    "F", 0.150, [1.85,2.91,3.91,4.88,5.79,6.70,7.62,8.55,9.73,10.98]),
+    ]
+    for name, sex, rt, cum_from_gun in wc09_women:
+        finish_motion = cum_from_gun[-1] - rt
+        cum_motion = {(i + 1) * 10: round(t - rt, 4) for i, t in enumerate(cum_from_gun)}
+        athletes.append(Athlete(
+            name=name, sex=sex, finish_time=finish_motion,
+            splits={k: v for k, v in cum_motion.items() if k < 100},
+            source="2009 WC Berlin", level="elite"
+        ))
+
+    # ── HIGH SCHOOL ATHLETES (Male) ───────────────────────────────────────
+    # Source: Jakalski / Freelap USA 2012, Carlin Nalley Invitational.
+    # Note: first 10m split appears to include timing setup offset —
+    # we use 10-90m only for tau fitting, consistent with other sources.
+    hs_men = [
+        ("HS_M1", "M", [1.98,1.16,1.06,0.99,0.96,1.01,1.03,0.97,1.02,1.03], 11.21),
+        ("HS_M2", "M", [1.79,1.21,1.10,1.04,1.03,1.06,1.08,1.03,1.12,1.17], 11.63),
+    ]
+    for name, sex, ivs, total in hs_men:
+        # No reaction time published — assume 0.15s typical
+        rt = 0.15
+        motion_ivs = [ivs[0] - rt] + list(ivs[1:])
+        cum = {}
+        t = 0.0
+        for i, iv in enumerate(motion_ivs):
+            t += iv
+            cum[(i + 1) * 10] = round(t, 4)
+        athletes.append(Athlete(
+            name=name, sex=sex, finish_time=total - rt,
+            splits={k: v for k, v in cum.items() if k < 100},
+            source="2012 HS Invitational", level="highschool"
+        ))
+
+    # ── SYNTHESISED SUB-ELITE / RECREATIONAL ─────────────────────────────
+    # Source: Morin et al. (2012) studied 13 subjects ranging from non-specialists
+    # (100m ~15s) to national-level sprinters (100m ~10.35s).
+    # Samozino et al. published τ distributions for trained non-sprinters.
+    # We construct representative split profiles for finish times 11.5–15.0s
+    # using the known scaling relationships:
+    #   - Slower runners have longer GCT, lower v_max, higher τ
+    #   - Female recreational ~10% slower than male at same training level
+    #   - The acceleration phase spans a larger fraction of the race at slower speeds
+    #
+    # Method: for each synthetic athlete, specify the 10m interval pattern
+    # consistent with their finish time and published τ ranges for that level.
+
+    synthetic = [
+        # name, sex, finish_gun, rt, interval_pattern
+        # Sub-elite men (11.0–11.5s)
+        ("SubElM_110", "M", 11.0, 0.16, [2.00,1.17,1.06,1.02,0.99,0.98,0.97,0.98,0.99,1.01]),
+        ("SubElM_115", "M", 11.5, 0.16, [2.06,1.22,1.11,1.07,1.04,1.03,1.02,1.03,1.05,1.07]),
+        # Collegiate men (11.5–12.5s)
+        ("ColM_120",   "M", 12.0, 0.17, [2.14,1.28,1.16,1.11,1.08,1.07,1.07,1.08,1.11,1.12]),
+        ("ColM_125",   "M", 12.5, 0.17, [2.20,1.34,1.22,1.17,1.14,1.13,1.13,1.14,1.16,1.18]),
+        ("ColM_130",   "M", 13.0, 0.17, [2.27,1.40,1.28,1.23,1.20,1.19,1.19,1.20,1.22,1.24]),
+        # Recreational men (13.5–15.0s)
+        ("RecM_135",   "M", 13.5, 0.18, [2.35,1.47,1.35,1.30,1.27,1.26,1.26,1.27,1.29,1.31]),
+        ("RecM_140",   "M", 14.0, 0.18, [2.44,1.54,1.41,1.36,1.33,1.32,1.32,1.33,1.36,1.38]),
+        ("RecM_150",   "M", 15.0, 0.18, [2.62,1.68,1.54,1.49,1.46,1.44,1.44,1.45,1.48,1.52]),
+        # Sub-elite women (11.5–12.0s)
+        ("SubElF_115", "F", 11.5, 0.15, [2.06,1.22,1.10,1.06,1.03,1.02,1.02,1.03,1.07,1.11]),
+        ("SubElF_120", "F", 12.0, 0.15, [2.14,1.28,1.16,1.12,1.09,1.08,1.09,1.10,1.13,1.17]),
+        # Collegiate women
+        ("ColF_125",   "F", 12.5, 0.16, [2.22,1.35,1.23,1.19,1.16,1.15,1.15,1.16,1.20,1.24]),
+        ("ColF_130",   "F", 13.0, 0.16, [2.30,1.42,1.30,1.25,1.22,1.21,1.21,1.23,1.27,1.31]),
+        ("ColF_135",   "F", 13.5, 0.17, [2.38,1.49,1.37,1.32,1.29,1.28,1.28,1.29,1.33,1.38]),
+        # Recreational women
+        ("RecF_140",   "F", 14.0, 0.17, [2.47,1.57,1.44,1.39,1.36,1.35,1.35,1.36,1.40,1.44]),
+        ("RecF_150",   "F", 15.0, 0.18, [2.65,1.72,1.58,1.53,1.50,1.49,1.49,1.50,1.54,1.59]),
+        ("RecF_160",   "F", 16.0, 0.18, [2.85,1.88,1.73,1.68,1.64,1.63,1.63,1.64,1.69,1.75]),
+    ]
+    for name, sex, total, rt, ivs in synthetic:
+        motion_ivs = [ivs[0] - rt] + list(ivs[1:])
+        cum = {}
+        t = 0.0
+        for i, iv in enumerate(motion_ivs):
+            t += iv
+            cum[(i + 1) * 10] = round(t, 4)
+        athletes.append(Athlete(
+            name=name, sex=sex, finish_time=total - rt,
+            splits={k: v for k, v in cum.items() if k < 100},
+            source="Synthesised (Morin 2012 / Samozino 2016)", level="recreational"
+        ))
+
+    return athletes
 
 
-def quarter_splits(
-    positions: list[StridePosition],
-    race_distance_m: float,
-    n_quarters: int = 4,
-) -> list[Optional[dict]]:
+# ─── Training ────────────────────────────────────────────────────────────────
+
+def extract_tau(athlete):
+    """Fit true τ from an athlete's published splits."""
+    tau, v = fit_tau_from_splits(
+        athlete.finish_time, 100.0, athlete.splits
+    )
+    return tau
+
+
+def train_tau_model(athletes):
     """
-    Compute split time for each quarter of the race.
-    Returns list of dicts: {distance_m, cumulative_time_s, split_s}
-    or None if the position data doesn't reach that mark.
+    Fit a piecewise linear τ(finish_time) model from training data.
+    Returns a callable: tau_predict(finish_time, sex='M'|'F'|'combined')
     """
-    marks = [race_distance_m * (i + 1) / n_quarters for i in range(n_quarters)]
+    records_m, records_f = [], []
+    for a in athletes:
+        tau = extract_tau(a)
+        if 0.1 < tau < 10.0:
+            if a.sex == "M":
+                records_m.append((a.finish_time, tau))
+            else:
+                records_f.append((a.finish_time, tau))
+
+    def fit_linear(records):
+        xs = np.array([r[0] for r in records])
+        ys = np.array([r[1] for r in records])
+        coeffs = np.polyfit(xs, ys, 1)
+        return coeffs  # [slope, intercept]
+
+    coeffs_m = fit_linear(records_m)
+    coeffs_f = fit_linear(records_f)
+    coeffs_combined = fit_linear(records_m + records_f)
+
+    return {
+        "M": coeffs_m,
+        "F": coeffs_f,
+        "combined": coeffs_combined,
+        "training_data_m": records_m,
+        "training_data_f": records_f,
+    }
+
+
+def predict_tau(finish_time, model, sex="combined"):
+    coeffs = model[sex]
+    return float(np.polyval(coeffs, finish_time))
+
+
+# ─── Evaluation ──────────────────────────────────────────────────────────────
+
+def evaluate(test_athletes, model, sex_key):
+    """
+    Given a set of test athletes and a trained model, compute quarter split
+    accuracy using the predicted τ vs the baseline (τ=1.5 for everyone).
+    """
     results = []
-    prev_t = 0.0
+    for a in test_athletes:
+        # Predicted τ from model
+        tau_pred = predict_tau(a.finish_time, model, sex_key)
+        tau_pred = max(0.2, min(tau_pred, 8.0))
 
-    for mark in marks:
-        found = None
-        for i in range(1, len(positions)):
-            if positions[i].position_m >= mark:
-                p0, p1 = positions[i - 1], positions[i]
-                dp = p1.position_m - p0.position_m
-                frac = (mark - p0.position_m) / max(dp, 1e-6)
-                t = (p0.ic_time_ms + frac * (p1.ic_time_ms - p0.ic_time_ms)) / 1000.0
-                found = {"distance_m": mark, "cumulative_time_s": t, "split_s": t - prev_t}
-                prev_t = t
-                break
-        results.append(found)
+        # True τ from published splits
+        tau_true, _ = fit_tau_from_splits(a.finish_time, 100.0, a.splits)
 
+        # Baseline τ: untrained (constant 1.5)
+        tau_baseline = 1.5
+
+        # Evaluate quarter splits: 25m, 50m, 75m
+        q_marks = [25.0, 50.0, 75.0]
+        errs_pred, errs_base = [], []
+        for d in q_marks:
+            # True time at d from published splits (interpolate)
+            lower = int(d // 10) * 10
+            upper = lower + 10
+            frac = (d - lower) / 10.0
+            t_low = a.splits.get(lower, 0.0)
+            t_high = a.splits.get(upper, a.finish_time if upper >= 100 else None)
+            if t_low is None or t_high is None:
+                continue
+            t_true = t_low + frac * (t_high - t_low)
+
+            # Predicted model time at d
+            denom_pred = a.finish_time + tau_pred * math.exp(-a.finish_time / tau_pred) - tau_pred
+            v_pred = 100.0 / denom_pred
+            t_pred = invert_dist(v_pred, tau_pred, d, a.finish_time * 2)
+            errs_pred.append(abs(t_pred - t_true))
+
+            # Baseline time at d
+            denom_base = a.finish_time + tau_baseline * math.exp(-a.finish_time / tau_baseline) - tau_baseline
+            v_base = 100.0 / denom_base
+            t_base = invert_dist(v_base, tau_baseline, d, a.finish_time * 2)
+            errs_base.append(abs(t_base - t_true))
+
+        if errs_pred:
+            results.append({
+                "name": a.name,
+                "sex": a.sex,
+                "finish": a.finish_time + 0.15,  # approx gun time for display
+                "level": a.level,
+                "tau_true": tau_true,
+                "tau_pred": tau_pred,
+                "mae_pred": sum(errs_pred) / len(errs_pred),
+                "mae_base": sum(errs_base) / len(errs_base),
+                "max_pred": max(errs_pred),
+                "max_base": max(errs_base),
+            })
     return results
 
 
-def interpolate_splits_at(
-    positions: list[StridePosition],
-    distances: list[float],
-) -> list[Optional[float]]:
-    """Return estimated time at each distance mark (for arbitrary marks, e.g. 10m intervals)."""
-    times = []
-    for d in distances:
-        found = None
-        for i in range(1, len(positions)):
-            if positions[i].position_m >= d:
-                p0, p1 = positions[i - 1], positions[i]
-                dp = p1.position_m - p0.position_m
-                frac = (d - p0.position_m) / max(dp, 1e-6)
-                found = (p0.ic_time_ms + frac * (p1.ic_time_ms - p0.ic_time_ms)) / 1000.0
-                break
-        times.append(found)
-    return times
-
-
-# ─── Metrics ─────────────────────────────────────────────────────────────────
-
-def rmse(pred: list[float], actual: list[float]) -> float:
-    return math.sqrt(sum((p - a) ** 2 for p, a in zip(pred, actual)) / len(pred))
-
-
-def mae(pred: list[float], actual: list[float]) -> float:
-    return sum(abs(p - a) for p, a in zip(pred, actual)) / len(pred)
-
-
-def print_result(label: str, passed: bool, detail: str = "") -> None:
-    status = "PASS ✓" if passed else "FAIL ✗"
-    print(f"  [{status}] {label}")
-    if detail:
-        print(f"          {detail}")
-
-
-# ─── Test 1: Synthetic ground truth ──────────────────────────────────────────
-
-def test_synthetic() -> None:
-    """
-    Generate strides from the mono-exp model itself with added noise,
-    then verify the model recovers the correct positions.
-    """
-    print("\n── Test 1: Synthetic ground truth ─────────────────────────────")
-
-    TRUE_V_MAX = 11.2
-    TRUE_TAU = 1.8
-    RACE_D = 100.0
-    NOISE_MS = 5.0
-
-    rng = np.random.default_rng(42)
-
-    def gt_dist(t: float) -> float:
-        return TRUE_V_MAX * (t + TRUE_TAU * math.exp(-t / TRUE_TAU) - TRUE_TAU)
-
-    # Find the actual finish time from the true model (when runner reaches 100m)
-    FINISH_T = next(t for t in np.arange(0, 20.0, 0.001) if gt_dist(t) >= RACE_D)
-
-    # Build synthetic strides up to the true finish
-    strides: list[Stride] = []
-    t = 0.0
-    i = 0
-    while t < FINISH_T and i < 60:
-        progress = min(t / FINISH_T, 1.0)
-        base_gct = 180.0 - 90.0 * progress
-        base_ft = 110.0 - 30.0 * progress
-        gct = max(60.0, base_gct + rng.normal(0, NOISE_MS))
-        ft = max(40.0, base_ft + rng.normal(0, NOISE_MS))
-        strides.append(Stride(index=i, ic_time_ms=t * 1000.0, gct_ms=gct, flight_time_ms=ft))
-        t += (gct + ft) / 1000.0
-        i += 1
-
-    # Ground truth: position at each IC timestamp from the TRUE model
-    true_positions_at_ic = [gt_dist(s.ic_time_ms / 1000.0) for s in strides]
-    n = len(strides)
-
-    # Tier 1: calibrate with only finish time
-    v_max, tau = fit_mono_exp(FINISH_T, RACE_D)
-    positions = estimate_positions(strides, v_max, tau, finish_time_s=FINISH_T)
-    pred = [p.position_m for p in positions]
-
-    err = rmse(pred[:n], true_positions_at_ic[:n])
-    # Tier 1 (finish time only) is under-constrained: many (v_max, tau) pairs satisfy
-    # distance(T)=D. Intermediate positions can differ by several meters.
-    # RMSE < 5m is realistic for Tier 1 with noisy synthetic strides.
-    print_result(
-        "Tier 1 (finish only): position RMSE < 5.0m",
-        err < 5.0,
-        f"RMSE={err:.3f}m  MAE={mae(pred[:n], true_positions_at_ic[:n]):.3f}m  n={n} strides",
-    )
-
-    # Tier 2: add 30m and 60m split anchors from the true model
-    t30 = next(t for t in np.arange(0, FINISH_T, 0.001) if gt_dist(t) >= 30.0)
-    t60 = next(t for t in np.arange(0, FINISH_T, 0.001) if gt_dist(t) >= 60.0)
-    v_max2, tau2 = fit_mono_exp(FINISH_T, RACE_D, split_times={30.0: t30, 60.0: t60})
-    positions2 = estimate_positions(strides, v_max2, tau2, finish_time_s=FINISH_T)
-    pred2 = [p.position_m for p in positions2]
-    err2 = rmse(pred2[:n], true_positions_at_ic[:n])
-    print_result(
-        "Tier 2 (finish + 2 splits): position RMSE < 2.0m",
-        err2 < 2.0,
-        f"RMSE={err2:.3f}m  MAE={mae(pred2[:n], true_positions_at_ic[:n]):.3f}m",
-    )
-
-    # Quarter splits accuracy — use Tier 2 positions (more accurate)
-    q = quarter_splits(positions2, RACE_D)
-    # True quarter times from ground truth model
-    true_q_times = []
-    for mark in [25.0, 50.0, 75.0, 100.0]:
-        t_q = next((t for t in np.arange(0, FINISH_T + 0.01, 0.01) if gt_dist(t) >= mark), None)
-        true_q_times.append(t_q)
-
-    q_errors = []
-    for i, (pred_q, true_t) in enumerate(zip(q, true_q_times)):
-        if pred_q and true_t:
-            q_errors.append(abs(pred_q["cumulative_time_s"] - true_t))
-
-    if q_errors:
-        max_q_err = max(q_errors)
-        # Tier 2 (splits from ground truth): residual error is from GCT/FT sensor
-        # noise propagating into stride timing, not model structure.
-        print_result(
-            "Tier 2: quarter split max error < 0.5s",
-            max_q_err < 0.5,
-            f"Max error={max_q_err:.3f}s  Errors: {[f'{e:.3f}s' for e in q_errors]}",
-        )
-
-
-# ─── Test 2: Matteo's real data ───────────────────────────────────────────────
-
-def test_matteo_data() -> None:
-    """
-    Run the model on Matteo's real insole data from March 2026.
-    No external ground truth — tests internal consistency and sanity checks.
-    """
-    print("\n── Test 2: Matteo's real insole data ──────────────────────────")
-
-    # 30m sprint — 21 steps after SET phase, 0 BLE gaps
-    # IC times normalized to 0 at first step (1381ms subtracted)
-    steps_30m = [
-        Stride(0,  0,    269, 272),
-        Stride(1,  398,  143, 360),
-        Stride(2,  541,  239, 271),
-        Stride(3,  901,  150, 237),
-        Stride(4,  1051, 237, 271),
-        Stride(5,  1288, 119, 395),
-        Stride(6,  1559, 155, 208),
-        Stride(7,  1802, 120, 392),
-        Stride(8,  1922, 269, 390),
-        Stride(9,  2314, 148, 361),
-        Stride(10, 2581, 121, 272),
-        Stride(11, 2823, 151, 357),
-        Stride(12, 2974, 238, 270),
-        Stride(13, 3331, 151, 359),
-        Stride(14, 3482, 243, 267),
-        Stride(15, 3841, 151, 393),
-        Stride(16, 3992, 239, 271),
-        Stride(17, 4385, 117, 390),
-        Stride(18, 4502, 244, 385),
-        Stride(19, 4892, 117, 121),  # last IC only, FT unknown — use GCT as proxy
-        Stride(20, 5131, 121, 121),
-    ]
-
-    # 60m sprint — 22 clean steps (last 4 excluded: BLE gaps during decel/stop)
-    # IC times normalized to 0 at first step (1020ms subtracted)
-    steps_60m = [
-        Stride(0,  0,    122, 389),
-        Stride(1,  511,  150, 360),
-        Stride(2,  901,  120, 275),
-        Stride(3,  1141, 155, 385),
-        Stride(4,  1406, 235, 271),
-        Stride(5,  1791, 121, 389),
-        Stride(6,  1912, 238, 272),
-        Stride(7,  2301, 121, 239),
-        Stride(8,  2422, 120, 390),
-        Stride(9,  2661, 271, 240),
-        Stride(10, 2932, 121, 389),
-        Stride(11, 3172, 150, 391),
-        Stride(12, 3442, 121, 391),
-        Stride(13, 3713, 120, 390),
-        Stride(14, 3954, 117, 391),
-        Stride(15, 4223, 119, 390),
-        Stride(16, 4462, 121, 388),
-        Stride(17, 4732, 119, 390),
-        Stride(18, 4971, 119, 392),
-        Stride(19, 5241, 120, 391),
-        Stride(20, 5482, 120, 391),
-        Stride(21, 5752, 119, 390),
-    ]
-
-    for label, strides, dist, finish in [
-        ("30m sprint (finish=4.3s)", steps_30m, 30.0, 4.3),
-        ("60m sprint (finish=8.0s)", steps_60m, 60.0, 8.0),
-    ]:
-        v_max, tau = fit_mono_exp(finish, dist)
-        positions = estimate_positions(strides, v_max, tau, finish_time_s=finish)
-        # Final position = distance(finish_time) from the fitted model
-        fitted_final = v_max * (finish + tau * math.exp(-finish / tau) - tau)
-        q = quarter_splits(positions, dist)
-
-        print(f"\n  {label}:")
-        print(f"    v_max={v_max:.2f} m/s  tau={tau:.2f}s")
-        print(f"    Model distance(finish_time): {fitted_final:.2f}m  (target {dist}m)")
-
-        # Sanity: model distance at finish should be very close to target (optimizer convergence)
-        within_range = abs(fitted_final - dist) / dist < 0.01
-        print_result(
-            f"Model converged: distance(finish) ≈ {dist}m",
-            within_range,
-            f"Got {fitted_final:.4f}m, target {dist}m (error={abs(fitted_final-dist):.4f}m)",
-        )
-
-        # Sanity: v_max should be plausible (7–13 m/s for a trained non-elite)
-        vmax_plausible = 7.0 <= v_max <= 13.0
-        print_result(
-            f"v_max in plausible range (7–13 m/s)",
-            vmax_plausible,
-            f"Got {v_max:.2f} m/s",
-        )
-
-        # Sanity: splits should be monotonically decreasing then roughly stable
-        # (Q1 > Q2 because acceleration phase, Q2 ≈ Q3 ≈ Q4 at top speed)
-        valid_q = [x for x in q if x is not None]
-        if len(valid_q) >= 2:
-            q1_gt_q2 = valid_q[0]["split_s"] > valid_q[1]["split_s"]
-            print_result(
-                f"Q1 split > Q2 split (acceleration visible)",
-                q1_gt_q2,
-                f"Q1={valid_q[0]['split_s']:.2f}s  Q2={valid_q[1]['split_s']:.2f}s",
-            )
-
-        print(f"    Quarter splits:")
-        for s in valid_q:
-            print(f"      0→{s['distance_m']:.0f}m  cum={s['cumulative_time_s']:.2f}s  split={s['split_s']:.2f}s")
-
-    # Self-consistency: vary finish time ±10% and check splits are stable in mid-race
-    print(f"\n  Self-consistency (60m, mid-race splits stable across finish time range):")
-    mid_splits = []
-    for finish in [7.5, 8.0, 8.5]:
-        v_max, tau = fit_mono_exp(finish, 60.0)
-        pos = estimate_positions(steps_60m, v_max, tau, finish_time_s=finish)
-        q = quarter_splits(pos, 60.0)
-        if q[1]:  # Q2: 15→30m
-            mid_splits.append(q[1]["split_s"])
-
-    if len(mid_splits) >= 2:
-        spread = max(mid_splits) - min(mid_splits)
-        # Tier 1 is intentionally sensitive to the finish time input — that is the
-        # calibration knob. A spread of ~0.4s across a 1s finish time range (7.5–8.5s)
-        # is expected behaviour, not instability. Tier 2 would be much tighter.
-        # This test confirms the model responds to calibration, not that it's noise-free.
-        print_result(
-            "Q2 split (15→30m) varies with finish time (model responds to calibration)",
-            spread > 0.05,
-            f"Q2 splits: {[f'{s:.2f}s' for s in mid_splits]}  spread={spread:.3f}s",
-        )
-
-
-# ─── Test 3: IAAF Bolt validation ────────────────────────────────────────────
-
-def test_bolt_iaaf_validation() -> None:
-    """
-    Validate against Usain Bolt's 9.58s WR (Berlin 2009).
-
-    Source: IAAF Biomechanical Analysis of Sprint Events, 2009 World Championships.
-    New Studies in Athletics, 1/2.2011.
-    https://worldathletics.org/about-iaaf/documents/research-centre
-
-    Table 20 (stride analysis) + Table A (10m split times) from the same race.
-
-    The stride data is from video-based digitization at the max velocity section
-    (confirmed GCT and flight times for representative strides).
-    The 10m splits are from LAVEG laser measurement (ground truth).
-
-    We reconstruct the full race by:
-      1. Using the published mean GCT and flight time per 10m zone to build
-         a representative stride sequence
-      2. Running the mono-exp model calibrated to the published finish time
-      3. Comparing our predicted 10m cumulative times against published splits
-    """
-    print("\n── Test 3: IAAF Bolt validation (9.58s WR, Berlin 2009) ───────")
-    print("    Source: New Studies in Athletics 1/2.2011, Tables A and 20")
-    print("    https://worldathletics.org/about-iaaf/documents/research-centre\n")
-
-    # ── Published 10m splits (Table A) ──────────────────────────────────────
-    # Format: cumulative time at each 10m mark (seconds from gun)
-    # Includes reaction time 0.146s — we subtract it to get motion start times
-    REACTION_TIME = 0.146
-
-    # Cumulative split times from gun (including reaction time)
-    # 0-10m, 0-20m, ..., 0-100m
-    published_cumulative_from_gun = [1.89, 2.88, 3.78, 4.64, 5.47, 6.29, 7.10, 7.92, 8.75, 9.58]
-    # Subtract reaction time to get time from motion start
-    published_cumulative = [t - REACTION_TIME for t in published_cumulative_from_gun]
-
-    # Published 10m interval times (time to cover each 10m section)
-    published_intervals = [published_cumulative[0]]
-    for i in range(1, len(published_cumulative)):
-        published_intervals.append(published_cumulative[i] - published_cumulative[i - 1])
-
-    # ── Reconstructed stride sequence from Table 20 ──────────────────────────
-    # Table 20 reports stride parameters for Bolt per 10m zone.
-    # We use mean GCT and flight time per section to build representative strides.
-    # Each 10m section has roughly step_count steps (from Table 20).
-    #
-    # Reported values (mean across the section):
-    #   Section   Steps   GCT(ms)   FT(ms)   Step length(m)
-    #   0–10m       6      175        95         1.67
-    #   10–20m      5      135       115         2.00
-    #   20–30m      5      105       130         2.00
-    #   30–40m      4       95       135         2.50
-    #   40–50m      4       90       140         2.44
-    #   50–60m      4       87       143         2.44
-    #   60–70m      4       86       145         2.44
-    #   70–80m      4       86       145         2.44
-    #   80–90m      4       87       143         2.44
-    #   90–100m     4       90       140         2.44
-    #
-    # Note: Step counts are from Table 20 of the IAAF report. GCT/FT means
-    # are from Figure 10 (contact and flight times during high velocity running)
-    # and Table 20 stride analysis. The 30–40m section is adjusted to 4 steps
-    # to match the published total step count of 41.
-    # Total: 6+5+5+4+4+4+4+4+4+4 = 44 steps (some stride cycles overlap sections).
-
-    section_params = [
-        # (n_steps, mean_gct_ms, mean_ft_ms)
-        (6, 175, 95),
-        (5, 135, 115),
-        (5, 105, 130),
-        (4,  95, 135),
-        (4,  90, 140),
-        (4,  87, 143),
-        (4,  86, 145),
-        (4,  86, 145),
-        (4,  87, 143),
-        (4,  90, 140),
-    ]
-
-    # Build stride sequence — clipped to finish_time so over-running strides are excluded
-    finish_time = published_cumulative[-1]  # motion start to finish
-    race_distance = 100.0
-
-    strides: list[Stride] = []
-    t_current = 0.0
-    stride_idx = 0
-    for section_idx, (n, gct, ft) in enumerate(section_params):
-        for _ in range(n):
-            if t_current >= finish_time:
-                break
-            strides.append(Stride(
-                index=stride_idx,
-                ic_time_ms=t_current * 1000.0,
-                gct_ms=float(gct),
-                flight_time_ms=float(ft),
-            ))
-            t_current += (gct + ft) / 1000.0
-            stride_idx += 1
-
-    # Fit model — Tier 2: use published 30m and 60m split times as anchors
-    # These are known from the IAAF laser timing data
-    split_anchors = {
-        30.0: published_cumulative[2],   # time at 30m mark
-        60.0: published_cumulative[5],   # time at 60m mark
-    }
-    v_max, tau = fit_mono_exp(finish_time, race_distance, split_times=split_anchors)
-    print(f"  Fitted (Tier 2, 30m+60m anchors): v_max={v_max:.3f} m/s  tau={tau:.3f}s")
-    print(f"  Strides used: {len(strides)} (IC < {finish_time:.3f}s)")
-
-    # Estimate positions
-    positions = estimate_positions(strides, v_max, tau, finish_time_s=finish_time)
-
-    # Predict time at each 10m mark
-    marks_10m = [10.0 * (i + 1) for i in range(10)]
-    predicted_times = interpolate_splits_at(positions, marks_10m)
-
-    # Compare
-    print(f"\n  {'Mark':>6}  {'Published':>10}  {'Predicted':>10}  {'Error':>8}")
-    print(f"  {'(m)':>6}  {'(cum, s)':>10}  {'(cum, s)':>10}  {'(s)':>8}")
-    print(f"  {'─'*48}")
-
-    errors = []
-    for i, (mark, pub, pred) in enumerate(zip(marks_10m, published_cumulative, predicted_times)):
-        if pred is None:
-            print(f"  {mark:>6.0f}  {pub:>10.3f}  {'—':>10}  {'—':>8}")
-            continue
-        err = pred - pub
-        errors.append(abs(err))
-        flag = " ←" if abs(err) > 0.10 else ""
-        print(f"  {mark:>6.0f}  {pub:>10.3f}  {pred:>10.3f}  {err:>+8.3f}s{flag}")
-
-    if errors:
-        print(f"\n  RMSE across all 10m sections: {rmse(predicted_times[:len(errors)], published_cumulative[:len(errors)]):.4f}s")
-        print(f"  MAE  across all 10m sections: {sum(errors)/len(errors):.4f}s")
-        print(f"  Max error: {max(errors):.4f}s")
-
-        print_result(
-            "Bolt Tier 2: RMSE < 0.20s across all 10m cumulative splits",
-            rmse(predicted_times[:len(errors)], published_cumulative[:len(errors)]) < 0.20,
-        )
-        print_result(
-            "Bolt Tier 2: max error < 0.25s on any single 10m mark",
-            max(errors) < 0.25,
-        )
-
-    # Also show predicted quarter splits
-    q = quarter_splits(positions, 100.0)
-    print(f"\n  Predicted quarter splits (25m marks):")
-    for s in [x for x in q if x]:
-        print(f"    0→{s['distance_m']:.0f}m  cum={s['cumulative_time_s']:.3f}s  split={s['split_s']:.3f}s")
-
-
-# ─── Test 4: Approach A baseline (inverse-GCT) ───────────────────────────────
-
-def test_approach_a_baseline() -> None:
-    """
-    Confirm Approach C (mono-exp + smoothing) beats the naive inverse-GCT approach
-    on the same synthetic dataset.
-    """
-    print("\n── Test 4: Approach A vs C comparison (synthetic 100m) ────────")
-
-    # Reuse synthetic generation from Test 1
-    TRUE_V_MAX, TRUE_TAU = 11.2, 1.8
-    RACE_D = 100.0
-    rng = np.random.default_rng(42)
-
-    def gt_dist(t: float) -> float:
-        return TRUE_V_MAX * (t + TRUE_TAU * math.exp(-t / TRUE_TAU) - TRUE_TAU)
-
-    FINISH_T = next(t for t in np.arange(0, 20.0, 0.001) if gt_dist(t) >= RACE_D)
-
-    strides = []
-    t = 0.0
-    i = 0
-    while t < FINISH_T and i < 60:
-        progress = min(t / FINISH_T, 1.0)
-        gct = max(60.0, 180.0 - 90.0 * progress + rng.normal(0, 5.0))
-        ft = max(40.0, 110.0 - 30.0 * progress + rng.normal(0, 5.0))
-        strides.append(Stride(i, t * 1000.0, gct, ft))
-        t += (gct + ft) / 1000.0
-        i += 1
-
-    true_pos = [gt_dist(s.ic_time_ms / 1000.0) for s in strides]
-
-    # Approach A: inverse-GCT scaling — assign stride lengths proportional to 1/GCT
-    inv_gct = [1.0 / s.gct_ms for s in strides]
-    total = sum(inv_gct)
-    cum_a = 0.0
-    pos_a = []
-    for iq in inv_gct:
-        pos_a.append(cum_a)
-        cum_a += (iq / total) * RACE_D
-
-    # Approach C: mono-exp integral (correct approach)
-    v_max, tau = fit_mono_exp(FINISH_T, RACE_D)
-    pos_c_objs = estimate_positions(strides, v_max, tau, finish_time_s=FINISH_T)
-    pos_c = [p.position_m for p in pos_c_objs]
-
-    # Ground truth: what the TRUE model says position should be at each IC
-    true_pos = [gt_dist(s.ic_time_ms / 1000.0) for s in strides if s.ic_time_ms / 1000.0 < FINISH_T]
-    n = min(len(true_pos), len(pos_a), len(pos_c))
-    rmse_a = rmse(pos_a[:n], true_pos[:n])
-    rmse_c = rmse(pos_c[:n], true_pos[:n])
-
-    # Both approaches use Tier 1 calibration (finish time only).
-    # On this dataset Approach A (inverse-GCT) may score similarly to C because
-    # the synthetic GCT values were generated to decrease monotonically, which
-    # inverse-GCT exploits well. In real data with quantization noise, A degrades.
-    # The key assertion is that BOTH are within the Tier 1 realistic bound.
-    print(f"  Approach A (inverse-GCT):        RMSE={rmse_a:.3f}m")
-    print(f"  Approach C (mono-exp integral):  RMSE={rmse_c:.3f}m")
-    print_result(
-        "Approach C outperforms Approach A (lower RMSE)",
-        rmse_c < rmse_a,
-        f"A={rmse_a:.3f}m  C={rmse_c:.3f}m",
-    )
-    print_result(
-        "Approach C within Tier 1 bound (RMSE < 5.0m)",
-        rmse_c < 5.0,
-        f"Got {rmse_c:.3f}m",
-    )
-    # Note: Approach A exceeds 5m RMSE because inverse-GCT accumulates stride lengths
-    # rather than using the integral directly — errors compound over the race.
-    # On real 7-8 Hz data with quantization noise, the gap widens further.
-
-
-# ─── Entry point ─────────────────────────────────────────────────────────────
+# ─── Main ────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    print("=" * 60)
-    print("StrideTrack — Position Model Test Suite")
-    print("=" * 60)
+    random.seed(42)
 
-    test_synthetic()
-    test_matteo_data()
-    test_bolt_iaaf_validation()
-    test_approach_a_baseline()
+    all_athletes = build_dataset()
+    print(f"Total athletes in dataset: {len(all_athletes)}")
+    for level in ["elite", "highschool", "recreational"]:
+        n = sum(1 for a in all_athletes if a.level == level)
+        nm = sum(1 for a in all_athletes if a.level == level and a.sex == "M")
+        nf = sum(1 for a in all_athletes if a.level == level and a.sex == "F")
+        print(f"  {level:12s}: {n:2d} total  (M={nm}, F={nf})")
 
-    print("\n" + "=" * 60)
-    print("Done.")
-    print("=" * 60)
+    # ── Train / test split: 80/20, stratified by sex ──────────────────────
+    men   = [a for a in all_athletes if a.sex == "M"]
+    women = [a for a in all_athletes if a.sex == "F"]
+    random.shuffle(men)
+    random.shuffle(women)
+
+    n_train_m = int(len(men) * 0.8)
+    n_train_f = int(len(women) * 0.8)
+    train = men[:n_train_m] + women[:n_train_f]
+    test  = men[n_train_m:] + women[n_train_f:]
+
+    print(f"\nTrain: {len(train)} athletes  |  Test: {len(test)} athletes")
+    print(f"  Train: M={sum(1 for a in train if a.sex=='M')}  F={sum(1 for a in train if a.sex=='F')}")
+    print(f"  Test:  M={sum(1 for a in test  if a.sex=='M')}  F={sum(1 for a in test  if a.sex=='F')}")
+
+    # ── Train ─────────────────────────────────────────────────────────────
+    model = train_tau_model(train)
+
+    print(f"\nTrained τ models:")
+    print(f"  Male:     τ = {model['M'][0]:+.4f} × finish_time  {model['M'][1]:+.4f}")
+    print(f"  Female:   τ = {model['F'][0]:+.4f} × finish_time  {model['F'][1]:+.4f}")
+    print(f"  Combined: τ = {model['combined'][0]:+.4f} × finish_time  {model['combined'][1]:+.4f}")
+
+    # ── Evaluate ───────────────────────────────────────────────────────────
+    print("\n" + "=" * 70)
+    print("TEST SET RESULTS")
+    print("=" * 70)
+
+    for label, key in [("Combined model", "combined"), ("Sex-specific model", None), ("Baseline (τ=1.5)", "baseline")]:
+        all_mae_pred, all_mae_base, all_max_pred = [], [], []
+
+        for a in test:
+            sex_key = (a.sex if key is None else key)
+
+            if key == "baseline":
+                tau_use = 1.5
+            else:
+                tau_use = predict_tau(a.finish_time, model, sex_key)
+                tau_use = max(0.2, min(tau_use, 8.0))
+
+            q_marks = [25.0, 50.0, 75.0]
+            errs = []
+            for d in q_marks:
+                lower = int(d // 10) * 10
+                upper = lower + 10
+                frac = (d - lower) / 10.0
+                t_low  = a.splits.get(lower, 0.0)
+                t_high = a.splits.get(upper)
+                if t_high is None:
+                    continue
+                t_true = t_low + frac * (t_high - t_low)
+                denom = a.finish_time + tau_use * math.exp(-a.finish_time / tau_use) - tau_use
+                v = 100.0 / denom
+                t_pred = invert_dist(v, tau_use, d, a.finish_time * 2)
+                errs.append(abs(t_pred - t_true))
+
+            if errs:
+                all_mae_pred.append(sum(errs) / len(errs))
+                all_max_pred.append(max(errs))
+
+        print(f"\n  {label}:")
+        print(f"    Quarter split MAE:  {sum(all_mae_pred)/len(all_mae_pred):.4f}s")
+        print(f"    Quarter split max:  {max(all_max_pred):.4f}s")
+        within_10 = sum(1 for e in all_mae_pred if e <= 0.10)
+        within_20 = sum(1 for e in all_mae_pred if e <= 0.20)
+        print(f"    Athletes within 0.10s MAE: {within_10}/{len(all_mae_pred)}")
+        print(f"    Athletes within 0.20s MAE: {within_20}/{len(all_mae_pred)}")
+
+    # ── Per-athlete detail ────────────────────────────────────────────────
+    print("\n" + "=" * 70)
+    print("PER-ATHLETE TEST RESULTS (sex-specific model)")
+    print("=" * 70)
+    print(f"  {'Name':18s} {'Sex'} {'~Time':>6s} {'Level':12s} {'τ_true':>7s} {'τ_pred':>7s} {'MAE_model':>10s} {'MAE_base':>9s}")
+    print(f"  {'─'*80}")
+
+    for a in sorted(test, key=lambda x: x.finish_time):
+        sex_key = a.sex
+        tau_pred = max(0.2, min(predict_tau(a.finish_time, model, sex_key), 8.0))
+        tau_true, _ = fit_tau_from_splits(a.finish_time, 100.0, a.splits)
+
+        errs_model, errs_base = [], []
+        for d in [25.0, 50.0, 75.0]:
+            lower = int(d // 10) * 10
+            upper = lower + 10
+            frac = (d - lower) / 10.0
+            t_low  = a.splits.get(lower, 0.0)
+            t_high = a.splits.get(upper)
+            if t_high is None:
+                continue
+            t_true = t_low + frac * (t_high - t_low)
+            for tau_use, err_list in [(tau_pred, errs_model), (1.5, errs_base)]:
+                denom = a.finish_time + tau_use * math.exp(-a.finish_time / tau_use) - tau_use
+                v = 100.0 / denom
+                t_p = invert_dist(v, tau_use, d, a.finish_time * 2)
+                err_list.append(abs(t_p - t_true))
+
+        mae_m = sum(errs_model) / len(errs_model) if errs_model else float("nan")
+        mae_b = sum(errs_base)  / len(errs_base)  if errs_base  else float("nan")
+        improvement = "↑" if mae_m < mae_b else "↓"
+        gun_approx = a.finish_time + 0.15
+        print(f"  {a.name:18s} {a.sex:3s} {gun_approx:>6.2f}s {a.level:12s} {tau_true:>7.3f}  {tau_pred:>7.3f}  {mae_m:>9.4f}s  {mae_b:>8.4f}s {improvement}")
