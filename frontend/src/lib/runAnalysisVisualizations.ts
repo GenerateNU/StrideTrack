@@ -1,4 +1,3 @@
-
 import type { ComponentType } from "react";
 
 // Shared charts
@@ -21,7 +20,7 @@ import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChar
 
 export type VisualizationConfig = {
   title: string;
-    component: ComponentType<any>;
+  component: ComponentType<any>;
 };
 
 const DEFAULT_CHARTS: VisualizationConfig[] = [
@@ -48,6 +47,7 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
   ],
 };
 
-export function getChartsForEventType(eventType: string): VisualizationConfig[] {
+export function getChartsForEventType(
+  eventType: string
+): VisualizationConfig[] {
   return visualizationsByEventType[eventType] ?? DEFAULT_CHARTS;
-}

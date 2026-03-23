@@ -27,20 +27,20 @@ export default function RunAnalysisPage() {
   const eventType: string = location.state?.eventType ?? "default";
   const charts = getChartsForEventType(eventType);
   return (
-      <div className="flex h-full flex-col pt-4">
-        <div className="mb-6">
-          <button
-            onClick={() => navigate(`/athletes/${athleteId}`)}
-            className="mb-2 flex items-center gap-1 text-sm text-muted-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Athlete
-          </button>
-          <h2 className="text-xl font-bold text-foreground">Run Analysis</h2>
-          {/* ADD HERE: Display run event_type, date, elapsed_ms once GET /api/run/:runId exists */}
-        </div>
-        
-        {runId ? (
+    <div className="flex h-full flex-col pt-4">
+      <div className="mb-6">
+        <button
+          onClick={() => navigate(`/athletes/${athleteId}`)}
+          className="mb-2 flex items-center gap-1 text-sm text-muted-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Athlete
+        </button>
+        <h2 className="text-xl font-bold text-foreground">Run Analysis</h2>
+        {/* ADD HERE: Display run event_type, date, elapsed_ms once GET /api/run/:runId exists */}
+      </div>
+
+      {runId ? (
         <div className="flex flex-1 flex-col gap-6">
           {charts.map(({ title, component: ChartComponent }) => (
             <div
