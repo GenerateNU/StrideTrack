@@ -18,7 +18,7 @@ const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
 
 export default function VisualizationsPage() {
-  const HARDCODED_ATHLETE_ID = "your-athlete-uuid-here";
+  const HARDCODED_ATHLETE_ID = "00000000-0000-0000-0000-000000000003"; //micheal
   const [eventHistoryFilters, setEventHistoryFilters] =
     useState<EventHistoryFilters | null>(null);
   return (
