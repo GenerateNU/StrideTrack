@@ -19,4 +19,3 @@ export const eventHistoryResponseSchema = z.object({
 
 export type EventHistoryPoint = z.infer<typeof eventHistoryPointSchema>;
 export type EventHistoryResponse = z.infer<typeof eventHistoryResponseSchema>;
-

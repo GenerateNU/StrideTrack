@@ -18,7 +18,10 @@ interface EventHistoryChartProps {
   enabled: boolean;
 }
 
-export const EventHistoryChart = ({ filters, enabled }: EventHistoryChartProps) => {
+export const EventHistoryChart = ({
+  filters,
+  enabled,
+}: EventHistoryChartProps) => {
   const { eventHistory, eventHistoryIsLoading, eventHistoryError } =
     useEventHistory(filters, enabled);
 
