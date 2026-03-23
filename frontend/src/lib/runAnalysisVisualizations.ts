@@ -51,3 +51,4 @@ export function getChartsForEventType(
   eventType: string
 ): VisualizationConfig[] {
   return visualizationsByEventType[eventType] ?? DEFAULT_CHARTS;
+}
