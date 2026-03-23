@@ -8,6 +8,7 @@ from tests.factories.athlete_factory import AthleteFactory
 
 BASE = "/api/athletes"
 
+
 @pytest.mark.integration
 class TestListAthletes:
     """GET /api/athletes"""
@@ -30,7 +31,9 @@ class TestListAthletes:
         coach_id = coach.data[0]["coach_id"]
         created_ids["coach_ids"].append(coach_id)
 
-        athlete_data = AthleteFactory.create(coach_id=coach_id, name="List Test Athlete")
+        athlete_data = AthleteFactory.create(
+            coach_id=coach_id, name="List Test Athlete"
+        )
         create_resp = test_client.post(BASE, json=athlete_data)
         assert create_resp.status_code == 201
         athlete_id = create_resp.json()["athlete_id"]
@@ -148,9 +151,7 @@ class TestCreateAthlete:
 
         assert response.status_code == 422
 
-    def test_create_invalid_height_returns_422(
-        self, test_client: TestClient
-    ) -> None:
+    def test_create_invalid_height_returns_422(self, test_client: TestClient) -> None:
         """A height_in of 0 or below should fail validation (gt=0) and return 422."""
         response = test_client.post(
             BASE,
@@ -201,9 +202,7 @@ class TestUpdateAthlete:
         """Patching a non-existent athlete ID should return 404."""
         fake_id = str(uuid4())
 
-        response = test_client.patch(
-            f"{BASE}/{fake_id}", json={"name": "Ghost"}
-        )
+        response = test_client.patch(f"{BASE}/{fake_id}", json={"name": "Ghost"})
 
         assert response.status_code == 404
 

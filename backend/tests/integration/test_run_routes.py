@@ -53,7 +53,9 @@ class TestListRunsByAthlete:
         assert isinstance(data, list)
         assert len(data) >= 1
 
-    def test_list_by_unknown_athlete_returns_empty(self, test_client: TestClient) -> None:
+    def test_list_by_unknown_athlete_returns_empty(
+        self, test_client: TestClient
+    ) -> None:
         """Listing runs for a non-existent athlete should return 200 with an empty array."""
         fake_id = str(uuid4())
 
@@ -293,7 +295,9 @@ class TestGetStepFrequency:
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_step_frequency_row_has_expected_fields(self, test_client: TestClient) -> None:
+    def test_step_frequency_row_has_expected_fields(
+        self, test_client: TestClient
+    ) -> None:
         """Each step frequency row should contain stride_num, foot, label, step_frequency_hz."""
         response = test_client.get(
             f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/step-frequency"

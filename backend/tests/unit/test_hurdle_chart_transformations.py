@@ -18,7 +18,6 @@ from app.utils.hurdle_chart_transformations import (
     transform_takeoff_gct,
 )
 
-
 # Fixtures
 
 

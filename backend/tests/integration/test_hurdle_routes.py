@@ -26,7 +26,9 @@ class TestGetHurdleMetrics:
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_hurdle_metrics_row_has_expected_fields(self, test_client: TestClient) -> None:
+    def test_hurdle_metrics_row_has_expected_fields(
+        self, test_client: TestClient
+    ) -> None:
         """Each hurdle metrics row should contain the core HurdleMetricRow fields."""
         response = test_client.get(
             f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles"
@@ -60,7 +62,9 @@ class TestGetHurdleSplits:
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_hurdle_splits_row_has_expected_fields(self, test_client: TestClient) -> None:
+    def test_hurdle_splits_row_has_expected_fields(
+        self, test_client: TestClient
+    ) -> None:
         """Each row should contain hurdle_num and hurdle_split_ms."""
         response = test_client.get(
             f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/splits"
@@ -90,7 +94,9 @@ class TestGetStepsBetweenHurdles:
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_steps_between_row_has_expected_fields(self, test_client: TestClient) -> None:
+    def test_steps_between_row_has_expected_fields(
+        self, test_client: TestClient
+    ) -> None:
         """Each row should contain hurdle_num and steps_between_hurdles."""
         response = test_client.get(
             f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/steps-between"
@@ -212,7 +218,9 @@ class TestGetGctIncrease:
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_gct_increase_row_has_expected_fields(self, test_client: TestClient) -> None:
+    def test_gct_increase_row_has_expected_fields(
+        self, test_client: TestClient
+    ) -> None:
         """Each row should contain hurdle_num, takeoff_gct_ms, and
         gct_increase_hurdle_to_hurdle_pct."""
         response = test_client.get(

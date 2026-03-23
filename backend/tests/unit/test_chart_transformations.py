@@ -6,7 +6,6 @@ from app.utils.chart_transformations import (
     transform_data_for_step_frequency,
 )
 
-
 # Fixtures
 
 
@@ -14,10 +13,34 @@ from app.utils.chart_transformations import (
 def sample_run_data() -> list[dict]:
     """Two complete strides with known values."""
     return [
-        {"stride_num": 1, "foot": "left", "gct_ms": 200, "flight_ms": 300, "step_time_ms": 500},
-        {"stride_num": 1, "foot": "right", "gct_ms": 220, "flight_ms": 280, "step_time_ms": 500},
-        {"stride_num": 2, "foot": "left", "gct_ms": 210, "flight_ms": 290, "step_time_ms": 500},
-        {"stride_num": 2, "foot": "right", "gct_ms": 190, "flight_ms": 310, "step_time_ms": 500},
+        {
+            "stride_num": 1,
+            "foot": "left",
+            "gct_ms": 200,
+            "flight_ms": 300,
+            "step_time_ms": 500,
+        },
+        {
+            "stride_num": 1,
+            "foot": "right",
+            "gct_ms": 220,
+            "flight_ms": 280,
+            "step_time_ms": 500,
+        },
+        {
+            "stride_num": 2,
+            "foot": "left",
+            "gct_ms": 210,
+            "flight_ms": 290,
+            "step_time_ms": 500,
+        },
+        {
+            "stride_num": 2,
+            "foot": "right",
+            "gct_ms": 190,
+            "flight_ms": 310,
+            "step_time_ms": 500,
+        },
     ]
 
 
@@ -53,7 +76,13 @@ class TestTransformDataForLrOverlay:
     def test_single_foot_stride(self) -> None:
         """A stride with only one foot should still appear, with only that foot's value."""
         data = [
-            {"stride_num": 1, "foot": "left", "gct_ms": 200, "flight_ms": 300, "step_time_ms": 500},
+            {
+                "stride_num": 1,
+                "foot": "left",
+                "gct_ms": 200,
+                "flight_ms": 300,
+                "step_time_ms": 500,
+            },
         ]
         result = transform_data_for_lr_overlay(data, metric="gct_ms")
 
@@ -102,8 +131,20 @@ class TestTransformDataForStackedBar:
     def test_sorted_by_stride_num(self) -> None:
         """Output should be sorted by stride_num even if input is unordered."""
         data = [
-            {"stride_num": 2, "foot": "left", "gct_ms": 210, "flight_ms": 290, "step_time_ms": 500},
-            {"stride_num": 1, "foot": "right", "gct_ms": 220, "flight_ms": 280, "step_time_ms": 500},
+            {
+                "stride_num": 2,
+                "foot": "left",
+                "gct_ms": 210,
+                "flight_ms": 290,
+                "step_time_ms": 500,
+            },
+            {
+                "stride_num": 1,
+                "foot": "right",
+                "gct_ms": 220,
+                "flight_ms": 280,
+                "step_time_ms": 500,
+            },
         ]
         result = transform_data_for_stacked_bar(data)
 
@@ -133,7 +174,13 @@ class TestTransformDataForStepFrequency:
     def test_frequency_rounded_to_three_decimals(self) -> None:
         """The frequency value should be rounded to 3 decimal places."""
         data = [
-            {"stride_num": 1, "foot": "left", "gct_ms": 200, "flight_ms": 300, "step_time_ms": 333},
+            {
+                "stride_num": 1,
+                "foot": "left",
+                "gct_ms": 200,
+                "flight_ms": 300,
+                "step_time_ms": 333,
+            },
         ]
         result = transform_data_for_step_frequency(data)
 
@@ -160,9 +207,27 @@ class TestTransformDataForStepFrequency:
     def test_sorted_by_stride_num_then_foot(self) -> None:
         """Output should be sorted by (stride_num, foot) even if input is unordered."""
         data = [
-            {"stride_num": 2, "foot": "right", "gct_ms": 190, "flight_ms": 310, "step_time_ms": 500},
-            {"stride_num": 1, "foot": "right", "gct_ms": 220, "flight_ms": 280, "step_time_ms": 500},
-            {"stride_num": 1, "foot": "left", "gct_ms": 200, "flight_ms": 300, "step_time_ms": 500},
+            {
+                "stride_num": 2,
+                "foot": "right",
+                "gct_ms": 190,
+                "flight_ms": 310,
+                "step_time_ms": 500,
+            },
+            {
+                "stride_num": 1,
+                "foot": "right",
+                "gct_ms": 220,
+                "flight_ms": 280,
+                "step_time_ms": 500,
+            },
+            {
+                "stride_num": 1,
+                "foot": "left",
+                "gct_ms": 200,
+                "flight_ms": 300,
+                "step_time_ms": 500,
+            },
         ]
         result = transform_data_for_step_frequency(data)
 
