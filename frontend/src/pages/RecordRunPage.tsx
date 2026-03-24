@@ -4,38 +4,30 @@ import EventSelector from "@/components/events/EventSelector";
 import { useCreateRun } from "@/hooks/useCreateRun.hooks";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useEvents } from "@/hooks/useEvents";
+import { UploadCSVModal } from "@/components/runs/UploadCSVModal";
 import type { EventTypeEnum } from "@/types/event.types";
 
 export default function RecordingPage() {
-  // Which screen we're on — setup or recording
   const [screen, setScreen] = useState<"setup" | "recording">("setup");
-
-  // Setup selections
   const [athleteId, setAthleteId] = useState<string | null>(null);
   const [eventType, setEventType] = useState<EventTypeEnum | null>(null);
-
-  // Timer state
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isStopped, setIsStopped] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
 
-  // Refs persist across re-renders without causing re-renders
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
 
-  // Data hooks — used for display names on recording screen
   const { athletes } = useGetAllAthletes();
   const events = useEvents();
   const { createRun, createRunIsLoading } = useCreateRun();
 
-  // Both selections required to proceed
   const canProceed = athleteId !== null && eventType !== null;
 
-  // Get display names for the recording screen header
   const selectedAthlete = athletes.find((a) => a.athlete_id === athleteId);
   const selectedEvent = events.find((e) => e.value === eventType);
 
-  // Start the timer — captures real start time, updates every 10ms
   const startTimer = useCallback(() => {
     startTimeRef.current = Date.now();
     setIsRunning(true);
@@ -46,7 +38,6 @@ export default function RecordingPage() {
     }, 10);
   }, []);
 
-  // Stop the timer — clears interval, takes final measurement
   const stopTimer = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     setElapsedMs(Date.now() - startTimeRef.current);
@@ -54,7 +45,6 @@ export default function RecordingPage() {
     setIsStopped(true);
   }, []);
 
-  // Save the run to the database, then reset
   const handleSave = async () => {
     if (!athleteId || !eventType) return;
     try {
@@ -69,7 +59,6 @@ export default function RecordingPage() {
     }
   };
 
-  // Reset everything back to setup screen — used by both Delete and Save
   const resetAll = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     setElapsedMs(0);
@@ -78,7 +67,6 @@ export default function RecordingPage() {
     setScreen("setup");
   };
 
-  // Format milliseconds as M:SS.cc (centisecond precision)
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -90,48 +78,60 @@ export default function RecordingPage() {
   // ── Setup Screen ──
   if (screen === "setup") {
     return (
-      <div className="py-10">
-        <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-bold text-foreground">New Run</h1>
-          <p className="text-sm text-muted-foreground mt-1 mb-10">
-            Select an athlete and event to begin recording
-          </p>
+      <>
+        <div className="py-10">
+          <div className="max-w-md mx-auto">
+            <h1 className="text-2xl font-bold text-foreground">New Run</h1>
+            <p className="text-sm text-muted-foreground mt-1 mb-10">
+              Select an athlete and event to begin recording
+            </p>
 
-          <div className="space-y-6">
-            <AthleteSelector value={athleteId} onChange={setAthleteId} />
-            <EventSelector value={eventType} onChange={setEventType} />
+            <div className="space-y-6">
+              <AthleteSelector value={athleteId} onChange={setAthleteId} />
+              <EventSelector value={eventType} onChange={setEventType} />
 
-            <button
-              onClick={() => setScreen("recording")}
-              disabled={!canProceed}
-              className={`w-full py-3.5 rounded-xl font-semibold text-base transition-all ${
-                canProceed
-                  ? "cursor-pointer opacity-100"
-                  : "cursor-not-allowed opacity-40"
-              }`}
-              style={{
-                backgroundColor: "hsl(var(--primary))",
-                color: "hsl(var(--primary-foreground))",
-              }}
-            >
-              Continue
-            </button>
+              <button
+                onClick={() => setScreen("recording")}
+                disabled={!canProceed}
+                className={`w-full py-3.5 rounded-xl font-semibold text-base transition-all ${
+                  canProceed
+                    ? "cursor-pointer opacity-100"
+                    : "cursor-not-allowed opacity-40"
+                }`}
+                style={{
+                  backgroundColor: "hsl(var(--primary))",
+                  color: "hsl(var(--primary-foreground))",
+                }}
+              >
+                Continue
+              </button>
+
+              <button
+                onClick={() => setUploadModalOpen(true)}
+                className="w-full py-3.5 rounded-xl font-semibold text-base border border-border text-foreground bg-card transition-colors hover:bg-secondary"
+              >
+                Upload Run
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+
+        <UploadCSVModal
+          open={uploadModalOpen}
+          onClose={() => setUploadModalOpen(false)}
+        />
+      </>
     );
   }
 
   // ── Recording Screen ──
   return (
     <div className="flex flex-col items-center pt-10">
-      {/* Header */}
       <h1 className="text-2xl font-bold text-foreground">New Run</h1>
       <p className="text-sm text-muted-foreground mt-1 mb-10">
         {selectedAthlete?.name} · {selectedEvent?.label}
       </p>
 
-      {/* Timer circle */}
       <div
         className="w-56 h-56 rounded-full flex flex-col items-center justify-center bg-card"
         style={{
@@ -156,7 +156,6 @@ export default function RecordingPage() {
         </span>
       </div>
 
-      {/* Start/Stop button — hidden after stopping */}
       {!isStopped && (
         <button
           onClick={isRunning ? stopTimer : startTimer}
@@ -172,7 +171,6 @@ export default function RecordingPage() {
         </button>
       )}
 
-      {/* Save/Delete buttons — shown after stopping */}
       {isStopped && (
         <div className="mt-10 flex gap-4">
           <button
@@ -195,7 +193,6 @@ export default function RecordingPage() {
         </div>
       )}
 
-      {/* Change selection link — only before starting */}
       {!isRunning && !isStopped && (
         <button
           onClick={() => setScreen("setup")}
