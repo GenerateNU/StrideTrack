@@ -77,10 +77,16 @@ export function UploadCSVModal({ open, onClose }: UploadCSVModalProps) {
                 stroke="hsl(var(--primary))"
                 strokeWidth={2.5}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             </div>
-            <p className="text-base font-semibold text-foreground">Upload successful</p>
+            <p className="text-base font-semibold text-foreground">
+              Upload successful
+            </p>
             <p className="text-sm text-muted-foreground">{file?.name}</p>
           </div>
         ) : (
