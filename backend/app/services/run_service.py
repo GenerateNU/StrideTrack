@@ -10,6 +10,7 @@ from app.schemas.run_schemas import (
     SprintDriftData,
     StackedBarData,
     StepFrequencyData,
+    RunMeta
 )
 from app.utils.chart_transformations import (
     transform_data_for_lr_overlay,
@@ -43,6 +44,24 @@ class RunService:
 
         logger.info(f"Service: Getting metrics for run {run_id}")
         metric = await self.repository.get_run_metrics(run_id)
+        logger.info(f"Service: Retrieved metrics for run {run_id}")
+        return metric
+
+    async def get_meta_by_run_id(self, run_id: UUID) -> RunMeta:
+        """Get metadata for a specific run."""
+
+        # Verify run belongs to an athlete under this coach
+        run_check = await self.repository.supabase.table("run") \
+            .select("run_id, athletes!inner(coach_id)") \
+            .eq("run_id", str(run_id)) \
+            .eq("athletes.coach_id", str(self.coach_id)) \
+            .execute()
+
+        if not run_check.data:
+            raise NotFoundException("Run", str(run_id))
+
+        logger.info(f"Service: Getting metrics for run {run_id}")
+        metric = await self.repository.get_run_meta(run_id)
         logger.info(f"Service: Retrieved metrics for run {run_id}")
         return metric
 

@@ -13,6 +13,7 @@ from app.schemas.run_schemas import (
     SprintDriftData,
     StackedBarData,
     StepFrequencyData,
+    RunMeta
 )
 from app.services.run_service import RunService
 
@@ -65,6 +66,15 @@ async def get_run_metric_record(
     logger.info(f"Route: Returning a metric record for run: {run_id}")
     return metrics
 
+@router.get("/athletes/{run_id}/metadata", response_model=RunMeta)
+async def get_run_metadata(
+    run_id: UUID, service: RunService = Depends(get_run_service)
+) -> RunMeta:
+    """Get a specific run's metadata'."""
+    logger.info(f"Route: GET /athletes/{run_id}/metadata")
+    meta = await service.get_meta_by_run_id(run_id)
+    logger.info(f"Route: Returning metadata for run: {run_id}")
+    return meta
 
 @router.get("/athletes/{run_id}/metrics/lr-overlay", response_model=list[LROverlayData])
 async def get_lr_overlay(

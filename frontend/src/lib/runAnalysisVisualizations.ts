@@ -20,6 +20,7 @@ import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChar
 
 export type VisualizationConfig = {
   title: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: ComponentType<any>;
 };
 

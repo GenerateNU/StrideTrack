@@ -3,8 +3,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import api from "@/lib/api";
-import { runResponseSchema } from "@/types/run.types";
-import type { Run } from "@/types/run.types";
+import { runResponseSchema, runMetaSchema } from "@/types/run.types";
+import type { Run, RunMeta } from "@/types/run.types";
 
 export function useGetAllRuns() {
   const query = useQuery({
@@ -24,5 +24,26 @@ export function useGetAllRuns() {
     runsIsLoading: query.isLoading,
     runsError: query.error,
     runsRefetch: query.refetch,
+  };
+}
+
+export function useGetRunMeta(runId: string | undefined) {
+  const query = useQuery({
+    queryKey: ["runMeta", runId],
+    queryFn: async () => {
+      const response = await api.get<RunMeta>(`/run/athletes/${runId}/metadata`);
+      const parsed = runMetaSchema.safeParse(response.data);
+      if (!parsed.success) {
+        throw new Error("Invalid response format");
+      }
+      return parsed.data;
+    },
+    enabled: !!runId,
+  });
+
+  return {
+    runMeta: query.data ?? null,
+    runMetaIsLoading: query.isLoading,
+    runMetaError: query.error,
   };
 }

@@ -4,7 +4,7 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunResponse
+from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunResponse, RunMeta
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,23 @@ class RunRepository:
             .select("stride_num, ic_time, gct_ms, flight_ms, step_time_ms, foot")
             .eq("run_id", run_id)
             .order("ic_time")
+            .execute()
+        )
+
+        if not response.data:
+            logger.warning(f"Repository: Run metric not found for id {run_id}")
+            raise NotFoundException("Run metric", str(run_id))
+
+        logger.info(f"Repository: Found run metric: {run_id}")
+        return response.data
+
+    async def get_run_meta(self, run_id: UUID) -> RunMeta:
+        """Get a run's metadata from RUN table."""
+        logger.info(f"Repository: Fetching run metric: {run_id}")
+        response = (
+            await self.supabase.table("run")
+            .select("*")
+            .eq("run_id", run_id)
             .execute()
         )
 

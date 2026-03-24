@@ -1,5 +1,6 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { getChartsForEventType } from "@/config/runVisualizations";
+import { useParams, useNavigate } from "react-router-dom";
+import { useGetRunMeta } from "@/hooks/useRuns.hooks";
+import { getChartsForEventType } from "@/lib/runAnalysisVisualizations";
 import { ArrowLeft } from "lucide-react";
 
 function SectionHeader({ title }: { title: string }) {
@@ -20,12 +21,13 @@ export default function RunAnalysisPage() {
     runId: string;
   }>();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  // ADD HERE: Replace with dedicated GET /api/run/:runId and GET /api/athletes/:athleteId
-  // endpoints once they exist. Currently we only have the runId from the URL.
-  const eventType: string = location.state?.eventType ?? "default";
-  const charts = getChartsForEventType(eventType);
+  const { runMeta, runMetaIsLoading } = useGetRunMeta(runId);
+  console.log("runId:", runId);
+  console.log("runMeta:", runMeta);
+  console.log("runMetaIsLoading:", runMetaIsLoading);
+  const charts = getChartsForEventType(runMeta?.event_type ?? "default");
+
   return (
     <div className="flex h-full flex-col pt-4">
       <div className="mb-6">
@@ -37,7 +39,12 @@ export default function RunAnalysisPage() {
           Back to Athlete
         </button>
         <h2 className="text-xl font-bold text-foreground">Run Analysis</h2>
-        {/* ADD HERE: Display run event_type, date, elapsed_ms once GET /api/run/:runId exists */}
+          {runMeta && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {runMeta.event_type} · {new Date(runMeta.created_at).toLocaleDateString()}
+              {runMeta.elapsed_ms !== null && ` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
+            </p>
+          )}
       </div>
 
       {runId ? (
