@@ -1,0 +1,56 @@
+import logging
+from uuid import UUID
+
+from supabase._async.client import AsyncClient
+
+from app.core.exceptions import NotFoundException
+
+logger = logging.getLogger(__name__)
+
+
+class SplitScoreRepository:
+    """Fetches the data needed to compute a split score for a given run."""
+
+    def __init__(self, supabase: AsyncClient) -> None:
+        self.supabase = supabase
+
+    async def get_run_meta(self, run_id: UUID) -> dict:
+        """
+        Fetch event_type and elapsed_ms from the run table.
+
+        Raises:
+            NotFoundException: If no run exists with the given run_id.
+        """
+        logger.info(f"Repository: Fetching run meta for {run_id}")
+        response = (
+            await self.supabase.table("run")
+            .select("run_id, event_type, elapsed_ms")
+            .eq("run_id", str(run_id))
+            .execute()
+        )
+        if not response.data or len(response.data) == 0:
+            logger.warning(f"Repository: Run not found for id {run_id}")
+            raise NotFoundException("Run", str(run_id))
+        logger.info(f"Repository: Found run meta for {run_id}")
+        return response.data[0]
+
+    async def get_run_metrics(self, run_id: UUID) -> list[dict]:
+        """
+        Fetch raw stride metrics needed to compute hurdle segments.
+
+        Raises:
+            NotFoundException: If no metrics exist for the given run_id.
+        """
+        logger.info(f"Repository: Fetching stride metrics for {run_id}")
+        response = (
+            await self.supabase.table("run_metrics")
+            .select("ic_time, to_time, gct_ms, foot")
+            .eq("run_id", str(run_id))
+            .order("ic_time")
+            .execute()
+        )
+        if not response.data:
+            logger.warning(f"Repository: Stride metrics not found for run {run_id}")
+            raise NotFoundException("Run metrics", str(run_id))
+        logger.info(f"Repository: Found {len(response.data)} metric rows for {run_id}")
+        return response.data
