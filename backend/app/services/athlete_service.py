@@ -50,4 +50,4 @@ class AthleteService:
         """Delete an athlete."""
         logger.info(f"Service: Deleting athlete {athlete_id}")
         await self.repository.delete(athlete_id, self.coach_id)
-        logger.info(f"Service: Deleted a
+        logger.info(f"Service: Deleted athlete {athlete_id}")
