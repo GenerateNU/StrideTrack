@@ -102,9 +102,9 @@ class SplitScoreService:
         elapsed_ms: float,
         event_type: str,
     ) -> list[float]:
-        if event_type == "400mH":
+        if event_type == "hurdles_400m":
             return self._compute_hurdle_segments(raw_metrics, elapsed_ms)
-        if event_type == "400m":
+        if event_type == "sprint_400m":
             return self._compute_sprint_segments(raw_metrics, elapsed_ms)
         raise UnsupportedEventError(event_type)
 
