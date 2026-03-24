@@ -4,7 +4,7 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunResponse, RunMeta
+from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta, RunResponse
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +37,7 @@ class RunRepository:
         """Get a run's metadata from RUN table."""
         logger.info(f"Repository: Fetching run metric: {run_id}")
         response = (
-            await self.supabase.table("run")
-            .select("*")
-            .eq("run_id", run_id)
-            .execute()
+            await self.supabase.table("run").select("*").eq("run_id", run_id).execute()
         )
 
         if not response.data:

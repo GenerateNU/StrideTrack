@@ -1,8 +1,8 @@
 import logging
+from uuid import UUID
 
 import pandas as pd
 from fastapi import HTTPException
-from uuid import UUID
 
 from app.core.observability import get_tracer
 from app.repositories.csv_repository import CSVRepository
@@ -22,11 +22,13 @@ class CSVService:
     ) -> CSVUploadResponse:
 
         # Athlete Check
-        athlete_check = await self.repository.supabase.table("athletes") \
-            .select("athlete_id") \
-            .eq("athlete_id", athlete_id) \
-            .eq("coach_id", str(self.coach_id)) \
+        athlete_check = (
+            await self.repository.supabase.table("athletes")
+            .select("athlete_id")
+            .eq("athlete_id", athlete_id)
+            .eq("coach_id", str(self.coach_id))
             .execute()
+        )
         if not athlete_check.data:
             raise HTTPException(status_code=404, detail="Athlete not found")
 

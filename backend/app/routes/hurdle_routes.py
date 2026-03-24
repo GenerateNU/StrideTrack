@@ -4,8 +4,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
+from app.core.auth import get_current_coach
 from app.core.supabase import get_async_supabase
 from app.repositories.hurdle_repository import HurdleRepository
+from app.schemas.coach_schemas import Coach
 from app.schemas.hurdle_schemas import (
     GctIncreaseData,
     HurdleMetricRow,
@@ -16,8 +18,6 @@ from app.schemas.hurdle_schemas import (
     TakeoffGctBarData,
 )
 from app.services.hurdle_service import HurdleService
-from app.schemas.coach_schemas import Coach
-from app.core.auth import get_current_coach
 
 logger = logging.getLogger(__name__)
 

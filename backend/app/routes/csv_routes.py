@@ -9,8 +9,8 @@ from app.core.auth import get_current_coach
 from app.core.observability import get_tracer
 from app.core.supabase import get_async_supabase
 from app.repositories.csv_repository import CSVRepository
-from app.schemas.csv_schemas import CSVUploadResponse
 from app.schemas.coach_schemas import Coach
+from app.schemas.csv_schemas import CSVUploadResponse
 from app.services.csv_service import CSVService
 
 logger = logging.getLogger(__name__)

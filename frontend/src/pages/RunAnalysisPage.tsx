@@ -39,12 +39,14 @@ export default function RunAnalysisPage() {
           Back to Athlete
         </button>
         <h2 className="text-xl font-bold text-foreground">Run Analysis</h2>
-          {runMeta && (
-            <p className="text-sm text-muted-foreground mt-1">
-              {runMeta.event_type} · {new Date(runMeta.created_at).toLocaleDateString()}
-              {runMeta.elapsed_ms !== null && ` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
-            </p>
-          )}
+        {runMeta && (
+          <p className="text-sm text-muted-foreground mt-1">
+            {runMeta.event_type} ·{" "}
+            {new Date(runMeta.created_at).toLocaleDateString()}
+            {runMeta.elapsed_ms !== null &&
+              ` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
+          </p>
+        )}
       </div>
 
       {runId ? (

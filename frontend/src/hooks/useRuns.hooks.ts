@@ -31,7 +31,9 @@ export function useGetRunMeta(runId: string | undefined) {
   const query = useQuery({
     queryKey: ["runMeta", runId],
     queryFn: async () => {
-      const response = await api.get<RunMeta>(`/run/athletes/${runId}/metadata`);
+      const response = await api.get<RunMeta>(
+        `/run/athletes/${runId}/metadata`
+      );
       const parsed = runMetaSchema.safeParse(response.data);
       if (!parsed.success) {
         throw new Error("Invalid response format");

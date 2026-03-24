@@ -40,7 +40,9 @@ class AthleteService:
     ) -> AthleteResponse:
         """Update an athlete."""
         logger.info(f"Service: Updating athlete {athlete_id}")
-        athlete = await self.repository.update(athlete_id, athlete_update, self.coach_id)
+        athlete = await self.repository.update(
+            athlete_id, athlete_update, self.coach_id
+        )
         logger.info(f"Service: Updated athlete {athlete_id}")
         return athlete
 

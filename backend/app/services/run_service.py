@@ -1,16 +1,16 @@
 import logging
 from typing import Literal
-from app.core.exceptions import NotFoundException
 from uuid import UUID
 
+from app.core.exceptions import NotFoundException
 from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRepository
 from app.schemas.run_schemas import (
     LROverlayData,
+    RunMeta,
     RunResponse,
     SprintDriftData,
     StackedBarData,
     StepFrequencyData,
-    RunMeta
 )
 from app.utils.chart_transformations import (
     transform_data_for_lr_overlay,
@@ -33,11 +33,13 @@ class RunService:
         """Get all run metrics for a specific run."""
 
         # Verify run belongs to an athlete under this coach
-        run_check = await self.repository.supabase.table("run") \
-            .select("run_id, athletes!inner(coach_id)") \
-            .eq("run_id", str(run_id)) \
-            .eq("athletes.coach_id", str(self.coach_id)) \
+        run_check = (
+            await self.repository.supabase.table("run")
+            .select("run_id, athletes!inner(coach_id)")
+            .eq("run_id", str(run_id))
+            .eq("athletes.coach_id", str(self.coach_id))
             .execute()
+        )
 
         if not run_check.data:
             raise NotFoundException("Run", str(run_id))
@@ -51,11 +53,13 @@ class RunService:
         """Get metadata for a specific run."""
 
         # Verify run belongs to an athlete under this coach
-        run_check = await self.repository.supabase.table("run") \
-            .select("run_id, athletes!inner(coach_id)") \
-            .eq("run_id", str(run_id)) \
-            .eq("athletes.coach_id", str(self.coach_id)) \
+        run_check = (
+            await self.repository.supabase.table("run")
+            .select("run_id, athletes!inner(coach_id)")
+            .eq("run_id", str(run_id))
+            .eq("athletes.coach_id", str(self.coach_id))
             .execute()
+        )
 
         if not run_check.data:
             raise NotFoundException("Run", str(run_id))
@@ -102,11 +106,13 @@ class RunService:
     async def create_run(self, data: RunCreate) -> RunCreateResponse:
         """Create a new run."""
 
-        athlete_check = await self.repository.supabase.table("athletes") \
-            .select("athlete_id") \
-            .eq("athlete_id", str(data.athlete_id)) \
-            .eq("coach_id", str(self.coach_id)) \
+        athlete_check = (
+            await self.repository.supabase.table("athletes")
+            .select("athlete_id")
+            .eq("athlete_id", str(data.athlete_id))
+            .eq("coach_id", str(self.coach_id))
             .execute()
+        )
 
         if not athlete_check.data:
             raise NotFoundException("Athlete", str(data.athlete_id))

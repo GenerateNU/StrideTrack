@@ -1,8 +1,8 @@
+from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
-from datetime import datetime
 
 
 class RunResponse(BaseModel):
@@ -52,6 +52,7 @@ class RunCreateResponse(BaseModel):
     event_type: str
     elapsed_ms: int | None = None
     created_at: str
+
 
 class RunMeta(BaseModel):
     run_id: UUID

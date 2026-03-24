@@ -51,7 +51,9 @@ class AthleteRepository:
         logger.info(f"Repository: Found athlete {athlete_id}")
         return AthleteResponse(**response.data[0])
 
-    async def create(self, athlete_create: AthleteCreate, coach_id: UUID) -> AthleteResponse:
+    async def create(
+        self, athlete_create: AthleteCreate, coach_id: UUID
+    ) -> AthleteResponse:
         """Create a new athlete."""
         logger.info(f"Repository: Creating athlete {athlete_create.name}")
         data = athlete_create.model_dump()
