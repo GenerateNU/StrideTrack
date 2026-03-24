@@ -108,4 +108,4 @@ class HurdleService:
         """Transform hurdle data for GCT increase KPI."""
         logger.info(f"Service: Getting GCT increase for run {run_id}")
         data = await self._get_hurdle_metric_rows(run_id)
-        return transform_gct_increase(data)
+        return transform_gct

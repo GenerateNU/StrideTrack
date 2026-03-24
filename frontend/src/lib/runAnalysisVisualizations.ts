@@ -29,6 +29,7 @@ const DEFAULT_CHARTS: VisualizationConfig[] = [
   { title: "Flight Time — L vs R", component: FlightTimeChart },
 ];
 
+
 const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
   sprint: [
     ...DEFAULT_CHARTS,
@@ -51,5 +52,8 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
 export function getChartsForEventType(
   eventType: string
 ): VisualizationConfig[] {
-  return visualizationsByEventType[eventType] ?? DEFAULT_CHARTS;
+  const category = eventType.startsWith("hurdles") ? "hurdles" :
+                   eventType.startsWith("sprint") ? "sprint" :
+                   eventType;
+  return visualizationsByEventType[category] ?? DEFAULT_CHARTS;
 }

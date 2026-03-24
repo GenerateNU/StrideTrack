@@ -45,7 +45,7 @@ class RunRepository:
             raise NotFoundException("Run metric", str(run_id))
 
         logger.info(f"Repository: Found run metric: {run_id}")
-        return response.data
+        return response.data[0]
 
     async def create(self, run_create: RunCreate) -> RunCreateResponse:
         """Create a new run."""

@@ -78,5 +78,4 @@ class CSVService:
             )
 
             return CSVUploadResponse(
-                message=f"CSV uploaded successfully. Run ID: {result['run_id']}, Rows inserted: {result['rows_inserted']}"
-            )
+                message=f"CSV uploaded successfully. Run ID: {result['run_id']}, Rows inserted: {result['rows_inserted']}

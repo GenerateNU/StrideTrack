@@ -134,4 +134,4 @@ class RunService:
         logger.info(f"Service: Getting runs for athlete {athlete_id}")
         runs = await self.repository.get_by_athlete_id(athlete_id)
         logger.info(f"Service: Retrieved {len(runs)} runs for athlete {athlete_id}")
-        return [RunCreateResponse(**run) for run in runs]
+        r

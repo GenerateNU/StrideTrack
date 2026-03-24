@@ -130,4 +130,4 @@ async def create_run(
     logger.info(f"Route: POST /run for athlete {data.athlete_id}")
     run = await service.create_run(data)
     logger.info(f"Route: Created run {run.run_id}")
-    return run
+    return ru
