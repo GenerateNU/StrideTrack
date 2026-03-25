@@ -122,6 +122,16 @@ make logs SERVICE=backend  # View logs
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
+**Running tests:**
+
+```bash
+make unit-test   # Unit tests — no services needed
+make int-test    # Integration tests — requires: make up
+make test        # Both
+```
+
+See [TESTING.md](./TESTING.md) for the full guide: test patterns, cleanup contract, FK dependency order, and how to write new tests.
+
 ## Environment Variables
 
 See `.env.example` for required configuration:

@@ -1,4 +1,4 @@
-import { useLROverlayData } from "@/hooks/useRunMetrics";
+import { useLROverlayData } from "@/hooks/useRunMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 import {
   LineChart,
@@ -21,6 +21,7 @@ export const LROverlayLineChart = ({
   metric,
 }: LROverlayLineChartProps) => {
   const { lrData } = useLROverlayData(runId, metric);
+  if (!lrData) return null;
 
   return (
     <ResponsiveContainer width="100%" height={300}>
