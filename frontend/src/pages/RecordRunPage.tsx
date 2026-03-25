@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { AthleteSelector } from "@/components/athletes/AthleteSelector";
 import EventSelector from "@/components/events/EventSelector";
 import { useCreateRun } from "@/hooks/useCreateRun.hooks";
@@ -7,10 +8,13 @@ import { useEvents } from "@/hooks/useEvents";
 import { UploadCSVModal } from "@/components/runs/UploadCSVModal";
 import type { EventTypeEnum } from "@/types/event.types";
 
+interface SetupFormValues {
+  athleteId: string;
+  eventType: EventTypeEnum;
+}
+
 export default function RecordingPage() {
   const [screen, setScreen] = useState<"setup" | "recording">("setup");
-  const [athleteId, setAthleteId] = useState<string | null>(null);
-  const [eventType, setEventType] = useState<EventTypeEnum | null>(null);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isStopped, setIsStopped] = useState(false);
@@ -23,7 +27,17 @@ export default function RecordingPage() {
   const events = useEvents();
   const { createRun, createRunIsLoading } = useCreateRun();
 
-  const canProceed = athleteId !== null && eventType !== null;
+  const {
+    control,
+    handleSubmit,
+    getValues,
+    formState: { isValid },
+  } = useForm<SetupFormValues>({
+    mode: "onChange",
+    defaultValues: { athleteId: "", eventType: "" as EventTypeEnum },
+  });
+
+  const { athleteId, eventType } = getValues();
 
   const selectedAthlete = athletes.find((a) => a.athlete_id === athleteId);
   const selectedEvent = events.find((e) => e.value === eventType);
@@ -86,15 +100,39 @@ export default function RecordingPage() {
               Select an athlete and event to begin recording
             </p>
 
-            <div className="space-y-6">
-              <AthleteSelector value={athleteId} onChange={setAthleteId} />
-              <EventSelector value={eventType} onChange={setEventType} />
+            <form
+              onSubmit={handleSubmit(() => setScreen("recording"))}
+              className="space-y-6"
+            >
+              <Controller
+                name="athleteId"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <AthleteSelector
+                    value={field.value || null}
+                    onChange={(val) => field.onChange(val ?? "")}
+                  />
+                )}
+              />
+
+              <Controller
+                name="eventType"
+                control={control}
+                rules={{ required: true }}
+                render={({ field }) => (
+                  <EventSelector
+                    value={(field.value as EventTypeEnum) || null}
+                    onChange={(val) => field.onChange(val ?? "")}
+                  />
+                )}
+              />
 
               <button
-                onClick={() => setScreen("recording")}
-                disabled={!canProceed}
+                type="submit"
+                disabled={!isValid}
                 className={`w-full py-3.5 rounded-xl font-semibold text-base transition-all ${
-                  canProceed
+                  isValid
                     ? "cursor-pointer opacity-100"
                     : "cursor-not-allowed opacity-40"
                 }`}
@@ -107,12 +145,13 @@ export default function RecordingPage() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setUploadModalOpen(true)}
                 className="w-full py-3.5 rounded-xl font-semibold text-base border border-border text-foreground bg-card transition-colors hover:bg-secondary"
               >
                 Upload Run
               </button>
-            </div>
+            </form>
           </div>
         </div>
 
