@@ -1,6 +1,7 @@
 import pytest
 
 from app.utils.sprint_metrics import _drift_window, calculate_drift
+from app.schemas.run_schemas import RunResponse, SprintDriftData
 
 # _drift_window
 
@@ -43,66 +44,86 @@ class TestCalculateDrift:
 
     def test_no_drift_with_constant_data(self) -> None:
         """When every stride has identical GCT and FT, both drift values should be 0%."""
-        data = [{"gct_ms": 200, "flight_ms": 300}] * 20
+        data = [
+            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=200, flight_ms=300, step_time_ms=500)
+            for i in range(1, 21)
+        ]
 
         result = calculate_drift(data)
 
-        assert result["gct_drift_pct"] == 0.0
-        assert result["ft_drift_pct"] == 0.0
+        assert result.gct_drift_pct == 0.0
+        assert result.ft_drift_pct == 0.0
 
     def test_positive_gct_drift_indicates_fatigue(self) -> None:
         """When terminal GCT is higher than the best (shortest) GCT values, gct_drift_pct
         should be positive, indicating the athlete is spending more time on the ground."""
-        data = [{"gct_ms": 180, "flight_ms": 300}] * 10 + [
-            {"gct_ms": 250, "flight_ms": 300}
-        ] * 10
+        data = [
+            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=180, flight_ms=300, step_time_ms=480)
+            for i in range(1, 11)
+        ] + [
+            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=250, flight_ms=300, step_time_ms=550)
+            for i in range(11, 21)
+        ]
 
         result = calculate_drift(data)
 
-        assert result["gct_drift_pct"] > 0.0
+        assert result.gct_drift_pct > 0.0
 
     def test_negative_ft_drift_indicates_power_loss(self) -> None:
         """When terminal FT is lower than the best (longest) FT values, ft_drift_pct
         should be negative, indicating the athlete is losing push-off power."""
-        data = [{"gct_ms": 200, "flight_ms": 350}] * 10 + [
-            {"gct_ms": 200, "flight_ms": 250}
-        ] * 10
+        data = [
+            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=200, flight_ms=350, step_time_ms=550)
+            for i in range(1, 11)
+        ] + [
+            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=200, flight_ms=250, step_time_ms=450)
+            for i in range(11, 21)
+        ]
 
         result = calculate_drift(data)
 
-        assert result["ft_drift_pct"] < 0.0
+        assert result.ft_drift_pct < 0.0
 
-    def test_output_keys(self) -> None:
-        """The returned dict should contain exactly gct_drift_pct and ft_drift_pct."""
-        data = [{"gct_ms": 200, "flight_ms": 300}] * 20
+    def test_output_is_sprint_drift_data(self) -> None:
+        """The returned value should be a SprintDriftData instance with both fields."""
+        data = [
+            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=200, flight_ms=300, step_time_ms=500)
+            for i in range(1, 21)
+        ]
 
         result = calculate_drift(data)
 
-        assert set(result.keys()) == {"gct_drift_pct", "ft_drift_pct"}
+        assert isinstance(result, SprintDriftData)
+        assert hasattr(result, "gct_drift_pct")
+        assert hasattr(result, "ft_drift_pct")
 
     def test_known_drift_values(self) -> None:
         """Where the first 10 strides have gct=180 and the last 10 have gct=216,
         the N=3 shortest GCTs are all 180 (baseline=180) and the terminal window
         (last 3) averages 216. Drift = (216-180)/180*100 = 20%."""
-        data = [{"gct_ms": 180, "flight_ms": 300}] * 10 + [
-            {"gct_ms": 216, "flight_ms": 240}
-        ] * 10
+        data = [
+            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=180, flight_ms=300, step_time_ms=480)
+            for i in range(1, 11)
+        ] + [
+            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=216, flight_ms=240, step_time_ms=456)
+            for i in range(11, 21)
+        ]
 
         result = calculate_drift(data)
 
-        assert result["gct_drift_pct"] == pytest.approx(20.0)
-        assert result["ft_drift_pct"] == pytest.approx(-20.0)
+        assert result.gct_drift_pct == pytest.approx(20.0)
+        assert result.ft_drift_pct == pytest.approx(-20.0)
 
     def test_minimum_viable_dataset(self) -> None:
         """With only 3 data points (the minimum window size), the function should
         still compute without error."""
         data = [
-            {"gct_ms": 180, "flight_ms": 300},
-            {"gct_ms": 190, "flight_ms": 290},
-            {"gct_ms": 200, "flight_ms": 280},
+            RunResponse(stride_num=1, foot="left", ic_time=0, gct_ms=180, flight_ms=300, step_time_ms=480),
+            RunResponse(stride_num=2, foot="left", ic_time=0, gct_ms=190, flight_ms=290, step_time_ms=480),
+            RunResponse(stride_num=3, foot="left", ic_time=0, gct_ms=200, flight_ms=280, step_time_ms=480),
         ]
 
         result = calculate_drift(data)
 
-        assert isinstance(result["gct_drift_pct"], float)
-        assert isinstance(result["ft_drift_pct"], float)
+        assert isinstance(result.gct_drift_pct, float)
+        assert isinstance(result.ft_drift_pct, float)

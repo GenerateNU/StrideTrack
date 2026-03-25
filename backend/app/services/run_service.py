@@ -55,7 +55,8 @@ class RunService:
         """Calculate GCT and FT drift % for sprint fatigue tracking."""
         logger.info(f"Service: Calculating sprint drift for run {run_id}")
         data = await self.repository.get_run_metrics(run_id)
-        result = calculate_drift(data)
+        strides = [RunResponse(**row) for row in data]
+        result = calculate_drift(strides)
         logger.info(f"Service: Calculated sprint drift for run {run_id}")
         return result
 
