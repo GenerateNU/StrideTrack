@@ -1,7 +1,7 @@
 import pytest
 
-from app.utils.sprint_metrics import _drift_window, calculate_drift
 from app.schemas.run_schemas import RunResponse, SprintDriftData
+from app.utils.sprint_metrics import _drift_window, calculate_drift
 
 # _drift_window
 
@@ -45,7 +45,14 @@ class TestCalculateDrift:
     def test_no_drift_with_constant_data(self) -> None:
         """When every stride has identical GCT and FT, both drift values should be 0%."""
         data = [
-            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=200, flight_ms=300, step_time_ms=500)
+            RunResponse(
+                stride_num=i,
+                foot="left",
+                ic_time=0,
+                gct_ms=200,
+                flight_ms=300,
+                step_time_ms=500,
+            )
             for i in range(1, 21)
         ]
 
@@ -58,10 +65,24 @@ class TestCalculateDrift:
         """When terminal GCT is higher than the best (shortest) GCT values, gct_drift_pct
         should be positive, indicating the athlete is spending more time on the ground."""
         data = [
-            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=180, flight_ms=300, step_time_ms=480)
+            RunResponse(
+                stride_num=i,
+                foot="left",
+                ic_time=0,
+                gct_ms=180,
+                flight_ms=300,
+                step_time_ms=480,
+            )
             for i in range(1, 11)
         ] + [
-            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=250, flight_ms=300, step_time_ms=550)
+            RunResponse(
+                stride_num=i,
+                foot="left",
+                ic_time=0,
+                gct_ms=250,
+                flight_ms=300,
+                step_time_ms=550,
+            )
             for i in range(11, 21)
         ]
 
@@ -73,10 +94,24 @@ class TestCalculateDrift:
         """When terminal FT is lower than the best (longest) FT values, ft_drift_pct
         should be negative, indicating the athlete is losing push-off power."""
         data = [
-            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=200, flight_ms=350, step_time_ms=550)
+            RunResponse(
+                stride_num=i,
+                foot="left",
+                ic_time=0,
+                gct_ms=200,
+                flight_ms=350,
+                step_time_ms=550,
+            )
             for i in range(1, 11)
         ] + [
-            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=200, flight_ms=250, step_time_ms=450)
+            RunResponse(
+                stride_num=i,
+                foot="left",
+                ic_time=0,
+                gct_ms=200,
+                flight_ms=250,
+                step_time_ms=450,
+            )
             for i in range(11, 21)
         ]
 
@@ -87,7 +122,14 @@ class TestCalculateDrift:
     def test_output_is_sprint_drift_data(self) -> None:
         """The returned value should be a SprintDriftData instance with both fields."""
         data = [
-            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=200, flight_ms=300, step_time_ms=500)
+            RunResponse(
+                stride_num=i,
+                foot="left",
+                ic_time=0,
+                gct_ms=200,
+                flight_ms=300,
+                step_time_ms=500,
+            )
             for i in range(1, 21)
         ]
 
@@ -102,10 +144,24 @@ class TestCalculateDrift:
         the N=3 shortest GCTs are all 180 (baseline=180) and the terminal window
         (last 3) averages 216. Drift = (216-180)/180*100 = 20%."""
         data = [
-            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=180, flight_ms=300, step_time_ms=480)
+            RunResponse(
+                stride_num=i,
+                foot="left",
+                ic_time=0,
+                gct_ms=180,
+                flight_ms=300,
+                step_time_ms=480,
+            )
             for i in range(1, 11)
         ] + [
-            RunResponse(stride_num=i, foot="left", ic_time=0, gct_ms=216, flight_ms=240, step_time_ms=456)
+            RunResponse(
+                stride_num=i,
+                foot="left",
+                ic_time=0,
+                gct_ms=216,
+                flight_ms=240,
+                step_time_ms=456,
+            )
             for i in range(11, 21)
         ]
 
@@ -118,9 +174,30 @@ class TestCalculateDrift:
         """With only 3 data points (the minimum window size), the function should
         still compute without error."""
         data = [
-            RunResponse(stride_num=1, foot="left", ic_time=0, gct_ms=180, flight_ms=300, step_time_ms=480),
-            RunResponse(stride_num=2, foot="left", ic_time=0, gct_ms=190, flight_ms=290, step_time_ms=480),
-            RunResponse(stride_num=3, foot="left", ic_time=0, gct_ms=200, flight_ms=280, step_time_ms=480),
+            RunResponse(
+                stride_num=1,
+                foot="left",
+                ic_time=0,
+                gct_ms=180,
+                flight_ms=300,
+                step_time_ms=480,
+            ),
+            RunResponse(
+                stride_num=2,
+                foot="left",
+                ic_time=0,
+                gct_ms=190,
+                flight_ms=290,
+                step_time_ms=480,
+            ),
+            RunResponse(
+                stride_num=3,
+                foot="left",
+                ic_time=0,
+                gct_ms=200,
+                flight_ms=280,
+                step_time_ms=480,
+            ),
         ]
 
         result = calculate_drift(data)

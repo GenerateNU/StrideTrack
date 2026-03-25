@@ -14,10 +14,38 @@ from app.utils.chart_transformations import (
 def sample_run_data() -> list[RunResponse]:
     """Two complete strides with known values."""
     return [
-        RunResponse(stride_num=1, foot="left", ic_time=0, gct_ms=200, flight_ms=300, step_time_ms=500),
-        RunResponse(stride_num=1, foot="right", ic_time=0, gct_ms=220, flight_ms=280, step_time_ms=500),
-        RunResponse(stride_num=2, foot="left", ic_time=0, gct_ms=210, flight_ms=290, step_time_ms=500),
-        RunResponse(stride_num=2, foot="right", ic_time=0, gct_ms=190, flight_ms=310, step_time_ms=500),
+        RunResponse(
+            stride_num=1,
+            foot="left",
+            ic_time=0,
+            gct_ms=200,
+            flight_ms=300,
+            step_time_ms=500,
+        ),
+        RunResponse(
+            stride_num=1,
+            foot="right",
+            ic_time=0,
+            gct_ms=220,
+            flight_ms=280,
+            step_time_ms=500,
+        ),
+        RunResponse(
+            stride_num=2,
+            foot="left",
+            ic_time=0,
+            gct_ms=210,
+            flight_ms=290,
+            step_time_ms=500,
+        ),
+        RunResponse(
+            stride_num=2,
+            foot="right",
+            ic_time=0,
+            gct_ms=190,
+            flight_ms=310,
+            step_time_ms=500,
+        ),
     ]
 
 
@@ -28,7 +56,9 @@ def sample_run_data() -> list[RunResponse]:
 class TestTransformDataForLrOverlay:
     """Tests for transform_data_for_lr_overlay"""
 
-    def test_groups_left_and_right_by_stride(self, sample_run_data: list[RunResponse]) -> None:
+    def test_groups_left_and_right_by_stride(
+        self, sample_run_data: list[RunResponse]
+    ) -> None:
         """Each stride should become one object with both left and right values nested
         under the stride_num key."""
         result = transform_data_for_lr_overlay(sample_run_data, metric="gct_ms")
@@ -38,7 +68,9 @@ class TestTransformDataForLrOverlay:
         assert result[0].left == 200
         assert result[0].right == 220
 
-    def test_works_with_flight_ms_metric(self, sample_run_data: list[RunResponse]) -> None:
+    def test_works_with_flight_ms_metric(
+        self, sample_run_data: list[RunResponse]
+    ) -> None:
         """Passing metric='flight_ms' should pull flight_ms values instead of gct_ms."""
         result = transform_data_for_lr_overlay(sample_run_data, metric="flight_ms")
 
@@ -53,7 +85,14 @@ class TestTransformDataForLrOverlay:
     def test_single_foot_stride(self) -> None:
         """A stride with only one foot should still appear, with only that foot's value."""
         data = [
-            RunResponse(stride_num=1, foot="left", ic_time=0, gct_ms=200, flight_ms=300, step_time_ms=500),
+            RunResponse(
+                stride_num=1,
+                foot="left",
+                ic_time=0,
+                gct_ms=200,
+                flight_ms=300,
+                step_time_ms=500,
+            ),
         ]
         result = transform_data_for_lr_overlay(data, metric="gct_ms")
 
@@ -69,7 +108,9 @@ class TestTransformDataForLrOverlay:
 class TestTransformDataForStackedBar:
     """Tests for transform_data_for_stacked_bar."""
 
-    def test_output_has_correct_attributes(self, sample_run_data: list[RunResponse]) -> None:
+    def test_output_has_correct_attributes(
+        self, sample_run_data: list[RunResponse]
+    ) -> None:
         """Each output object should have stride_num, foot, label, gct_ms, and flight_ms."""
         result = transform_data_for_stacked_bar(sample_run_data)
 
@@ -102,8 +143,22 @@ class TestTransformDataForStackedBar:
     def test_sorted_by_stride_num(self) -> None:
         """Output should be sorted by stride_num even if input is unordered."""
         data = [
-            RunResponse(stride_num=2, foot="left", ic_time=0, gct_ms=210, flight_ms=290, step_time_ms=500),
-            RunResponse(stride_num=1, foot="right", ic_time=0, gct_ms=220, flight_ms=280, step_time_ms=500),
+            RunResponse(
+                stride_num=2,
+                foot="left",
+                ic_time=0,
+                gct_ms=210,
+                flight_ms=290,
+                step_time_ms=500,
+            ),
+            RunResponse(
+                stride_num=1,
+                foot="right",
+                ic_time=0,
+                gct_ms=220,
+                flight_ms=280,
+                step_time_ms=500,
+            ),
         ]
         result = transform_data_for_stacked_bar(data)
 
@@ -123,7 +178,9 @@ class TestTransformDataForStackedBar:
 class TestTransformDataForStepFrequency:
     """Tests for transform_data_for_step_frequency."""
 
-    def test_correct_frequency_calculation(self, sample_run_data: list[RunResponse]) -> None:
+    def test_correct_frequency_calculation(
+        self, sample_run_data: list[RunResponse]
+    ) -> None:
         """With step_time_ms=500, step_frequency_hz should be 1000/500 = 2.0 Hz."""
         result = transform_data_for_step_frequency(sample_run_data)
 
@@ -133,13 +190,22 @@ class TestTransformDataForStepFrequency:
     def test_frequency_rounded_to_three_decimals(self) -> None:
         """The frequency value should be rounded to 3 decimal places."""
         data = [
-            RunResponse(stride_num=1, foot="left", ic_time=0, gct_ms=200, flight_ms=300, step_time_ms=333),
+            RunResponse(
+                stride_num=1,
+                foot="left",
+                ic_time=0,
+                gct_ms=200,
+                flight_ms=300,
+                step_time_ms=333,
+            ),
         ]
         result = transform_data_for_step_frequency(data)
 
         assert result[0].step_frequency_hz == 3.003
 
-    def test_output_has_correct_attributes(self, sample_run_data: list[RunResponse]) -> None:
+    def test_output_has_correct_attributes(
+        self, sample_run_data: list[RunResponse]
+    ) -> None:
         """Each output object should have stride_num, foot, label, and step_frequency_hz."""
         result = transform_data_for_step_frequency(sample_run_data)
 
@@ -160,9 +226,30 @@ class TestTransformDataForStepFrequency:
     def test_sorted_by_stride_num_then_foot(self) -> None:
         """Output should be sorted by (stride_num, foot) even if input is unordered."""
         data = [
-            RunResponse(stride_num=2, foot="right", ic_time=0, gct_ms=190, flight_ms=310, step_time_ms=500),
-            RunResponse(stride_num=1, foot="right", ic_time=0, gct_ms=220, flight_ms=280, step_time_ms=500),
-            RunResponse(stride_num=1, foot="left", ic_time=0, gct_ms=200, flight_ms=300, step_time_ms=500),
+            RunResponse(
+                stride_num=2,
+                foot="right",
+                ic_time=0,
+                gct_ms=190,
+                flight_ms=310,
+                step_time_ms=500,
+            ),
+            RunResponse(
+                stride_num=1,
+                foot="right",
+                ic_time=0,
+                gct_ms=220,
+                flight_ms=280,
+                step_time_ms=500,
+            ),
+            RunResponse(
+                stride_num=1,
+                foot="left",
+                ic_time=0,
+                gct_ms=200,
+                flight_ms=300,
+                step_time_ms=500,
+            ),
         ]
         result = transform_data_for_step_frequency(data)
 
