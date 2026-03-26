@@ -145,6 +145,9 @@ export default function VisualizationsPage() {
             {eventHistoryFilters && (
               <EventHistoryChart filters={eventHistoryFilters} enabled={true} />
             )}
+          </div>
+        </div>
+
         {/* Bosco Metrics */}
         <h2 className="text-2xl font-bold mb-6 text-foreground">Bosco Test</h2>
         <div className="space-y-8">
