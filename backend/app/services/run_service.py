@@ -3,11 +3,19 @@ from typing import Literal
 from uuid import UUID
 
 from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRepository
-from app.schemas.run_schemas import LROverlayData, RunResponse, StackedBarData
+from app.schemas.run_schemas import (
+    LROverlayData,
+    RunResponse,
+    SprintDriftData,
+    StackedBarData,
+    StepFrequencyData,
+)
 from app.utils.chart_transformations import (
     transform_data_for_lr_overlay,
     transform_data_for_stacked_bar,
+    transform_data_for_step_frequency,
 )
+from app.utils.sprint_metrics import calculate_drift
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +29,7 @@ class RunService:
     async def get_metrics_by_run_id(self, run_id: UUID) -> list[RunResponse]:
         """Get all run metrics for a specific run."""
         logger.info(f"Service: Getting metrics for run {run_id}")
-
-        # Convert UUID to string for Supabase query
         metric = await self.repository.get_run_metrics(run_id)
-
         logger.info(f"Service: Retrieved metrics for run {run_id}")
         return metric
 
@@ -33,21 +38,33 @@ class RunService:
     ) -> list[LROverlayData]:
         """Transform run data for FT and GCT visualizations"""
         logger.info(f"Service: Transforming run {run_id} for {metric} visualization")
-
         data = await self.repository.get_run_metrics(run_id)
         transformed = transform_data_for_lr_overlay(data, metric)
-
         logger.info(f"Service: Transformed run {run_id} for {metric} visualization")
         return transformed
 
     async def transform_stacked_bar(self, run_id: UUID) -> list[StackedBarData]:
         """Transform run data for step time visualization"""
         logger.info(f"Service: Transforming run {run_id} for stacked bar chart")
-
         data = await self.repository.get_run_metrics(run_id)
         transformed = transform_data_for_stacked_bar(data)
-
         logger.info(f"Service: Transformed run {run_id} for stacked bar chart")
+        return transformed
+
+    async def get_sprint_drift(self, run_id: UUID) -> SprintDriftData:
+        """Calculate GCT and FT drift % for sprint fatigue tracking."""
+        logger.info(f"Service: Calculating sprint drift for run {run_id}")
+        data = await self.repository.get_run_metrics(run_id)
+        result = calculate_drift(data)
+        logger.info(f"Service: Calculated sprint drift for run {run_id}")
+        return result
+
+    async def transform_step_frequency(self, run_id: UUID) -> list[StepFrequencyData]:
+        """Transform run data for step frequency visualization"""
+        logger.info(f"Service: Transforming run {run_id} for step frequency chart")
+        data = await self.repository.get_run_metrics(run_id)
+        transformed = transform_data_for_step_frequency(data)
+        logger.info(f"Service: Transformed run {run_id} for step frequency chart")
         return transformed
 
     async def create_run(self, data: RunCreate) -> RunCreateResponse:

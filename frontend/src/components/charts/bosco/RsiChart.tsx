@@ -1,4 +1,4 @@
-import { useLROverlayData } from "@/hooks/useRunMetrics.hooks";
+import { useBoscoMetrics } from "@/hooks/useBoscoMetrics";
 import { chartColors } from "@/lib/chartColors";
 import {
   LineChart,
@@ -7,30 +7,27 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
+  ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
 
-interface LROverlayLineChartProps {
-  runId: string;
-  metric: "gct_ms" | "flight_ms";
-}
+export const RsiChart = ({ runId }: { runId: string }) => {
+  const { boscoMetrics } = useBoscoMetrics(runId);
 
-export const LROverlayLineChart = ({
-  runId,
-  metric,
-}: LROverlayLineChartProps) => {
-  const { lrData } = useLROverlayData(runId, metric);
-  if (!lrData) return null;
+  const data =
+    boscoMetrics?.rsi_per_jump.map((rsi, index) => ({
+      jump_num: index + 1,
+      rsi: parseFloat(rsi.toFixed(3)),
+    })) ?? [];
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={lrData}>
+      <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
         <XAxis
-          dataKey="stride_num"
+          dataKey="jump_num"
           label={{
-            value: "Stride Number",
+            value: "Jump Number",
             position: "insideBottom",
             offset: -5,
             style: {
@@ -42,7 +39,7 @@ export const LROverlayLineChart = ({
         />
         <YAxis
           label={{
-            value: "Time (milliseconds)",
+            value: "RSI",
             angle: -90,
             position: "insideLeft",
             offset: 0,
@@ -62,30 +59,25 @@ export const LROverlayLineChart = ({
             backgroundColor: chartColors.card,
             color: chartColors.foreground,
           }}
-          formatter={(value) => [`${value} ms`]}
+          formatter={(value) => [`${value}`, "RSI"]}
         />
-        <Legend
-          verticalAlign="bottom"
-          align="center"
-          wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 60 }}
-          iconType="circle"
-          iconSize={8}
+        <ReferenceLine
+          y={1.0}
+          stroke={chartColors.mutedForeground}
+          strokeDasharray="4 4"
+          label={{
+            value: "1.0 target",
+            fill: chartColors.mutedForeground,
+            fontSize: 10,
+          }}
         />
         <Line
           type="monotone"
-          dataKey="left"
+          dataKey="rsi"
           stroke={chartColors.primary}
           strokeWidth={2}
-          name="Left Foot"
+          name="RSI"
           dot={{ fill: chartColors.primary }}
-        />
-        <Line
-          type="monotone"
-          dataKey="right"
-          stroke={chartColors.foreground}
-          strokeWidth={2}
-          name="Right Foot"
-          dot={{ fill: chartColors.foreground }}
         />
       </LineChart>
     </ResponsiveContainer>

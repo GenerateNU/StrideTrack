@@ -1,4 +1,4 @@
-import { useLROverlayData } from "@/hooks/useRunMetrics.hooks";
+import { useBoscoMetrics } from "@/hooks/useBoscoMetrics";
 import { chartColors } from "@/lib/chartColors";
 import {
   LineChart,
@@ -10,27 +10,29 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import type { BoscoMetricsResponse } from "@/types/bosco.types";
 
-interface LROverlayLineChartProps {
-  runId: string;
-  metric: "gct_ms" | "flight_ms";
+function buildChartData(metrics: BoscoMetricsResponse) {
+  return metrics.flight_per_jump.map((flight, index) => ({
+    jump_num: index + 1,
+    flight_ms: flight,
+    jump_height_cm: parseFloat((metrics.jump_heights[index] * 100).toFixed(1)),
+  }));
 }
 
-export const LROverlayLineChart = ({
-  runId,
-  metric,
-}: LROverlayLineChartProps) => {
-  const { lrData } = useLROverlayData(runId, metric);
-  if (!lrData) return null;
+export const GctFlightChart = ({ runId }: { runId: string }) => {
+  const { boscoMetrics } = useBoscoMetrics(runId);
+
+  const data = boscoMetrics ? buildChartData(boscoMetrics) : [];
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={lrData}>
+      <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
         <XAxis
-          dataKey="stride_num"
+          dataKey="jump_num"
           label={{
-            value: "Stride Number",
+            value: "Jump Number",
             position: "insideBottom",
             offset: -5,
             style: {
@@ -42,7 +44,7 @@ export const LROverlayLineChart = ({
         />
         <YAxis
           label={{
-            value: "Time (milliseconds)",
+            value: "Time (ms)",
             angle: -90,
             position: "insideLeft",
             offset: 0,
@@ -73,18 +75,18 @@ export const LROverlayLineChart = ({
         />
         <Line
           type="monotone"
-          dataKey="left"
+          dataKey="flight_ms"
           stroke={chartColors.primary}
           strokeWidth={2}
-          name="Left Foot"
+          name="Flight Time"
           dot={{ fill: chartColors.primary }}
         />
         <Line
           type="monotone"
-          dataKey="right"
+          dataKey="jump_height_cm"
           stroke={chartColors.foreground}
           strokeWidth={2}
-          name="Right Foot"
+          name="Jump Height (cm)"
           dot={{ fill: chartColors.foreground }}
         />
       </LineChart>
