@@ -39,8 +39,7 @@ class RunService:
         """Transform run data for FT and GCT visualizations"""
         logger.info(f"Service: Transforming run {run_id} for {metric} visualization")
         data = await self.repository.get_run_metrics(run_id)
-        strides = [RunResponse(**row) for row in data]
-        transformed = transform_data_for_lr_overlay(strides, metric)
+        transformed = transform_data_for_lr_overlay(data, metric)
         logger.info(f"Service: Transformed run {run_id} for {metric} visualization")
         return transformed
 
@@ -48,8 +47,7 @@ class RunService:
         """Transform run data for step time visualization"""
         logger.info(f"Service: Transforming run {run_id} for stacked bar chart")
         data = await self.repository.get_run_metrics(run_id)
-        strides = [RunResponse(**row) for row in data]
-        transformed = transform_data_for_stacked_bar(strides)
+        transformed = transform_data_for_stacked_bar(data)
         logger.info(f"Service: Transformed run {run_id} for stacked bar chart")
         return transformed
 
@@ -57,8 +55,7 @@ class RunService:
         """Calculate GCT and FT drift % for sprint fatigue tracking."""
         logger.info(f"Service: Calculating sprint drift for run {run_id}")
         data = await self.repository.get_run_metrics(run_id)
-        strides = [RunResponse(**row) for row in data]
-        result = calculate_drift(strides)
+        result = calculate_drift(data)
         logger.info(f"Service: Calculated sprint drift for run {run_id}")
         return result
 
@@ -66,8 +63,7 @@ class RunService:
         """Transform run data for step frequency visualization"""
         logger.info(f"Service: Transforming run {run_id} for step frequency chart")
         data = await self.repository.get_run_metrics(run_id)
-        strides = [RunResponse(**row) for row in data]
-        transformed = transform_data_for_step_frequency(strides)
+        transformed = transform_data_for_step_frequency(data)
         logger.info(f"Service: Transformed run {run_id} for step frequency chart")
         return transformed
 
