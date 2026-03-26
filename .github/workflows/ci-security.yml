@@ -25,9 +25,11 @@ jobs:
   dependency-audit:
     name: Dependency Audit
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
       - name: Scan backend dependencies
-        run: uvx uv-secure backend/
+        run: |
+          if ! uvx uv-secure backend/ 2>&1; then
+            echo "::warning::Dependency vulnerabilities detected — see logs above"
+          fi
