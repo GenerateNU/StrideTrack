@@ -26,7 +26,7 @@ class TestComputePercentiles:
         total_ms = 50_000.0
         means = POPULATION_STATS["hurdles_400m"]["mean"]
         stds = POPULATION_STATS["hurdles_400m"]["std"]
-        slow_pcts = [m + 2 * s for m, s in zip(means, stds)]
+        slow_pcts = [m + 2 * s for m, s in zip(means, stds, strict=True)]
         segments_ms = [p / 100.0 * total_ms for p in slow_pcts]
         result = compute_percentiles(segments_ms, total_ms, "hurdles_400m")
         for pct in result:
@@ -36,7 +36,7 @@ class TestComputePercentiles:
         total_ms = 50_000.0
         means = POPULATION_STATS["hurdles_400m"]["mean"]
         stds = POPULATION_STATS["hurdles_400m"]["std"]
-        fast_pcts = [m - 2 * s for m, s in zip(means, stds)]
+        fast_pcts = [m - 2 * s for m, s in zip(means, stds, strict=True)]
         segments_ms = [p / 100.0 * total_ms for p in fast_pcts]
         result = compute_percentiles(segments_ms, total_ms, "hurdles_400m")
         for pct in result:

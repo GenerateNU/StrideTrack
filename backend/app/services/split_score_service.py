@@ -41,7 +41,7 @@ class SplitScoreService:
                 percentile=pct,
             )
             for label, raw_ms, pct in zip(
-                SEGMENT_LABELS[event_type], segments_ms, percentiles
+                SEGMENT_LABELS[event_type], segments_ms, percentiles, strict=True
             )
         ]
 

@@ -34,7 +34,7 @@ def generate_coaching_notes(
 ) -> list[str]:
     labels = SEGMENT_LABELS[event_type]
     notes: list[str] = []
-    for pct, label in zip(percentiles, labels):
+    for pct, label in zip(percentiles, labels, strict=True):
         if pct > 85:
             notes.append(
                 f"{label}: {pct:.0f}th percentile — significant deceleration. "
