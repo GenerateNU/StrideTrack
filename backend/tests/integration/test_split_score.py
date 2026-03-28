@@ -1,15 +1,3 @@
-"""
-Integration tests for GET /run/athletes/{run_id}/metrics/split-score.
-
-Covers:
-  - 404 for a missing run_id
-  - 422 for an unsupported event type
-  - 200 with a real run ID (requires pre-seeded data; see note)
-
-Run inside Docker:
-    docker exec -it stridetrack-backend pytest tests/integration/test_split_score.py -m integration -v
-"""
-
 from __future__ import annotations
 
 import os
@@ -18,15 +6,9 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
-BASE = "/api/run/athletes"
-SPLIT_SCORE_PATH = "metrics/split-score"
-
 
 def _url(run_id: str) -> str:
-    return f"{BASE}/{run_id}/{SPLIT_SCORE_PATH}"
-
-
-# ── Missing run ───────────────────────────────────────────────────────────────
+    return f"/api/split-score/{run_id}"
 
 
 @pytest.mark.integration
@@ -44,9 +26,6 @@ class TestSplitScoreMissingRun:
         assert "detail" in response.json()
 
 
-# ── Unsupported event type ────────────────────────────────────────────────────
-
-
 @pytest.mark.integration
 class TestSplitScoreUnsupportedEvent:
     """GET for a run whose event_type is not supported by split score analysis."""
@@ -57,7 +36,6 @@ class TestSplitScoreUnsupportedEvent:
         supabase_client,
         created_ids: dict,
     ) -> None:
-        # long_jump is a valid DB enum value but not in SUPPORTED_EVENTS
         create_resp = test_client.post(
             "/api/run",
             json={
@@ -68,10 +46,8 @@ class TestSplitScoreUnsupportedEvent:
         )
         if create_resp.status_code not in (200, 201):
             pytest.skip("Could not create run — athlete FK constraint requires seed.")
-
         run_id = create_resp.json()["run_id"]
         created_ids["run_ids"].append(run_id)
-
         response = test_client.get(_url(run_id))
         assert response.status_code == 422
 
@@ -90,28 +66,18 @@ class TestSplitScoreUnsupportedEvent:
         )
         if create_resp.status_code not in (200, 201):
             pytest.skip("Could not create run — athlete FK constraint requires seed.")
-
         run_id = create_resp.json()["run_id"]
         created_ids["run_ids"].append(run_id)
-
         response = test_client.get(_url(run_id))
         data = response.json()
         assert "detail" in data
         assert "long_jump" in data["detail"]
 
 
-# ── Real run with metrics (requires pre-seeded data) ─────────────────────────
-
-
 @pytest.mark.integration
 @pytest.mark.requires_seed
 class TestSplitScoreRealRun:
-    """
-    GET with a real run_id that has hurdles_400m stride metrics in the DB.
-
-        export SPLIT_SCORE_TEST_RUN_ID=<uuid>
-        docker exec -it stridetrack-backend pytest tests/integration/test_split_score.py -m requires_seed -v
-    """
+    """GET with a real run_id that has hurdles_400m stride metrics in the DB."""
 
     @pytest.fixture
     def seeded_run_id(self) -> str:

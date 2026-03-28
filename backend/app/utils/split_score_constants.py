@@ -1,18 +1,5 @@
-"""
-Population distribution constants for split score percentile computation.
-
-Derived by running the R&D parsing and normalization logic against the
-AthletesFirst PDFs (326 hurdle races, 304 sprint races). Hardcoded so
-percentiles can be computed at request time with a single normal CDF call —
-no DB or file I/O required.
-
-To regenerate: add the four print statements to the bottom of
-R&D/Tests/split_score_test.py main() and rerun against the PDFs.
-"""
-
 from __future__ import annotations
 
-# Event types supported by split score analysis.
 SUPPORTED_EVENTS: frozenset[str] = frozenset({"hurdles_400m", "sprint_400m"})
 
 SEGMENT_LABELS: dict[str, list[str]] = {

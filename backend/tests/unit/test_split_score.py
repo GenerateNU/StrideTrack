@@ -1,10 +1,3 @@
-"""
-Unit tests for split score pure functions.
-
-Tests compute_percentiles and generate_coaching_notes in isolation —
-no DB, no HTTP, no Supabase.
-"""
-
 from __future__ import annotations
 
 import pytest
@@ -12,16 +5,11 @@ import pytest
 from app.utils.split_score import compute_percentiles, generate_coaching_notes
 from app.utils.split_score_constants import POPULATION_STATS
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
 
 def _mean_segments_ms(event_type: str, total_ms: float = 50_000.0) -> list[float]:
     """Build a segment list that sits exactly at the population mean."""
     means = POPULATION_STATS[event_type]["mean"]
     return [m / 100.0 * total_ms for m in means]
-
-
-# ── compute_percentiles ───────────────────────────────────────────────────────
 
 
 @pytest.mark.unit
@@ -74,9 +62,6 @@ class TestComputePercentiles:
     def test_unsupported_event_raises_key_error(self) -> None:
         with pytest.raises(KeyError):
             compute_percentiles([1000.0] * 4, 50_000.0, "hurdles_110m")
-
-
-# ── generate_coaching_notes ───────────────────────────────────────────────────
 
 
 @pytest.mark.unit
