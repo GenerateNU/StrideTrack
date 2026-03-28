@@ -4,7 +4,7 @@ export type AmountMode = "count" | "dateRange";
 
 export interface EventHistoryFilters {
   athleteId: string;
-  eventType: EventTypeEnum | null;
+  eventType: EventTypeEnum;
   amountMode: AmountMode;
   limit: number;
   dateFrom: string | null;
