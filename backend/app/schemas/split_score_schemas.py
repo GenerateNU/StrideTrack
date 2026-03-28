@@ -1,9 +1,22 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 
 
-class SegmentScore(BaseModel):
-    """Percentile analysis for a single race segment."""
+class RunMeta(BaseModel):
+    run_id: UUID
+    event_type: str
+    elapsed_ms: float
 
+
+class RunMetric(BaseModel):
+    ic_time: float
+    to_time: float
+    gct_ms: float
+    foot: str
+
+
+class SegmentScore(BaseModel):
     label: str
     raw_ms: float
     pct_of_total: float
@@ -11,8 +24,6 @@ class SegmentScore(BaseModel):
 
 
 class SplitScoreResponse(BaseModel):
-    """Full split score report for a single run."""
-
     run_id: str
     event_type: str
     total_ms: float

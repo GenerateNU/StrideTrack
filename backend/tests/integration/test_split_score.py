@@ -26,6 +26,9 @@ class TestSplitScoreMissingRun:
         assert "detail" in response.json()
 
 
+SEEDED_ATHLETE_ID = "00000000-0000-0000-0000-000000000002"
+
+
 @pytest.mark.integration
 class TestSplitScoreUnsupportedEvent:
     """GET for a run whose event_type is not supported by split score analysis."""
@@ -33,19 +36,17 @@ class TestSplitScoreUnsupportedEvent:
     def test_unsupported_event_returns_422(
         self,
         test_client: TestClient,
-        supabase_client,
         created_ids: dict,
     ) -> None:
         create_resp = test_client.post(
             "/api/run",
             json={
-                "athlete_id": str(uuid4()),
+                "athlete_id": SEEDED_ATHLETE_ID,
                 "event_type": "long_jump",
                 "elapsed_ms": 13500,
             },
         )
-        if create_resp.status_code not in (200, 201):
-            pytest.skip("Could not create run — athlete FK constraint requires seed.")
+        assert create_resp.status_code in (200, 201)
         run_id = create_resp.json()["run_id"]
         created_ids["run_ids"].append(run_id)
         response = test_client.get(_url(run_id))
@@ -59,13 +60,12 @@ class TestSplitScoreUnsupportedEvent:
         create_resp = test_client.post(
             "/api/run",
             json={
-                "athlete_id": str(uuid4()),
+                "athlete_id": SEEDED_ATHLETE_ID,
                 "event_type": "long_jump",
                 "elapsed_ms": 13500,
             },
         )
-        if create_resp.status_code not in (200, 201):
-            pytest.skip("Could not create run — athlete FK constraint requires seed.")
+        assert create_resp.status_code in (200, 201)
         run_id = create_resp.json()["run_id"]
         created_ids["run_ids"].append(run_id)
         response = test_client.get(_url(run_id))
