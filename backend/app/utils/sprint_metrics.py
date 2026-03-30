@@ -1,11 +1,13 @@
 import numpy as np
 
+from app.schemas.run_schemas import RunResponse, SprintDriftData
+
 
 def _drift_window(total: int) -> int:
     return max(3, min(10, round(total * 0.1)))
 
 
-def calculate_drift(data: list[dict]) -> dict:
+def calculate_drift(data: list[RunResponse]) -> SprintDriftData:
     """
     Calculate GCT and FT drift % comparing max-velocity phase to terminal phase.
 
@@ -20,8 +22,8 @@ def calculate_drift(data: list[dict]) -> dict:
     """
     n = _drift_window(len(data))
 
-    gct_vals = np.array([row["gct_ms"] for row in data])
-    ft_vals = np.array([row["flight_ms"] for row in data])
+    gct_vals = np.array([row.gct_ms for row in data])
+    ft_vals = np.array([row.flight_ms for row in data])
 
     gct_baseline = np.mean(np.sort(gct_vals)[:n])
     gct_terminal = np.mean(gct_vals[-n:])
@@ -38,7 +40,7 @@ def calculate_drift(data: list[dict]) -> dict:
         float((ft_terminal - ft_baseline) / ft_baseline * 100) if ft_baseline else 0.0
     )
 
-    return {
-        "gct_drift_pct": round(gct_drift, 2),
-        "ft_drift_pct": round(ft_drift, 2),
-    }
+    return SprintDriftData(
+        gct_drift_pct=round(gct_drift, 2),
+        ft_drift_pct=round(ft_drift, 2),
+    )
