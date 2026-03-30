@@ -29,7 +29,8 @@ export const FTAsymmetryKPI = ({ runId }: { runId: string }) => {
   for (const s of strideMap.values()) {
     if (s.left_ft != null && s.right_ft != null) {
       const avg = (s.left_ft + s.right_ft) / 2;
-      if (avg > 0) asymmetries.push((Math.abs(s.left_ft - s.right_ft) / avg) * 100);
+      if (avg > 0)
+        asymmetries.push((Math.abs(s.left_ft - s.right_ft) / avg) * 100);
     }
   }
 

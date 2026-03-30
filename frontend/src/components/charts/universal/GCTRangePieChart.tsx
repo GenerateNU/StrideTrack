@@ -2,12 +2,19 @@ import { useState } from "react";
 import { useRunMetrics } from "@/hooks/useRunMetrics.hooks";
 import { QueryLoading } from "@/components/QueryLoading";
 import { QueryError } from "@/components/QueryError";
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const COLORS = {
-  below: "#22c55e",  // green
-  in: "#f59e0b",     // yellow
-  above: "#ef4444",  // red
+  below: "#22c55e", // green
+  in: "#f59e0b", // yellow
+  above: "#ef4444", // red
 };
 
 export const GCTRangePieChart = ({ runId }: { runId: string }) => {
@@ -23,7 +30,9 @@ export const GCTRangePieChart = ({ runId }: { runId: string }) => {
   if (!metrics) return null;
 
   const below = metrics.filter((m) => m.gct_ms < minMs).length;
-  const inRange = metrics.filter((m) => m.gct_ms >= minMs && m.gct_ms <= maxMs).length;
+  const inRange = metrics.filter(
+    (m) => m.gct_ms >= minMs && m.gct_ms <= maxMs
+  ).length;
   const above = metrics.filter((m) => m.gct_ms > maxMs).length;
 
   const data = [

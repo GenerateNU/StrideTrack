@@ -29,7 +29,10 @@ export const RSIChart = ({ runId }: { runId: string }) => {
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={rsiData} margin={{ top: 16, right: 24, left: 0, bottom: 24 }}>
+      <LineChart
+        data={rsiData}
+        margin={{ top: 16, right: 24, left: 0, bottom: 24 }}
+      >
         <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
         <XAxis
           dataKey="label"
@@ -81,7 +84,6 @@ export const RSIChart = ({ runId }: { runId: string }) => {
             position: "insideBottomRight",
             style: { fill: chartColors.primary, fontSize: 10 },
           }}
-
         />
         <Line
           type="monotone"

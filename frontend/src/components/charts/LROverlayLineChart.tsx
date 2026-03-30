@@ -91,7 +91,6 @@ export const LROverlayLineChart = ({
             stroke={chartColors.primary}
             strokeDasharray="6 3"
             strokeWidth={1.5}
-
           />
         )}
         <Line

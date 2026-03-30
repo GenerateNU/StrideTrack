@@ -41,7 +41,10 @@ export default function RunAnalysisPage() {
 
   const meanRSI =
     metrics && metrics.length > 0
-      ? metrics.reduce((s, m) => s + (m.gct_ms > 0 ? m.flight_ms / m.gct_ms : 0), 0) / metrics.length
+      ? metrics.reduce(
+          (s, m) => s + (m.gct_ms > 0 ? m.flight_ms / m.gct_ms : 0),
+          0
+        ) / metrics.length
       : null;
 
   const meanFT =

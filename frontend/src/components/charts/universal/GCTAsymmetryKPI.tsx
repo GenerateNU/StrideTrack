@@ -17,7 +17,10 @@ export const GCTAsymmetryKPI = ({ runId }: { runId: string }) => {
     return <QueryError error={metricsError} refetch={metricsRefetch} />;
   if (!metrics) return null;
 
-  const strideMap = new Map<number, { left_gct?: number; right_gct?: number }>();
+  const strideMap = new Map<
+    number,
+    { left_gct?: number; right_gct?: number }
+  >();
   for (const m of metrics) {
     const entry = strideMap.get(m.stride_num) ?? {};
     if (m.foot.toLowerCase() === "left") entry.left_gct = m.gct_ms;
@@ -29,7 +32,8 @@ export const GCTAsymmetryKPI = ({ runId }: { runId: string }) => {
   for (const s of strideMap.values()) {
     if (s.left_gct != null && s.right_gct != null) {
       const avg = (s.left_gct + s.right_gct) / 2;
-      if (avg > 0) asymmetries.push((Math.abs(s.left_gct - s.right_gct) / avg) * 100);
+      if (avg > 0)
+        asymmetries.push((Math.abs(s.left_gct - s.right_gct) / avg) * 100);
     }
   }
 
