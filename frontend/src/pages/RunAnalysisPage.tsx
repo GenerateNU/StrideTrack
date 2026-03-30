@@ -12,6 +12,7 @@ import { MeanGCTKPI } from "@/components/charts/universal/MeanGCTKPI";
 import { MeanFTKPI } from "@/components/charts/universal/MeanFTKPI";
 import { MeanRSIKPI } from "@/components/charts/universal/MeanRSIKPI";
 import { GCTRangePieChart } from "@/components/charts/universal/GCTRangePieChart";
+import { InfoCard } from "@/components/charts/InfoCard";
 
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -64,8 +65,11 @@ export default function RunAnalysisPage() {
 
       {runId ? (
         <div className="space-y-6">
+          {/* Item 1 — Total Steps */}
           <TotalStepsKPI runId={runId} />
+          <InfoCard text="Basic volume metric." />
 
+          {/* Item 2 — Mean GCT */}
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
             <div className="flex items-start justify-between mb-3">
               <SectionHeader title="Ground Contact Time — L vs R" />
@@ -73,7 +77,9 @@ export default function RunAnalysisPage() {
             </div>
             <GroundContactTimeChart runId={runId} />
           </div>
+          <InfoCard text="Lower is better at max velocity." />
 
+          {/* Item 3 — Mean FT */}
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
             <div className="flex items-start justify-between mb-3">
               <SectionHeader title="Flight Time — L vs R" />
@@ -81,7 +87,9 @@ export default function RunAnalysisPage() {
             </div>
             <FlightTimeChart runId={runId} />
           </div>
+          <InfoCard text="Context-dependent (sprinting vs jumping)." />
 
+          {/* Item 4 — RSI per step */}
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
             <div className="flex items-start justify-between mb-3">
               <SectionHeader title="Reactive Strength Index (RSI)" />
@@ -89,16 +97,28 @@ export default function RunAnalysisPage() {
             </div>
             <RSIChart runId={runId} />
           </div>
+          <InfoCard text="Elite sprinters RSI > 1.0 at max velocity." />
 
+          {/* Items 5 & 6 — Asymmetry */}
           <div className="grid grid-cols-2 gap-3">
-            <GCTAsymmetryKPI runId={runId} />
-            <FTAsymmetryKPI runId={runId} />
+            <div className="space-y-2">
+              <GCTAsymmetryKPI runId={runId} />
+              <InfoCard text=">10% may indicate injury risk. Target <5%." />
+            </div>
+            <div className="space-y-2">
+              <FTAsymmetryKPI runId={runId} />
+              <InfoCard text="Push-off power imbalance between legs." />
+            </div>
           </div>
 
+          {/* Item 8 — GCT Range */}
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
-            <SectionHeader title="Steps in GCT Range" />
+            <div className="flex items-start justify-between mb-3">
+              <SectionHeader title="Steps in GCT Range" />
+            </div>
             <GCTRangePieChart runId={runId} />
           </div>
+          <InfoCard text="Bucketing done client-side from existing per-step gct_ms data." />
 
           <StepDataTable metrics={metrics ?? []} isLoading={metricsIsLoading} />
         </div>
