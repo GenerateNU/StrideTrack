@@ -3,7 +3,7 @@ import { useAuth } from "@/context/auth.context";
 import { config } from "@/lib/config";
 import { QueryLoading } from "@/components/QueryLoading";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
-import logo from "@/assets/stridetrack-logo.png";
+import logo from "@/assets/full_logo.png";
 
 export default function LoginPage() {
   const { mode, loading, loginAsDev, loginWithGoogle } = useAuth();

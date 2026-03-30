@@ -46,6 +46,13 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     { title: "Takeoff Flight Time", component: TakeoffFtChart },
     { title: "Takeoff GCT", component: TakeoffGctChart },
   ],
+  bosco: [
+    ...DEFAULT_CHARTS,
+    { title: "Drift KPI", component: SprintDriftKPIs },
+    { title: "FT Drift", component: FTDriftCard },
+    { title: "GCT Drift", component: GCTDriftCard },
+    { title: "Step Frequency", component: StepFrequencyChart },
+  ]
 };
 
 export function getChartsForEventType(

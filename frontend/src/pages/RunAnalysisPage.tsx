@@ -22,10 +22,7 @@ export default function RunAnalysisPage() {
   }>();
   const navigate = useNavigate();
 
-  const { runMeta, runMetaIsLoading } = useGetRunMeta(runId);
-  console.log("runId:", runId);
-  console.log("runMeta:", runMeta);
-  console.log("runMetaIsLoading:", runMetaIsLoading);
+  const { runMeta } = useGetRunMeta(runId);
   const charts = getChartsForEventType(runMeta?.event_type ?? "default");
 
   return (
