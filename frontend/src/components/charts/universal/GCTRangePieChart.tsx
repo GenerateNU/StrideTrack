@@ -73,7 +73,7 @@ export const GCTRangePieChart = ({ runId }: { runId: string }) => {
             outerRadius={110}
             paddingAngle={3}
             dataKey="value"
-            label={({ name, value }) => `${value}`}
+            label={({ value }) => `${value}`}
             labelLine={false}
           >
             {data.map((entry) => (
