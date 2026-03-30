@@ -4,10 +4,18 @@ import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
 import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
 import { StepDataTable } from "@/components/charts/StepDataTable";
 import { ArrowLeft } from "lucide-react";
+import { TotalStepsKPI } from "@/components/charts/universal/TotalStepsKPI";
+import { RSIChart } from "@/components/charts/universal/RSIChart";
+import { GCTAsymmetryKPI } from "@/components/charts/universal/GCTAsymmetryKPI";
+import { FTAsymmetryKPI } from "@/components/charts/universal/FTAsymmetryKPI";
+import { MeanGCTKPI } from "@/components/charts/universal/MeanGCTKPI";
+import { MeanFTKPI } from "@/components/charts/universal/MeanFTKPI";
+import { MeanRSIKPI } from "@/components/charts/universal/MeanRSIKPI";
+import { GCTRangePieChart } from "@/components/charts/universal/GCTRangePieChart";
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="mb-3 flex items-center gap-2.5">
+    <div className="flex items-center gap-2.5">
       <div
         className="h-5 w-1 rounded-full"
         style={{ backgroundColor: "hsl(var(--primary))" }}
@@ -25,8 +33,20 @@ export default function RunAnalysisPage() {
   const navigate = useNavigate();
   const { metrics, metricsIsLoading } = useRunMetrics(runId ?? null);
 
-  // ADD HERE: Replace with dedicated GET /api/run/:runId and GET /api/athletes/:athleteId
-  // endpoints once they exist. Currently we only have the runId from the URL.
+  const meanGCT =
+    metrics && metrics.length > 0
+      ? metrics.reduce((s, m) => s + m.gct_ms, 0) / metrics.length
+      : null;
+
+  const meanRSI =
+    metrics && metrics.length > 0
+      ? metrics.reduce((s, m) => s + (m.gct_ms > 0 ? m.flight_ms / m.gct_ms : 0), 0) / metrics.length
+      : null;
+
+  const meanFT =
+    metrics && metrics.length > 0
+      ? metrics.reduce((s, m) => s + m.flight_ms, 0) / metrics.length
+      : null;
 
   return (
     <div className="pt-4">
@@ -40,19 +60,44 @@ export default function RunAnalysisPage() {
 
       <div className="mb-8">
         <h2 className="text-xl font-bold text-foreground">Run Analysis</h2>
-        {/* ADD HERE: Display run event_type, date, elapsed_ms once GET /api/run/:runId exists */}
       </div>
 
       {runId ? (
         <div className="space-y-6">
+          <TotalStepsKPI runId={runId} />
+
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
-            <SectionHeader title="Ground Contact Time — L vs R" />
+            <div className="flex items-start justify-between mb-3">
+              <SectionHeader title="Ground Contact Time — L vs R" />
+              {meanGCT != null && <MeanGCTKPI mean={meanGCT} />}
+            </div>
             <GroundContactTimeChart runId={runId} />
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
-            <SectionHeader title="Flight Time — L vs R" />
+            <div className="flex items-start justify-between mb-3">
+              <SectionHeader title="Flight Time — L vs R" />
+              {meanFT != null && <MeanFTKPI mean={meanFT} />}
+            </div>
             <FlightTimeChart runId={runId} />
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
+            <div className="flex items-start justify-between mb-3">
+              <SectionHeader title="Reactive Strength Index (RSI)" />
+              {meanRSI != null && <MeanRSIKPI mean={meanRSI} />}
+            </div>
+            <RSIChart runId={runId} />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <GCTAsymmetryKPI runId={runId} />
+            <FTAsymmetryKPI runId={runId} />
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
+            <SectionHeader title="Steps in GCT Range" />
+            <GCTRangePieChart runId={runId} />
           </div>
 
           <StepDataTable metrics={metrics ?? []} isLoading={metricsIsLoading} />
