@@ -15,7 +15,7 @@ import {
 } from "recharts";
 import { useState } from "react";
 
-const TOGGLE_STYLE = (active: boolean, _color: string) =>
+const TOGGLE_STYLE = (active: boolean) =>
   `px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
     active
       ? `border-transparent text-white`
@@ -110,7 +110,7 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
     <button
       type="button"
       onClick={onToggle}
-      className={TOGGLE_STYLE(active, color)}
+      className={TOGGLE_STYLE(active)}
       style={active ? { backgroundColor: color, borderColor: color } : {}}
     >
       {label}
