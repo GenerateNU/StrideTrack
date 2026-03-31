@@ -28,4 +28,4 @@ async def analyze_reaction_time(
         return result
     except ValueError as e:
         logger.warning(f"Route: Bad request - {e}")
-        raise HTTPException(status_code=422, detail=str(e))
+        raise HTTPException(status_code=422, detail=str(e)) from e

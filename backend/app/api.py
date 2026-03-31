@@ -8,9 +8,9 @@ from app.routes.bosco_routes import router as bosco_router
 from app.routes.csv_routes import router as csv_router
 from app.routes.example_routes import router as example_router
 from app.routes.hurdle_routes import router as hurdle_router
+from app.routes.reaction_time_routes import router as reaction_time_router
 from app.routes.run_routes import router as run_router
 from app.schemas.health_schemas import HealthResponse
-from app.routes.reaction_time_routes import router as reaction_time_router
 
 api_router = APIRouter(prefix="/api")
 
