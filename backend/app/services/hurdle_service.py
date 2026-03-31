@@ -7,8 +7,11 @@ import pandas as pd
 from app.repositories.hurdle_repository import HurdleRepository
 from app.schemas.hurdle_schemas import (
     GctIncreaseData,
+    HurdleMarker,
     HurdleMetricRow,
     HurdleSplitBarData,
+    HurdleTimelinePoint,
+    HurdleTimelineResponse,
     LandingGctBarData,
     StepsBetweenHurdlesData,
     TakeoffFtBarData,
@@ -96,3 +99,68 @@ class HurdleService:
         logger.info(f"Service: Getting GCT increase for run {run_id}")
         data = await self._get_hurdle_metric_rows(run_id)
         return transform_gct_increase(data)
+
+    async def get_hurdle_timeline(self, run_id: UUID) -> HurdleTimelineResponse:
+        """Build time-series points for the hurdle timeline chart."""
+        logger.info(f"Service: Getting hurdle timeline for run {run_id}")
+        steps = await self.repository.get_hurdle_metrics(run_id)
+        points: list[HurdleTimelinePoint] = []
+
+        for step in steps:
+            foot = step["foot"]
+            ic_ms = step["ic_time"]
+            to_ms = step["to_time"]
+            gct_ms = step["gct_ms"]
+            ft_ms = step["flight_ms"]
+
+            if ic_ms is None or to_ms is None:
+                continue
+
+            ic_s = ic_ms / 1000
+            to_s = to_ms / 1000
+
+            # Ground phase — two points to make flat bottom
+            for t in [ic_s, to_s - 0.001]:
+                points.append(
+                    HurdleTimelinePoint(
+                        time_s=round(t, 4),
+                        left=0.0 if foot == "left" else None,
+                        right=0.0 if foot == "right" else None,
+                        foot=foot,
+                        phase="ground",
+                        gct_ms=gct_ms,
+                        ft_ms=None,
+                    )
+                )
+
+            # Air phase — two points to make flat top
+            if ft_ms:
+                ft_end_s = (to_ms + ft_ms) / 1000
+                for t in [to_s, ft_end_s - 0.001]:
+                    points.append(
+                        HurdleTimelinePoint(
+                            time_s=round(t, 4),
+                            left=1.0 if foot == "left" else None,
+                            right=1.0 if foot == "right" else None,
+                            foot=foot,
+                            phase="air",
+                            gct_ms=None,
+                            ft_ms=ft_ms,
+                        )
+                    )
+
+        points.sort(key=lambda p: p.time_s)
+
+        hurdle_rows = await self._get_hurdle_metric_rows(run_id)
+        markers = [
+            HurdleMarker(
+                time_s=round(row.clearance_start_ms / 1000, 4),
+                hurdle_num=row.hurdle_num,
+            )
+            for row in hurdle_rows
+        ]
+
+        logger.info(
+            f"Service: Returning {len(points)} timeline points for run {run_id}"
+        )
+        return HurdleTimelineResponse(points=points, hurdle_markers=markers)

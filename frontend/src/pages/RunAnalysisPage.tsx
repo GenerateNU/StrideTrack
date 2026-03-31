@@ -4,6 +4,7 @@ import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
 import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
 import { StepDataTable } from "@/components/charts/StepDataTable";
 import { ArrowLeft } from "lucide-react";
+import { HurdleTimelineChart } from "@/components/charts/hurdles/HurdleTimelineChart";
 
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -53,6 +54,11 @@ export default function RunAnalysisPage() {
           <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
             <SectionHeader title="Flight Time — L vs R" />
             <FlightTimeChart runId={runId} />
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
+            <SectionHeader title="Hurdle Timeline" />
+            <HurdleTimelineChart runId={runId} />
           </div>
 
           <StepDataTable metrics={metrics ?? []} isLoading={metricsIsLoading} />

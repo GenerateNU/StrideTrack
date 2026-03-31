@@ -55,3 +55,20 @@ class GctIncreaseData(BaseModel):
     hurdle_num: int
     takeoff_gct_ms: int | None = None
     gct_increase_hurdle_to_hurdle_pct: float | None = None
+
+class HurdleTimelinePoint(BaseModel):
+    time_s: float
+    left: float | None = None    # 0 = ground, 1 = air, None = no data
+    right: float | None = None
+    foot: Literal["left", "right"]
+    phase: Literal["ground", "air"]
+    gct_ms: int | None = None
+    ft_ms: int | None = None
+
+class HurdleMarker(BaseModel):
+    time_s: float
+    hurdle_num: int
+
+class HurdleTimelineResponse(BaseModel):
+    points: list[HurdleTimelinePoint]
+    hurdle_markers: list[HurdleMarker]

@@ -1,0 +1,19 @@
+export interface HurdleTimelinePoint {
+  time_s: number;
+  left: number | null;
+  right: number | null;
+  foot: "left" | "right";
+  phase: "ground" | "air";
+  gct_ms: number | null;
+  ft_ms: number | null;
+}
+
+export interface HurdleMarker {
+  time_s: number;
+  hurdle_num: number;
+}
+
+export interface HurdleTimelineResponse {
+  points: HurdleTimelinePoint[];
+  hurdle_markers: HurdleMarker[];
+}

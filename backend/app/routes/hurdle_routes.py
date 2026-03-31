@@ -10,6 +10,7 @@ from app.schemas.hurdle_schemas import (
     GctIncreaseData,
     HurdleMetricRow,
     HurdleSplitBarData,
+    HurdleTimelineResponse,
     LandingGctBarData,
     StepsBetweenHurdlesData,
     TakeoffFtBarData,
@@ -119,3 +120,16 @@ async def get_gct_increase(
     """Get GCT increase hurdle-to-hurdle data for a specific run."""
     logger.info(f"Route: GET /run/athletes/{run_id}/metrics/hurdles/gct-increase")
     return await service.get_gct_increase(run_id)
+
+
+@router.get(
+    "/athletes/{run_id}/metrics/hurdles/timeline",
+    response_model=HurdleTimelineResponse,
+)
+async def get_hurdle_timeline(
+    run_id: UUID,
+    service: HurdleService = Depends(get_hurdle_service),
+) -> HurdleTimelineResponse:
+    """Get time-series data for the hurdle timeline chart."""
+    logger.info(f"Route: GET /run/athletes/{run_id}/metrics/hurdles/timeline")
+    return await service.get_hurdle_timeline(run_id)
