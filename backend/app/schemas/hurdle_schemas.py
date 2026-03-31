@@ -55,3 +55,18 @@ class GctIncreaseData(BaseModel):
     hurdle_num: int
     takeoff_gct_ms: int | None = None
     gct_increase_hurdle_to_hurdle_pct: float | None = None
+
+
+class ProjectedSplit(BaseModel):
+    hurdle_num: int
+    split_ms: int
+
+
+class HurdleProjectionResponse(BaseModel):
+    completed_splits: list[ProjectedSplit]
+    projected_splits: list[ProjectedSplit]
+    projected_final_segment_ms: int
+    projected_total_ms: int | None = None
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    target_event: str
+    total_hurdles: int
