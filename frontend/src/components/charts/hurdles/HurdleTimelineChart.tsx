@@ -2,6 +2,7 @@ import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
 import { useHurdleTimeline } from "@/hooks/useHurdleTimeline.hooks";
 import { chartColors } from "@/lib/chartColors";
+import type { HurdleTimelinePoint } from "@/types/hurdleTimeline.types";
 import {
   CartesianGrid,
   Line,
@@ -21,6 +22,65 @@ const TOGGLE_STYLE = (active: boolean, _color: string) =>
       : "border-input bg-card text-muted-foreground hover:bg-secondary"
   }`;
 
+const makeGctDot =
+  (show: boolean, color: string) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (props: any) => {
+    const { cx, cy, payload, index, data } = props as {
+      cx: number;
+      cy: number;
+      payload: HurdleTimelinePoint;
+      index: number;
+      data: HurdleTimelinePoint[];
+    };
+    if (!show || payload.phase !== "ground" || !payload.gct_ms) return null;
+    if (!data) return null; // add this line
+    const prev = data[index - 1];
+    if (prev && prev.foot === payload.foot && prev.phase === "ground")
+      return null;
+    return (
+      <text
+        key={`gct-${index}`}
+        x={cx}
+        y={cy + 14}
+        textAnchor="middle"
+        fontSize={9}
+        fill={color}
+      >
+        {payload.gct_ms}
+      </text>
+    );
+  };
+
+const makeFtDot =
+  (show: boolean, color: string) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (props: any) => {
+    const { cx, cy, payload, index, data } = props as {
+      cx: number;
+      cy: number;
+      payload: HurdleTimelinePoint;
+      index: number;
+      data: HurdleTimelinePoint[];
+    };
+    if (!show || payload.phase !== "air" || !payload.ft_ms) return null;
+    if (!data) return null;
+    const prev = data[index - 1];
+    if (prev && prev.foot === payload.foot && prev.phase === "air") return null;
+    return (
+      <text
+        key={`ft-${index}`}
+        x={cx}
+        y={cy - 6}
+        textAnchor="middle"
+        fontSize={9}
+        fill={color}
+      >
+        {payload.ft_ms}
+      </text>
+    );
+  };
+
 export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
   const { timelineData, timelineLoading, timelineError, refetchTimeline } =
     useHurdleTimeline(runId);
@@ -29,6 +89,7 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
   const [showRight, setShowRight] = useState(true);
   const [showHurdles, setShowHurdles] = useState(true);
   const [showGctLabels, setShowGctLabels] = useState(true);
+  const [showFtLabels, setShowFtLabels] = useState(true);
 
   if (timelineLoading) return <QueryLoading />;
   if (timelineError)
@@ -84,12 +145,18 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
           () => setShowGctLabels((v) => !v),
           "#22c55e"
         )}
+        {toggleBtn(
+          "FT Labels",
+          showFtLabels,
+          () => setShowFtLabels((v) => !v),
+          "#a855f7"
+        )}
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
         <LineChart
           data={timelineData.points}
-          margin={{ top: 10, right: 40, left: 20, bottom: 40 }}
+          margin={{ top: 20, right: 40, left: 20, bottom: 40 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
@@ -148,16 +215,12 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
                 x={m.time_s}
                 stroke="#ef4444"
                 strokeDasharray="4 3"
-                label={
-                  showGctLabels
-                    ? {
-                        value: `H${m.hurdle_num}`,
-                        position: "top",
-                        fill: "#ef4444",
-                        fontSize: 10,
-                      }
-                    : undefined
-                }
+                label={{
+                  value: `H${m.hurdle_num}`,
+                  position: "top",
+                  fill: "#ef4444",
+                  fontSize: 10,
+                }}
               />
             ))}
 
@@ -167,7 +230,7 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
               dataKey="left"
               stroke="#3b82f6"
               strokeWidth={2}
-              dot={false}
+              dot={makeGctDot(showGctLabels, "#22c55e")}
               connectNulls={false}
               name="Left"
             />
@@ -178,7 +241,7 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
               dataKey="right"
               stroke="#f97316"
               strokeWidth={2}
-              dot={false}
+              dot={makeFtDot(showFtLabels, "#a855f7")}
               connectNulls={false}
               name="Right"
             />
