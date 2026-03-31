@@ -9,7 +9,7 @@ from app.core.exceptions import UnsupportedEventError
 from app.repositories.split_score_repository import SplitScoreRepository
 from app.schemas.split_score_schemas import RunMetric, SegmentScore, SplitScoreResponse
 from app.utils.hurdle_metrics import transform_stride_cycles_to_hurdle_metrics
-from app.utils.split_score import compute_percentiles, generate_coaching_notes
+from app.utils.split_score import compute_diffs, generate_coaching_notes
 from app.utils.split_score_constants import SEGMENT_LABELS, SUPPORTED_EVENTS
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,7 @@ class SplitScoreService:
 
     async def get_split_score(self, run_id: UUID) -> SplitScoreResponse:
         logger.info(f"Service: Computing split score for run {run_id}")
+
         run_meta = await self.repository.get_run_meta(run_id)
         event_type: str = run_meta.event_type
         elapsed_ms: float = float(run_meta.elapsed_ms)
@@ -30,18 +31,19 @@ class SplitScoreService:
 
         raw_metrics = await self.repository.get_run_metrics(run_id)
         segments_ms = self._compute_segments(raw_metrics, elapsed_ms, event_type)
-        percentiles = compute_percentiles(segments_ms, elapsed_ms, event_type)
-        notes = generate_coaching_notes(percentiles, event_type)
+        diffs = compute_diffs(segments_ms, elapsed_ms, event_type)
+        notes = generate_coaching_notes(diffs, event_type)
 
         segment_scores = [
             SegmentScore(
                 label=label,
                 raw_ms=round(raw_ms, 1),
                 pct_of_total=round((raw_ms / elapsed_ms) * 100, 2),
-                percentile=pct,
+                diff_s=d["diff_s"],
+                diff_pct=d["diff_pct"],
             )
-            for label, raw_ms, pct in zip(
-                SEGMENT_LABELS[event_type], segments_ms, percentiles, strict=True
+            for label, raw_ms, d in zip(
+                SEGMENT_LABELS[event_type], segments_ms, diffs, strict=True
             )
         ]
 

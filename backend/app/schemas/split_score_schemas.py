@@ -20,7 +20,8 @@ class SegmentScore(BaseModel):
     label: str
     raw_ms: float
     pct_of_total: float
-    percentile: float
+    diff_s: float
+    diff_pct: float
 
 
 class SplitScoreResponse(BaseModel):

@@ -1,50 +1,55 @@
 from __future__ import annotations
 
-import math
-
 from app.utils.split_score_constants import POPULATION_STATS, SEGMENT_LABELS
 
 
-def compute_percentiles(
+def compute_diffs(
     segments_ms: list[float],
     total_ms: float,
     event_type: str,
-) -> list[float]:
+) -> list[dict]:
     stats = POPULATION_STATS[event_type]
     means = stats["mean"]
-    stds = stats["std"]
 
     if len(segments_ms) != len(means):
         raise ValueError(
             f"Expected {len(means)} segments for {event_type}, got {len(segments_ms)}."
         )
 
-    percentiles: list[float] = []
+    diffs: list[dict] = []
     for i, raw_ms in enumerate(segments_ms):
-        pct_of_total = (raw_ms / total_ms) * 100.0
-        z = (pct_of_total - means[i]) / stds[i]
-        percentile = round(0.5 * (1 + math.erf(z / math.sqrt(2))) * 100, 1)
-        percentiles.append(percentile)
-    return percentiles
+        athlete_pct = (raw_ms / total_ms) * 100.0
+        diff_pct = athlete_pct - means[i]
+        diff_s = (diff_pct / 100.0) * total_ms / 1000.0
+        diffs.append(
+            {
+                "diff_s": round(diff_s, 2),
+                "diff_pct": round(diff_pct, 2),
+            }
+        )
+    return diffs
 
 
 def generate_coaching_notes(
-    percentiles: list[float],
+    diffs: list[dict],
     event_type: str,
+    on_pace_threshold_s: float = 0.1,
 ) -> list[str]:
     labels = SEGMENT_LABELS[event_type]
     notes: list[str] = []
-    for pct, label in zip(percentiles, labels, strict=True):
-        if pct > 85:
+    for diff, label in zip(diffs, labels, strict=True):
+        diff_s = diff["diff_s"]
+        diff_pct = diff["diff_pct"]
+        abs_s = abs(diff_s)
+        abs_pct = abs(diff_pct)
+        if abs_s <= on_pace_threshold_s:
+            notes.append(f"{label}: on pace")
+        elif diff_s > 0:
             notes.append(
-                f"{label}: {pct:.0f}th percentile — significant deceleration. "
-                "Focus on maintaining pace here."
+                f"{label}: {abs_s:.2f}s slower than average ({abs_pct:.1f}% slower)"
             )
-        elif pct > 70:
+        else:
             notes.append(
-                f"{label}: {pct:.0f}th percentile — mild deceleration. "
-                "Room for improvement."
+                f"{label}: {abs_s:.2f}s faster than average ({abs_pct:.1f}% faster)"
             )
-        elif pct < 15:
-            notes.append(f"{label}: {pct:.0f}th percentile — strong segment.")
     return notes

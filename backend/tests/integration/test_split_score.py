@@ -114,14 +114,8 @@ class TestSplitScoreRealRun:
             assert "label" in seg
             assert "raw_ms" in seg
             assert "pct_of_total" in seg
-            assert "percentile" in seg
-
-    def test_percentiles_bounded(
-        self, test_client: TestClient, seeded_run_id: str
-    ) -> None:
-        segments = test_client.get(_url(seeded_run_id)).json()["segments"]
-        for seg in segments:
-            assert 0.0 <= seg["percentile"] <= 100.0
+            assert "diff_s" in seg
+            assert "diff_pct" in seg
 
     def test_segment_pcts_sum_to_approximately_100(
         self, test_client: TestClient, seeded_run_id: str
