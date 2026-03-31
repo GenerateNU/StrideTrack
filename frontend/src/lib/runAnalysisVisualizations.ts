@@ -18,6 +18,12 @@ import { FTDriftCard } from "@/components/charts/sprint/FTDriftCard";
 import { GCTDriftCard } from "@/components/charts/sprint/GCTDriftCard";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
 
+// Bosco charts
+import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
+import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
+import { JumpHeightChart } from "@/components/charts/bosco/JumpHeightChart";
+import { RsiChart } from "@/components/charts/bosco/RsiChart";
+
 export type VisualizationConfig = {
   title: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,11 +54,11 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
   ],
   bosco: [
     ...DEFAULT_CHARTS,
-    { title: "Drift KPI", component: SprintDriftKPIs },
-    { title: "FT Drift", component: FTDriftCard },
-    { title: "GCT Drift", component: GCTDriftCard },
-    { title: "Step Frequency", component: StepFrequencyChart },
-  ]
+    { title: "GCT Flight", component: GctFlightChart },
+    { title: "Jump Height", component: JumpHeightChart },
+    { title: "RSI", component: RsiChart },
+    { title: "Fatigue Index", component: FatigueIndexKPI },
+  ],
 };
 
 export function getChartsForEventType(
@@ -62,6 +68,8 @@ export function getChartsForEventType(
     ? "hurdles"
     : eventType.startsWith("sprint")
       ? "sprint"
-      : eventType;
+      : eventType.startsWith("bosco")
+        ? "bosco"
+        : eventType;
   return visualizationsByEventType[category] ?? DEFAULT_CHARTS;
 }

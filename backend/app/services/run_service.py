@@ -123,14 +123,31 @@ class RunService:
         return run
 
     async def get_all_runs(self) -> list[RunCreateResponse]:
-        """Get all runs."""
-        logger.info("Service: Getting all runs")
-        runs = await self.repository.get_all()
+        """Get all runs for the current coach's athletes."""
+
+        logger.info("Service: Getting all runs for coach")
+        runs = await self.repository.get_all(self.coach_id)
+
+        if not runs:
+            return []
+
         logger.info(f"Service: Retrieved {len(runs)} runs")
         return [RunCreateResponse(**run) for run in runs]
 
     async def get_runs_by_athlete_id(self, athlete_id: UUID) -> list[RunCreateResponse]:
         """Get all runs for a specific athlete."""
+
+        athlete_check = (
+            await self.repository.supabase.table("athletes")
+            .select("athlete_id")
+            .eq("athlete_id", str(athlete_id))
+            .eq("coach_id", str(self.coach_id))
+            .execute()
+        )
+
+        if not athlete_check:
+            raise NotFoundException("Athlete", athlete_id)
+
         logger.info(f"Service: Getting runs for athlete {athlete_id}")
         runs = await self.repository.get_by_athlete_id(athlete_id)
         logger.info(f"Service: Retrieved {len(runs)} runs for athlete {athlete_id}")

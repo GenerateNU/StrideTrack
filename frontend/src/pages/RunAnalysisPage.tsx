@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="mb-3 flex items-center gap-2.5">
+    <div className="mb-6 flex items-center gap-2.5">
       <div
         className="h-5 w-1 rounded-full"
         style={{ backgroundColor: "hsl(var(--primary))" }}
@@ -30,7 +30,7 @@ export default function RunAnalysisPage() {
       <div className="mb-6">
         <button
           onClick={() => navigate(`/athletes/${athleteId}`)}
-          className="mb-2 flex items-center gap-1 text-sm text-muted-foreground"
+          className="mb-4 flex items-center gap-1 text-sm text-muted-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Athlete
@@ -38,7 +38,7 @@ export default function RunAnalysisPage() {
         <h2 className="text-xl font-bold text-foreground">Run Analysis</h2>
         {runMeta && (
           <p className="text-sm text-muted-foreground mt-1">
-            {runMeta.event_type} ·{" "}
+            {runMeta.event_type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())} ·{" "}
             {new Date(runMeta.created_at).toLocaleDateString()}
             {runMeta.elapsed_ms !== null &&
               ` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}

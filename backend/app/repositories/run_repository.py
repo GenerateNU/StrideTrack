@@ -61,15 +61,17 @@ class RunRepository:
         logger.info(f"Repository: Created run {response.data[0]['run_id']}")
         return RunCreateResponse(**response.data[0])
 
-    async def get_all(self) -> list[dict]:
+    async def get_all(self, coach_id: UUID) -> list[dict]:
         """Get all runs, ordered by most recent first."""
         logger.info("Repository: Fetching all runs")
         response = (
             await self.supabase.table("run")
-            .select("run_id, athlete_id, event_type, elapsed_ms, created_at")
+            .select("run_id, athlete_id, event_type, elapsed_ms, created_at, athletes!inner(coach_id)")
+            .eq("athletes.coach_id", str(coach_id))
             .order("created_at", desc=True)
             .execute()
         )
+
         logger.info(f"Repository: Found {len(response.data)} runs")
         return response.data
 
