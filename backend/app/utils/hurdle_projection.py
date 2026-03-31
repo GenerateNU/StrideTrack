@@ -83,9 +83,6 @@ def project_hurdle_race(
     split_values = np.array([s["split_ms"] for s in completed_splits])
     slope, intercept = _fit_linear_trend(hurdle_nums, split_values)
 
-    # The last completed hurdle number
-    last_completed_hurdle = completed_metrics[-1].hurdle_num
-
     projected_splits: list[dict] = []
     remaining_start = max(s["hurdle_num"] for s in completed_splits) + 1
 
@@ -94,12 +91,16 @@ def project_hurdle_race(
         projected_splits.append({"hurdle_num": h, "split_ms": projected_ms})
 
     # Sum up total time
-    first_clearance_ms = completed_metrics[0].clearance_start_ms if completed_metrics else 0
+    first_clearance_ms = (
+        completed_metrics[0].clearance_start_ms if completed_metrics else 0
+    )
 
     completed_total = sum(s["split_ms"] for s in completed_splits)
     projected_total = sum(s["split_ms"] for s in projected_splits)
 
-    projected_total_ms = first_clearance_ms + completed_total + projected_total + final_segment_ms
+    projected_total_ms = (
+        first_clearance_ms + completed_total + projected_total + final_segment_ms
+    )
 
     confidence = _compute_confidence(num_completed, total_hurdles - 1)
 

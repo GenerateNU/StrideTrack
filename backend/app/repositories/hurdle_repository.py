@@ -44,19 +44,19 @@ class HurdleRepository:
             .single()
             .execute()
         )
- 
+
         if not response.data:
             raise NotFoundException("Run", str(run_id))
- 
+
         row = response.data
         if row["event_type"] != "hurdles_partial":
             raise ValueError(
                 f"Run {run_id} is not a hurdles_partial run "
                 f"(event_type={row['event_type']})"
             )
- 
+
         if not row["target_event"]:
             raise ValueError(f"Run {run_id} has no target_event")
- 
+
         logger.info(f"Repository: target_event for {run_id} = {row['target_event']}")
         return row["target_event"]
