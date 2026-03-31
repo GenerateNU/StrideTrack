@@ -94,7 +94,7 @@ export default function RecordingPage() {
     return (
       <div className="py-10">
         <div className="max-w-md mx-auto">
-          <h1 className="text-2xl font-bold text-foreground">New Run</h1>
+          <h1 className="text-2xl font-bold text-foreground">New Recording</h1>
           <p className="text-sm text-muted-foreground mt-1 mb-10">
             Select an athlete and event to begin recording
           </p>
@@ -128,7 +128,7 @@ export default function RecordingPage() {
   return (
     <div className="flex flex-col items-center pt-10">
       {/* Header */}
-      <h1 className="text-2xl font-bold text-foreground">New Run</h1>
+      <h1 className="text-2xl font-bold text-foreground">New Recording</h1>
       <p className="text-sm text-muted-foreground mt-1 mb-10">
         {selectedAthlete?.name} · {selectedEvent?.label}
       </p>

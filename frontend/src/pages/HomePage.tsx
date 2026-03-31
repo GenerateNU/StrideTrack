@@ -37,7 +37,7 @@ export default function HomePage() {
         <h2 className="text-2xl font-bold text-foreground">Your Athletes</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           {athletes.length} athlete{athletes.length !== 1 ? "s" : ""} ·{" "}
-          {runs.length} run{runs.length !== 1 ? "s" : ""} recorded
+          {runs.length} event{runs.length !== 1 ? "s" : ""} recorded
         </p>
       </div>
 
@@ -95,7 +95,7 @@ export default function HomePage() {
                       {[
                         athlete.height_in ? `${athlete.height_in}"` : null,
                         athlete.weight_lbs ? `${athlete.weight_lbs} lbs` : null,
-                        `${runs.filter((r) => r.athlete_id === athlete.athlete_id).length} runs`,
+                        `${runs.filter((r) => r.athlete_id === athlete.athlete_id).length} recordings`,
                       ]
                         .filter(Boolean)
                         .join(" · ")}
@@ -134,7 +134,7 @@ export default function HomePage() {
               {isExpanded && athleteRuns.length > 0 && (
                 <div className="border-t border-border bg-secondary/20 px-4 pb-3 pt-3">
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    Recent Runs
+                    Recent Recordings
                   </p>
                   <div className="space-y-1.5">
                     {athleteRuns.map((run) => (

@@ -35,7 +35,7 @@ export default function RunAnalysisPage() {
           <ArrowLeft className="h-4 w-4" />
           Back to Athlete
         </button>
-        <h2 className="text-xl font-bold text-foreground">Run Analysis</h2>
+        <h2 className="text-xl font-bold text-foreground">Event Analysis</h2>
         {runMeta && (
           <p className="text-sm text-muted-foreground mt-1">
             {runMeta.event_type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())} ·{" "}
@@ -63,7 +63,7 @@ export default function RunAnalysisPage() {
       ) : (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center">
           <p className="text-sm font-medium text-muted-foreground">
-            Run not found.
+            Event not found.
           </p>
         </div>
       )}
