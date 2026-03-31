@@ -1,6 +1,7 @@
 import api from "@/lib/api.ts";
 import type {
   GctIncreaseData,
+  HurdleProjectionResponse,
   HurdleSplitBarData,
   LandingGctBarData,
   StepsBetweenHurdlesData,
@@ -9,6 +10,7 @@ import type {
 } from "@/types/hurdleMetrics.types";
 import {
   gctIncreaseSchema,
+  hurdleProjectionResponseSchema,
   hurdleSplitBarSchema,
   landingGctBarSchema,
   stepsBetweenHurdlesSchema,
@@ -169,5 +171,30 @@ export function useGctIncrease(runId: string | null) {
     gctIncreaseLoading: query.isLoading,
     gctIncreaseError: query.error,
     refetchGctIncreaseData: query.refetch,
+  };
+}
+
+export function useHurdleProjection(runId: string | null) {
+  const query = useQuery({
+    queryKey: ["hurdle-projection", runId],
+    queryFn: async () => {
+      if (!runId) {
+        return null;
+      }
+
+      const response = await api.get<HurdleProjectionResponse>(
+        `/run/athletes/${runId}/metrics/hurdles/projection`
+      );
+
+      return validateResponse(response.data, hurdleProjectionResponseSchema);
+    },
+    enabled: !!runId,
+  });
+
+  return {
+    projectionData: query.data ?? null,
+    projectionLoading: query.isLoading,
+    projectionError: query.error,
+    refetchProjectionData: query.refetch,
   };
 }
