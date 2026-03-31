@@ -76,17 +76,18 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
               backgroundColor: chartColors.card,
               color: chartColors.foreground,
             }}
-            formatter={(value: number, _name: string, props) => {
-              const diff_pct = props.payload.diff_pct as number;
-              const sign = value > 0 ? "+" : "";
+            formatter={(value, _name, props) => {
+              const num = typeof value === "number" ? value : 0;
+              const diff_pct = (props.payload as { diff_pct: number }).diff_pct;
+              const sign = num > 0 ? "+" : "";
               const direction =
-                Math.abs(value) <= ON_PACE_THRESHOLD
+                Math.abs(num) <= ON_PACE_THRESHOLD
                   ? "on pace"
-                  : value > 0
+                  : num > 0
                     ? "slower"
                     : "faster";
               return [
-                `${sign}${value.toFixed(2)}s (${Math.abs(diff_pct).toFixed(1)}% ${direction})`,
+                `${sign}${num.toFixed(2)}s (${Math.abs(diff_pct).toFixed(1)}% ${direction})`,
                 "vs average",
               ];
             }}
@@ -109,11 +110,18 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
           Coaching Notes
         </p>
-        {coaching_notes.map((note, i) => (
-          <p key={i} className="text-xs text-foreground leading-snug">
-            {note}
-          </p>
-        ))}
+        {coaching_notes.map((note, i) => {
+          const seg = segments[i];
+          let color = "text-foreground";
+          if (Math.abs(seg.diff_s) > ON_PACE_THRESHOLD) {
+            color = seg.diff_s > 0 ? "text-red-500" : "text-green-500";
+          }
+          return (
+            <p key={i} className={`text-xs leading-snug ${color}`}>
+              {note}
+            </p>
+          );
+        })}
       </div>
     </div>
   );

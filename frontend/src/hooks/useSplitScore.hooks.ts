@@ -126,7 +126,6 @@ export const useSplitScore = (runId: string): UseSplitScoreResult => {
     null
   );
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -147,5 +146,5 @@ export const useSplitScore = (runId: string): UseSplitScoreResult => {
     fetchData();
   }, [runId]);
 
-  return { splitScoreData, loading, error };
+  return { splitScoreData, loading, error: null };
 };
