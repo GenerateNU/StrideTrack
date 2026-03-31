@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { AthleteSelector } from "@/components/athletes/AthleteSelector";
 import EventSelector from "@/components/events/EventSelector";
-import { useCreateRun } from "@/hooks/useCreateRun.hooks";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useEvents } from "@/hooks/useEvents";
 import { useBle } from "@/hooks/useBle.hooks";
@@ -9,6 +9,8 @@ import api from "@/lib/api";
 import type { EventTypeEnum } from "@/types/event.types";
 
 export default function RecordingPage() {
+  const queryClient = useQueryClient();
+
   // Which screen we're on — setup or recording
   const [screen, setScreen] = useState<"setup" | "recording">("setup");
 
@@ -31,8 +33,6 @@ export default function RecordingPage() {
   // Data hooks — used for display names on recording screen
   const { athletes } = useGetAllAthletes();
   const events = useEvents();
-  const { createRun, createRunIsLoading } = useCreateRun();
-
   // BLE hook
   const {
     bleIsAvailable,
@@ -88,19 +88,8 @@ export default function RecordingPage() {
 
     setIsSaving(true);
     try {
-      // Create the run record
-      await createRun({
-        athlete_id: athleteId,
-        event_type: eventType,
-        elapsed_ms: elapsedMs,
-      });
-
-      // Build CSV from BLE buffer, truncated to recording window
-      const startMs = startTimeRef.current;
-      const stopMs = stopTimeRef.current;
-      const rows = bleDataBuffer().filter(
-        (row) => row.time >= startMs && row.time <= stopMs
-      );
+      // Buffer only contains rows received between connect and disconnect
+      const rows = bleDataBuffer();
 
       const csvLines = ["Time,Force_Foot1,Force_Foot2"];
       for (const row of rows) {
@@ -114,12 +103,14 @@ export default function RecordingPage() {
       const formData = new FormData();
       formData.append("athlete_id", athleteId);
       formData.append("event_type", eventType);
+      formData.append("elapsed_ms", String(elapsedMs));
       formData.append("file", file);
 
       await api.post("/csv/upload-run", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      await queryClient.invalidateQueries({ queryKey: ["runs"] });
       bleClearBuffer();
       resetAll();
     } catch (error) {
@@ -222,7 +213,7 @@ export default function RecordingPage() {
   }
 
   // ── Recording Screen ──
-  const saving = createRunIsLoading || isSaving;
+  const saving = isSaving;
 
   return (
     <div className="flex flex-col items-center pt-10">

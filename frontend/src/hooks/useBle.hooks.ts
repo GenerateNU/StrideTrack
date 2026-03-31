@@ -56,7 +56,9 @@ export function useBle() {
       }
     }
     init();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const startListening = useCallback(async (deviceId: string) => {
@@ -86,8 +88,7 @@ export function useBle() {
     setBleIsScanning(true);
     try {
       const device = await BleClient.requestDevice({
-        namePrefix: "StrideTrack",
-        optionalServices: [FORCE_PLATE_SERVICE_UUID],
+        services: [FORCE_PLATE_SERVICE_UUID],
       });
 
       setBleIsScanning(false);

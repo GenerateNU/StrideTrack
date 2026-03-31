@@ -21,15 +21,15 @@ class CSVService:
         athlete_id: str,
         event_type: str,
         name: str | None = None,
+        elapsed_ms: int | None = None,
     ) -> CSVUploadResponse:
         """Parse a raw force-plate CSV, transform into stride cycles, and persist."""
         tracer = get_tracer()
         with tracer.start_as_current_span("csv.ingest") as span:
             span.set_attribute("csv.rows_in", len(raw_df))
 
-            # Compute elapsed_ms from the Time column
-            elapsed_ms: int | None = None
-            if "Time" in raw_df.columns and len(raw_df) > 0:
+            # Use client-provided elapsed_ms (wall-clock); fall back to CSV Time delta
+            if elapsed_ms is None and "Time" in raw_df.columns and len(raw_df) > 0:
                 elapsed_ms = int(raw_df["Time"].max() - raw_df["Time"].min())
 
             # Transform
