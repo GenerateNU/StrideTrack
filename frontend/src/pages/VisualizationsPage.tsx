@@ -129,21 +129,6 @@ export default function VisualizationsPage() {
           </div>
         </div>
 
-        {/* Reaction Time */}
-        <h2 className="text-2xl font-bold mt-8 mb-6 text-foreground">
-          Reaction Time Test
-        </h2>
-        <div className="space-y-8">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-              <ReactionTimeCard runId={HARDCODED_RT_RUN_ID} />
-            </div>
-            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-              <ReactionTimeInfoCard />
-            </div>
-          </div>
-        </div>
-
         {/* Bosco Metrics */}
         <h2 className="text-2xl font-bold mb-6 text-foreground">Bosco Test</h2>
         <div className="space-y-8">
@@ -171,6 +156,20 @@ export default function VisualizationsPage() {
               Fatigue Index
             </h3>
             <FatigueIndexKPI runId={HARDCODED_BOSCO_RUN_ID} />
+          </div>
+        </div>
+        {/* Reaction Time */}
+        <h2 className="text-2xl font-bold mt-8 mb-6 text-foreground">
+          Reaction Time Test
+        </h2>
+        <div className="space-y-8">
+          <div className="flex flex-col gap-3">
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <ReactionTimeCard runId={HARDCODED_RT_RUN_ID} />
+            </div>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <ReactionTimeInfoCard />
+            </div>
           </div>
         </div>
       </div>

@@ -17,10 +17,9 @@ export const ReactionTimeInfoCard = () => {
       </CardHeader>
       <CardContent>
         <p className="text-xs text-muted-foreground leading-snug">
-          Pure neural response speed — time from the start stimulus to first
-          detected ground contact (GCT onset). Elite sprinters react in under
-          150ms. A reaction time below 100ms is flagged as a false start by
-          World Athletics rules.
+          How fast an athlete reacts to the start signal, measured from the
+          stimulus to their first foot movement. Elite sprinters: under 150ms.
+          Under 100ms is a false start.
         </p>
       </CardContent>
     </Card>
