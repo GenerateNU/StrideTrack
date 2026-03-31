@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import api from "@/lib/api";
 
 interface ReactionTimeMetrics {
   reaction_time_ms: number;
@@ -38,14 +39,11 @@ export const useReactionTimeMetrics = (
     const fetchMetrics = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/reaction-time/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(MOCK_REQUEST),
-        });
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const data: ReactionTimeMetrics = await res.json();
-        setRtMetrics(data);
+        const res = await api.post<ReactionTimeMetrics>(
+          "/reaction-time/analyze",
+          MOCK_REQUEST
+        );
+        setRtMetrics(res.data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
