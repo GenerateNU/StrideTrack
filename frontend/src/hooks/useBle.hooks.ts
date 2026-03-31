@@ -1,9 +1,9 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
 import { BleClient } from "@capacitor-community/bluetooth-le";
 
 const FORCE_PLATE_SERVICE_UUID = "0000180d-0000-1000-8000-00805f9b34fb";
-const FORCE_PLATE_CHARACTERISTIC_UUID = "0000180d-0000-1000-8000-00805f9b34fb";
+const FORCE_PLATE_CHARACTERISTIC_UUID = "00002a37-0000-1000-8000-00805f9b34fb";
 
 export interface BleForceRow {
   time: number;
@@ -42,6 +42,23 @@ export function useBle() {
     }
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    async function init() {
+      const isNative = Capacitor.isNativePlatform();
+      if (!isNative) return;
+      try {
+        await BleClient.initialize();
+        const enabled = await BleClient.isEnabled();
+        if (!cancelled) setBleIsAvailable(enabled);
+      } catch {
+        if (!cancelled) setBleIsAvailable(false);
+      }
+    }
+    init();
+    return () => { cancelled = true; };
+  }, []);
+
   const startListening = useCallback(async (deviceId: string) => {
     await BleClient.startNotifications(
       deviceId,
@@ -69,7 +86,8 @@ export function useBle() {
     setBleIsScanning(true);
     try {
       const device = await BleClient.requestDevice({
-        services: [FORCE_PLATE_SERVICE_UUID],
+        namePrefix: "StrideTrack",
+        optionalServices: [FORCE_PLATE_SERVICE_UUID],
       });
 
       setBleIsScanning(false);

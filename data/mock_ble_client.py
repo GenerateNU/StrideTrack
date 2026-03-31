@@ -143,8 +143,8 @@ async def run_peripheral(csv_path: str) -> None:
     await server.add_new_characteristic(
         SERVICE_UUID,
         CHARACTERISTIC_UUID,
-        GATTCharacteristicProperties.read | GATTCharacteristicProperties.notify,
-        bytearray(12),
+        GATTCharacteristicProperties.notify,
+        None,
         GATTAttributePermissions.readable,
     )
 
@@ -160,36 +160,30 @@ async def run_peripheral(csv_path: str) -> None:
     notifications_sent = 0
     streaming_start = asyncio.get_event_loop().time()
 
+    gap_simulated = False
+
     while row_index < len(rows):
-        # Check if we should simulate a disconnect
+        # Check if we should simulate a data gap
         elapsed = asyncio.get_event_loop().time() - streaming_start
-        if elapsed >= DISCONNECT_AFTER_S and notifications_sent > 0:
+        if not gap_simulated and elapsed >= DISCONNECT_AFTER_S and notifications_sent > 0:
+            gap_simulated = True
             logger.info(
-                "Simulating disconnect after %.1fs (%d notifications sent, "
+                "Simulating data gap after %.1fs (%d notifications sent, "
                 "paused at row %d/%d)",
                 elapsed,
                 notifications_sent,
                 row_index,
                 len(rows),
             )
-            await server.stop()
 
-            logger.info("Waiting %.0fs before reconnecting...", RECONNECT_WAIT_S)
+            logger.info("Pausing notifications for %.0fs...", RECONNECT_WAIT_S)
             await asyncio.sleep(RECONNECT_WAIT_S)
 
-            # Restart advertising and wait for reconnection
-            await server.start()
-            logger.info("Re-advertising — waiting for reconnection...")
-            while not await server.is_connected():
-                await asyncio.sleep(0.1)
             logger.info(
-                "Central reconnected — resuming from row %d/%d",
+                "Resuming notifications from row %d/%d",
                 row_index,
                 len(rows),
             )
-
-            # Reset so we only disconnect once
-            streaming_start = float("inf")
 
         # Send notification
         time_val, foot1, foot2 = rows[row_index]

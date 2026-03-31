@@ -39,10 +39,13 @@ class CSVRepository:
         """
         Inserts transformed data into stride_data table
         """
-        logger.info(f"Repository: Inserted {len(df)} transformed rows")
+        if df.empty:
+            logger.info("Repository: No transformed rows to insert")
+            return 0
 
         df["run_id"] = df["run_id"].astype(str)
         data = df.to_dict(orient="records")
+        logger.info(f"Repository: Inserting {len(data)} transformed rows")
         response = await self.supabase.table(self.metrics_table).insert(data).execute()
 
         rows_inserted = len(response.data)
