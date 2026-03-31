@@ -10,6 +10,7 @@ from app.routes.example_routes import router as example_router
 from app.routes.hurdle_routes import router as hurdle_router
 from app.routes.run_routes import router as run_router
 from app.schemas.health_schemas import HealthResponse
+from app.routes.reaction_time_routes import router as reaction_time_router
 
 api_router = APIRouter(prefix="/api")
 
@@ -32,3 +33,4 @@ api_router.include_router(athlete_router)
 api_router.include_router(run_router)
 api_router.include_router(bosco_router)
 api_router.include_router(hurdle_router)
+api_router.include_router(reaction_time_router)
