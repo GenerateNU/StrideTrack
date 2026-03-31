@@ -38,8 +38,10 @@ export default function RunAnalysisPage() {
         <h2 className="text-xl font-bold text-foreground">Event Analysis</h2>
         {runMeta && (
           <p className="text-sm text-muted-foreground mt-1">
-            {runMeta.event_type.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())} ·{" "}
-            {new Date(runMeta.created_at).toLocaleDateString()}
+            {runMeta.event_type
+              .replace(/_/g, " ")
+              .replace(/\b\w/g, (c) => c.toUpperCase())}{" "}
+            · {new Date(runMeta.created_at).toLocaleDateString()}
             {runMeta.elapsed_ms !== null &&
               ` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
           </p>

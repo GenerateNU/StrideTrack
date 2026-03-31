@@ -66,7 +66,9 @@ class RunRepository:
         logger.info("Repository: Fetching all runs")
         response = (
             await self.supabase.table("run")
-            .select("run_id, athlete_id, event_type, elapsed_ms, created_at, athletes!inner(coach_id)")
+            .select(
+                "run_id, athlete_id, event_type, elapsed_ms, created_at, athletes!inner(coach_id)"
+            )
             .eq("athletes.coach_id", str(coach_id))
             .order("created_at", desc=True)
             .execute()

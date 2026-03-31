@@ -131,7 +131,9 @@ export default function AthleteProfilePage() {
               <div className="text-2xl font-bold text-foreground">
                 {athleteRuns.length}
               </div>
-              <div className="text-xs text-muted-foreground">Total Recordings</div>
+              <div className="text-xs text-muted-foreground">
+                Total Recordings
+              </div>
             </div>
             <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
               <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
