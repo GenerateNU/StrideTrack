@@ -8,7 +8,7 @@ import { useBle } from "@/hooks/useBle.hooks";
 import api from "@/lib/api";
 import type { EventTypeEnum } from "@/types/event.types";
 
-export default function RecordingPage() {
+export default function RecordRunPage() {
   const queryClient = useQueryClient();
 
   // Which screen we're on — setup or recording
