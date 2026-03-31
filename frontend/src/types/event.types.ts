@@ -7,11 +7,18 @@ export type EventTypeEnum =
   | "hurdles_110m"
   | "hurdles_100m"
   | "hurdles_400m"
+  | "hurdles_partial"
   | "long_jump"
   | "triple_jump"
   | "high_jump"
   | "bosco_test"
   | "reaction_time_test";
+
+export type HurdleTargetEvent =
+  | "hurdles_60m"
+  | "hurdles_110m"
+  | "hurdles_100m"
+  | "hurdles_400m";
 
 export interface EventOption {
   value: EventTypeEnum;
