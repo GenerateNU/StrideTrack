@@ -215,6 +215,20 @@ def transform_feet_to_stride_cycles(
     # Assign stride numbers
     out = _assign_stride_numbers(out)
 
+    if out.empty:
+        return pd.DataFrame(
+            columns=[
+                "stride_num",
+                "foot",
+                "ic_time",
+                "to_time",
+                "next_ic_time",
+                "gct_ms",
+                "flight_ms",
+                "step_time_ms",
+            ]
+        )
+
     # Final column order
     out = (
         out[

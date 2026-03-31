@@ -31,7 +31,7 @@ class RunRepository:
             raise NotFoundException("Run metric", str(run_id))
 
         logger.info(f"Repository: Found run metric: {run_id}")
-        return response.data
+        return [RunResponse(**row) for row in response.data]
 
     async def get_run_meta(self, run_id: UUID) -> RunMeta:
         """Get a run's metadata from RUN table."""
