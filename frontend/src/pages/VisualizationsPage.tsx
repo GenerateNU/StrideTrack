@@ -13,12 +13,19 @@ import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
 import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
+import { useState } from "react";
+import EventHistoryFilterBar from "@/components/charts/EventHistoryFilterBar";
+import { EventHistoryChart } from "@/components/charts/EventHistoryChart";
+import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
 
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 const HARDCODED_BOSCO_RUN_ID = "b1a2c3d4-5678-9abc-def0-111111111111";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
 
 export default function VisualizationsPage() {
+  const HARDCODED_ATHLETE_ID = "00000000-0000-0000-0000-000000000003"; //micheal
+  const [eventHistoryFilters, setEventHistoryFilters] =
+    useState<EventHistoryFilters | null>(null);
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
@@ -123,6 +130,21 @@ export default function VisualizationsPage() {
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
               <GctIncreaseChart runId={HARDCODED_HURDLE_RUN_ID} />
             </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-xl font-bold mb-3 text-primary">
+            Event Time History
+          </h2>
+          <div className="bg-card border border-border rounded-lg p-6 shadow-sm space-y-4">
+            <EventHistoryFilterBar
+              athleteId={HARDCODED_ATHLETE_ID}
+              onApply={(filters) => setEventHistoryFilters(filters)}
+            />
+            {eventHistoryFilters && (
+              <EventHistoryChart filters={eventHistoryFilters} enabled={true} />
+            )}
           </div>
         </div>
 
