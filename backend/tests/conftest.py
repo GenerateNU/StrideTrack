@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
@@ -54,9 +54,9 @@ def _override_auth() -> Generator[None, None, None]:
             email="dev@stridetrack.dev",
             name="Coach Sam Baldwin",
             role="coach",
-            created_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+            created_at=datetime(2024, 1, 1, tzinfo=UTC),
         ),
-        created_at=datetime(2024, 1, 1, tzinfo=timezone.utc),
+        created_at=datetime(2024, 1, 1, tzinfo=UTC),
     )
     app.dependency_overrides[get_current_coach] = lambda: seeded_coach
     yield
