@@ -18,7 +18,12 @@ class CSVService:
         self.coach_id = coach_id
 
     async def ingest_stride_csv(
-        self, raw_df: pd.DataFrame, athlete_id: str, event_type: str, name: str = None
+        self,
+        raw_df: pd.DataFrame,
+        athlete_id: str,
+        event_type: str,
+        name: str | None = None,
+        elapsed_ms: int | None = None,
     ) -> CSVUploadResponse:
 
         # Athlete Check
@@ -44,6 +49,11 @@ class CSVService:
         tracer = get_tracer()
         with tracer.start_as_current_span("csv.ingest") as span:
             span.set_attribute("csv.rows_in", len(raw_df))
+
+            # Use client-provided elapsed_ms (wall-clock); fall back to CSV Time delta
+            if elapsed_ms is None and "Time" in raw_df.columns and len(raw_df) > 0:
+                elapsed_ms = int(raw_df["Time"].max() - raw_df["Time"].min())
+
             # Transform
             try:
                 transformed_df = transform_feet_to_stride_cycles(raw_df)
@@ -62,6 +72,7 @@ class CSVService:
                     athlete_id=athlete_id,
                     event_type=event_type,
                     name=name,
+                    elapsed_ms=elapsed_ms,
                 )
                 span.set_attribute("csv.run_id", result["run_id"])
                 span.set_attribute("csv.rows_inserted", result["rows_inserted"])
@@ -78,5 +89,7 @@ class CSVService:
             )
 
             return CSVUploadResponse(
-                message=f"CSV uploaded successfully. Run ID: {result['run_id']}, Rows inserted: {result['rows_inserted']}"
+                message=f"CSV uploaded successfully. Run ID: {result['run_id']}, Rows inserted: {result['rows_inserted']}",
+                run_id=str(result["run_id"]),
+                rows_inserted=result["rows_inserted"],
             )
