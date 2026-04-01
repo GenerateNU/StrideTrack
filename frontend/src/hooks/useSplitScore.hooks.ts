@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import api from "@/lib/api";
 
 interface SegmentScore {
   label: string;
@@ -131,10 +132,8 @@ export const useSplitScore = (runId: string): UseSplitScoreResult => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/split-score/${runId}`);
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const data: SplitScoreData = await res.json();
-        setSplitScoreData(data);
+        const res = await api.get<SplitScoreData>(`/split-score/${runId}`);
+        setSplitScoreData(res.data);
       } catch {
         // Fall back to mock data when backend is unavailable
         setSplitScoreData(MOCK_DATA);
