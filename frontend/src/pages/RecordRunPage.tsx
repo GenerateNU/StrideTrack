@@ -1,48 +1,68 @@
 import { useState, useRef, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { AthleteSelector } from "@/components/athletes/AthleteSelector";
 import EventSelector from "@/components/events/EventSelector";
-import { useCreateRun } from "@/hooks/useCreateRun.hooks";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useEvents } from "@/hooks/useEvents";
-import { UploadCSVModal } from "@/components/runs/UploadCSVModal";
+import { useBle } from "@/hooks/useBle.hooks";
+import api from "@/lib/api";
 import type { EventTypeEnum } from "@/types/event.types";
 
-interface SetupFormValues {
-  athleteId: string;
-  eventType: EventTypeEnum;
-}
+export default function RecordRunPage() {
+  const queryClient = useQueryClient();
 
-export default function RecordingPage() {
+  // Which screen we're on — setup or recording
   const [screen, setScreen] = useState<"setup" | "recording">("setup");
+
+  // Setup selections
+  const [athleteId, setAthleteId] = useState<string | null>(null);
+  const [eventType, setEventType] = useState<EventTypeEnum | null>(null);
+
+  // Timer state
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isStopped, setIsStopped] = useState(false);
-  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
+  // Refs persist across re-renders without causing re-renders
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(0);
+  const stopTimeRef = useRef<number>(0);
 
+  // Data hooks — used for display names on recording screen
   const { athletes } = useGetAllAthletes();
   const events = useEvents();
-  const { createRun, createRunIsLoading } = useCreateRun();
-
+  // BLE hook
   const {
-    control,
-    handleSubmit,
-    getValues,
-    formState: { isValid },
-  } = useForm<SetupFormValues>({
-    mode: "onChange",
-    defaultValues: { athleteId: "", eventType: "" as EventTypeEnum },
-  });
+    bleIsAvailable,
+    bleIsConnected,
+    bleIsScanning,
+    bleConnect,
+    bleDisconnect,
+    bleDataBuffer,
+    bleClearBuffer,
+  } = useBle();
 
-  const { athleteId, eventType } = getValues();
+  // Both selections required to proceed
+  const canProceed = athleteId !== null && eventType !== null;
 
+  // Get display names for the recording screen header
   const selectedAthlete = athletes.find((a) => a.athlete_id === athleteId);
   const selectedEvent = events.find((e) => e.value === eventType);
 
-  const startTimer = useCallback(() => {
+  // Start the timer — connects BLE first, then captures real start time
+  const startTimer = useCallback(async () => {
+    setIsConnecting(true);
+    try {
+      await bleConnect();
+    } catch (error) {
+      console.error("BLE connection failed:", error);
+      setIsConnecting(false);
+      return;
+    }
+    setIsConnecting(false);
+
     startTimeRef.current = Date.now();
     setIsRunning(true);
     setIsStopped(false);
@@ -50,37 +70,74 @@ export default function RecordingPage() {
     intervalRef.current = setInterval(() => {
       setElapsedMs(Date.now() - startTimeRef.current);
     }, 10);
-  }, []);
+  }, [bleConnect]);
 
-  const stopTimer = useCallback(() => {
+  // Stop the timer — clears interval, takes final measurement, disconnects BLE
+  const stopTimer = useCallback(async () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    setElapsedMs(Date.now() - startTimeRef.current);
+    stopTimeRef.current = Date.now();
+    setElapsedMs(stopTimeRef.current - startTimeRef.current);
     setIsRunning(false);
     setIsStopped(true);
-  }, []);
+    await bleDisconnect();
+  }, [bleDisconnect]);
 
+  // Save the run to the database with CSV upload, then reset
   const handleSave = async () => {
     if (!athleteId || !eventType) return;
+
+    setIsSaving(true);
     try {
-      await createRun({
-        athlete_id: athleteId,
-        event_type: eventType,
-        elapsed_ms: elapsedMs,
+      // Buffer only contains rows received between connect and disconnect
+      const rows = bleDataBuffer();
+
+      const csvLines = ["Time,Force_Foot1,Force_Foot2"];
+      for (const row of rows) {
+        csvLines.push(`${row.time},${row.force_foot1},${row.force_foot2}`);
+      }
+      const csvString = csvLines.join("\n");
+
+      const blob = new Blob([csvString], { type: "text/csv" });
+      const file = new File([blob], "run_data.csv", { type: "text/csv" });
+
+      const formData = new FormData();
+      formData.append("athlete_id", athleteId);
+      formData.append("event_type", eventType);
+      formData.append("elapsed_ms", String(elapsedMs));
+      formData.append("file", file);
+
+      await api.post("/csv/upload-run", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
+
+      await queryClient.invalidateQueries({ queryKey: ["runs"] });
+      bleClearBuffer();
       resetAll();
     } catch (error) {
       console.error("Failed to save run:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  // Reset everything back to setup screen — used by both Delete and Save
   const resetAll = () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     setElapsedMs(0);
     setIsRunning(false);
     setIsStopped(false);
+    setIsConnecting(false);
     setScreen("setup");
   };
 
+  // Delete handler — also disconnects and clears buffer
+  const handleDelete = async () => {
+    await bleDisconnect();
+    bleClearBuffer();
+    resetAll();
+  };
+
+  // Format milliseconds as M:SS.cc (centisecond precision)
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
@@ -89,88 +146,109 @@ export default function RecordingPage() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}.${centiseconds.toString().padStart(2, "0")}`;
   };
 
+  // ── BLE Unavailable Screen ──
+  if (!bleIsAvailable) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="64"
+          height="64"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="text-muted-foreground mb-6"
+        >
+          <path d="m7 7 10 10-5 5V2l5 5L7 17" />
+          <line x1="2" y1="2" x2="22" y2="22" />
+        </svg>
+        <h1 className="text-xl font-bold text-foreground mb-2">
+          Bluetooth Required
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-xs">
+          StrideTrack requires Bluetooth to connect to force plate sensors.
+          Please enable Bluetooth in your device settings or use a
+          Bluetooth-compatible device.
+        </p>
+      </div>
+    );
+  }
+
   // ── Setup Screen ──
   if (screen === "setup") {
     return (
-      <>
-        <div className="py-10">
-          <div className="max-w-md mx-auto">
-            <h1 className="text-2xl font-bold text-foreground">New Run</h1>
-            <p className="text-sm text-muted-foreground mt-1 mb-10">
-              Select an athlete and event to begin recording
-            </p>
+      <div className="py-10">
+        <div className="max-w-md mx-auto">
+          <h1 className="text-2xl font-bold text-foreground">New Run</h1>
+          <p className="text-sm text-muted-foreground mt-1 mb-10">
+            Select an athlete and event to begin recording
+          </p>
 
-            <form
-              onSubmit={handleSubmit(() => setScreen("recording"))}
-              className="space-y-6"
+          <div className="space-y-6">
+            <AthleteSelector value={athleteId} onChange={setAthleteId} />
+            <EventSelector value={eventType} onChange={setEventType} />
+
+            <button
+              onClick={() => setScreen("recording")}
+              disabled={!canProceed}
+              className={`w-full py-3.5 rounded-xl font-semibold text-base transition-all ${
+                canProceed
+                  ? "cursor-pointer opacity-100"
+                  : "cursor-not-allowed opacity-40"
+              }`}
+              style={{
+                backgroundColor: "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
+              }}
             >
-              <Controller
-                name="athleteId"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <AthleteSelector
-                    value={field.value || null}
-                    onChange={(val) => field.onChange(val ?? "")}
-                  />
-                )}
-              />
-
-              <Controller
-                name="eventType"
-                control={control}
-                rules={{ required: true }}
-                render={({ field }) => (
-                  <EventSelector
-                    value={(field.value as EventTypeEnum) || null}
-                    onChange={(val) => field.onChange(val ?? "")}
-                  />
-                )}
-              />
-
-              <button
-                type="submit"
-                disabled={!isValid}
-                className={`w-full py-3.5 rounded-xl font-semibold text-base transition-all ${
-                  isValid
-                    ? "cursor-pointer opacity-100"
-                    : "cursor-not-allowed opacity-40"
-                }`}
-                style={{
-                  backgroundColor: "hsl(var(--primary))",
-                  color: "hsl(var(--primary-foreground))",
-                }}
-              >
-                Continue
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setUploadModalOpen(true)}
-                className="w-full py-3.5 rounded-xl font-semibold text-base border border-border text-foreground bg-card transition-colors hover:bg-secondary"
-              >
-                Upload Run
-              </button>
-            </form>
+              Continue
+            </button>
           </div>
         </div>
-
-        <UploadCSVModal
-          open={uploadModalOpen}
-          onClose={() => setUploadModalOpen(false)}
-        />
-      </>
+      </div>
     );
   }
 
   // ── Recording Screen ──
+  const saving = isSaving;
+
   return (
     <div className="flex flex-col items-center pt-10">
+      {/* Header */}
       <h1 className="text-2xl font-bold text-foreground">New Run</h1>
       <p className="text-sm text-muted-foreground mt-1 mb-10">
         {selectedAthlete?.name} · {selectedEvent?.label}
       </p>
 
+      {/* BLE status indicator during recording */}
+      {isRunning && (
+        <div
+          className="flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full text-xs font-medium"
+          style={{
+            backgroundColor: bleIsConnected
+              ? "hsl(var(--primary) / 0.1)"
+              : "hsl(var(--destructive) / 0.1)",
+            color: bleIsConnected
+              ? "hsl(var(--primary))"
+              : "hsl(var(--destructive))",
+          }}
+        >
+          <span
+            className="w-2 h-2 rounded-full"
+            style={{
+              backgroundColor: bleIsConnected
+                ? "hsl(var(--primary))"
+                : "hsl(var(--destructive))",
+            }}
+          />
+          {bleIsConnected ? "Connected" : "Sensor Disconnected — buffering..."}
+        </div>
+      )}
+
+      {/* Timer circle */}
       <div
         className="w-56 h-56 rounded-full flex flex-col items-center justify-center bg-card"
         style={{
@@ -185,7 +263,13 @@ export default function RecordingPage() {
         }}
       >
         <span className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-          {isRunning ? "Recording" : isStopped ? "Stopped" : "Ready"}
+          {isConnecting
+            ? "Connecting..."
+            : isRunning
+              ? "Recording"
+              : isStopped
+                ? "Stopped"
+                : "Ready"}
         </span>
         <span
           className="text-5xl font-bold text-foreground mt-1"
@@ -195,10 +279,12 @@ export default function RecordingPage() {
         </span>
       </div>
 
+      {/* Start/Stop button — hidden after stopping */}
       {!isStopped && (
         <button
           onClick={isRunning ? stopTimer : startTimer}
-          className="mt-10 w-56 py-4 rounded-2xl font-semibold text-xl cursor-pointer transition-all"
+          disabled={isConnecting || bleIsScanning}
+          className="mt-10 w-56 py-4 rounded-2xl font-semibold text-xl cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             backgroundColor: isRunning
               ? "hsl(var(--destructive))"
@@ -206,33 +292,40 @@ export default function RecordingPage() {
             color: "hsl(var(--primary-foreground))",
           }}
         >
-          {isRunning ? "Stop" : "Start"}
+          {isConnecting || bleIsScanning
+            ? "Connecting..."
+            : isRunning
+              ? "Stop"
+              : "Start"}
         </button>
       )}
 
+      {/* Save/Delete buttons — shown after stopping */}
       {isStopped && (
         <div className="mt-10 flex gap-4">
           <button
-            onClick={resetAll}
-            className="px-10 py-4 rounded-2xl font-semibold text-lg cursor-pointer transition-colors border border-border text-foreground bg-card"
+            onClick={handleDelete}
+            disabled={saving}
+            className="px-10 py-4 rounded-2xl font-semibold text-lg cursor-pointer transition-colors border border-border text-foreground bg-card disabled:opacity-50"
           >
             Delete
           </button>
           <button
             onClick={handleSave}
-            disabled={createRunIsLoading}
+            disabled={saving}
             className="px-10 py-4 rounded-2xl font-semibold text-lg cursor-pointer transition-colors disabled:opacity-50"
             style={{
               backgroundColor: "hsl(var(--primary))",
               color: "hsl(var(--primary-foreground))",
             }}
           >
-            {createRunIsLoading ? "Saving..." : "Save"}
+            {saving ? "Saving..." : "Save"}
           </button>
         </div>
       )}
 
-      {!isRunning && !isStopped && (
+      {/* Change selection link — only before starting */}
+      {!isRunning && !isStopped && !isConnecting && (
         <button
           onClick={() => setScreen("setup")}
           className="mt-5 text-sm font-medium cursor-pointer"
