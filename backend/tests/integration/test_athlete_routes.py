@@ -2,8 +2,8 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from supabase import Client
 
+from app.schemas.coach_schemas import Coach
 from tests.factories.athlete_factory import AthleteFactory
 
 BASE = "/api/athletes"
@@ -23,16 +23,12 @@ class TestListAthletes:
     def test_created_athlete_appears_in_list(
         self,
         test_client: TestClient,
-        supabase_client: Client,
+        test_coach: Coach,
         created_ids: dict,
     ) -> None:
         """An athlete created via POST should appear in the subsequent GET list."""
-        coach = supabase_client.table("coaches").insert({}).execute()
-        coach_id = coach.data[0]["coach_id"]
-        created_ids["coach_ids"].append(coach_id)
-
         athlete_data = AthleteFactory.create(
-            coach_id=coach_id, name="List Test Athlete"
+            coach_id=str(test_coach.coach_id), name="List Test Athlete"
         )
         create_resp = test_client.post(BASE, json=athlete_data)
         assert create_resp.status_code == 201
@@ -53,15 +49,13 @@ class TestGetAthlete:
     def test_get_existing_athlete_returns_200(
         self,
         test_client: TestClient,
-        supabase_client: Client,
+        test_coach: Coach,
         created_ids: dict,
     ) -> None:
         """Fetching a created athlete by ID should return 200 with correct data."""
-        coach = supabase_client.table("coaches").insert({}).execute()
-        coach_id = coach.data[0]["coach_id"]
-        created_ids["coach_ids"].append(coach_id)
-
-        athlete_data = AthleteFactory.create(coach_id=coach_id, name="Get Test Athlete")
+        athlete_data = AthleteFactory.create(
+            coach_id=str(test_coach.coach_id), name="Get Test Athlete"
+        )
         create_resp = test_client.post(BASE, json=athlete_data)
         assert create_resp.status_code == 201
         athlete_id = create_resp.json()["athlete_id"]
@@ -90,16 +84,12 @@ class TestCreateAthlete:
     def test_create_full_athlete_returns_201(
         self,
         test_client: TestClient,
-        supabase_client: Client,
+        test_coach: Coach,
         created_ids: dict,
     ) -> None:
         """Creating an athlete with all fields should return 201 with the full response."""
-        coach = supabase_client.table("coaches").insert({}).execute()
-        coach_id = coach.data[0]["coach_id"]
-        created_ids["coach_ids"].append(coach_id)
-
         athlete_data = AthleteFactory.create(
-            coach_id=coach_id,
+            coach_id=str(test_coach.coach_id),
             name="Full Athlete",
             height_in=72.0,
             weight_lbs=180.0,
@@ -120,17 +110,13 @@ class TestCreateAthlete:
     def test_create_minimal_athlete_returns_201(
         self,
         test_client: TestClient,
-        supabase_client: Client,
+        test_coach: Coach,
         created_ids: dict,
     ) -> None:
         """Creating an athlete with only required fields should return 201
         with nullable fields set to None."""
-        coach = supabase_client.table("coaches").insert({}).execute()
-        coach_id = coach.data[0]["coach_id"]
-        created_ids["coach_ids"].append(coach_id)
-
         athlete_data = AthleteFactory.create_minimal(
-            coach_id=coach_id, name="Minimal Athlete"
+            coach_id=str(test_coach.coach_id), name="Minimal Athlete"
         )
 
         response = test_client.post(BASE, json=athlete_data)
@@ -172,15 +158,13 @@ class TestUpdateAthlete:
     def test_update_returns_200_with_new_values(
         self,
         test_client: TestClient,
-        supabase_client: Client,
+        test_coach: Coach,
         created_ids: dict,
     ) -> None:
         """Patching an athlete's name and height should return 200 with the updated values."""
-        coach = supabase_client.table("coaches").insert({}).execute()
-        coach_id = coach.data[0]["coach_id"]
-        created_ids["coach_ids"].append(coach_id)
-
-        athlete_data = AthleteFactory.create(coach_id=coach_id, name="Before Update")
+        athlete_data = AthleteFactory.create(
+            coach_id=str(test_coach.coach_id), name="Before Update"
+        )
         create_resp = test_client.post(BASE, json=athlete_data)
         assert create_resp.status_code == 201
         athlete_id = create_resp.json()["athlete_id"]
@@ -214,15 +198,13 @@ class TestDeleteAthlete:
     def test_delete_returns_204(
         self,
         test_client: TestClient,
-        supabase_client: Client,
+        test_coach: Coach,
         created_ids: dict,
     ) -> None:
         """Deleting an existing athlete should return 204, and a subsequent GET should 404."""
-        coach = supabase_client.table("coaches").insert({}).execute()
-        coach_id = coach.data[0]["coach_id"]
-        created_ids["coach_ids"].append(coach_id)
-
-        athlete_data = AthleteFactory.create(coach_id=coach_id, name="To Be Deleted")
+        athlete_data = AthleteFactory.create(
+            coach_id=str(test_coach.coach_id), name="To Be Deleted"
+        )
         create_resp = test_client.post(BASE, json=athlete_data)
         assert create_resp.status_code == 201
         athlete_id = create_resp.json()["athlete_id"]

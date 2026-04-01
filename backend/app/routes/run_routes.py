@@ -5,10 +5,13 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 from supabase._async.client import AsyncClient
 
+from app.core.auth import get_current_coach
 from app.core.supabase import get_async_supabase
 from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRepository
+from app.schemas.coach_schemas import Coach
 from app.schemas.run_schemas import (
     LROverlayData,
+    RunMeta,
     RunResponse,
     SprintDriftData,
     StackedBarData,
@@ -22,10 +25,11 @@ router = APIRouter(prefix="/run", tags=["Run"])
 
 
 async def get_run_service(
+    coach: Coach = Depends(get_current_coach),
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> RunService:
     repository = RunRepository(supabase)
-    return RunService(repository)
+    return RunService(repository, coach_id=coach.coach_id)
 
 
 @router.get("", response_model=list[RunCreateResponse])
@@ -60,6 +64,17 @@ async def get_run_metric_record(
     metrics = await service.get_metrics_by_run_id(run_id)
     logger.info(f"Route: Returning a metric record for run: {run_id}")
     return metrics
+
+
+@router.get("/athletes/{run_id}/metadata", response_model=RunMeta)
+async def get_run_metadata(
+    run_id: UUID, service: RunService = Depends(get_run_service)
+) -> RunMeta:
+    """Get a specific run's metadata'."""
+    logger.info(f"Route: GET /athletes/{run_id}/metadata")
+    meta = await service.get_meta_by_run_id(run_id)
+    logger.info(f"Route: Returning metadata for run: {run_id}")
+    return meta
 
 
 @router.get("/athletes/{run_id}/metrics/lr-overlay", response_model=list[LROverlayData])

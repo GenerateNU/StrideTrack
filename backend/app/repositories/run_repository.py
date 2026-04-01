@@ -4,7 +4,7 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunResponse
+from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta, RunResponse
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,20 @@ class RunRepository:
         logger.info(f"Repository: Found run metric: {run_id}")
         return [RunResponse(**row) for row in response.data]
 
+    async def get_run_meta(self, run_id: UUID) -> RunMeta:
+        """Get a run's metadata from RUN table."""
+        logger.info(f"Repository: Fetching run metric: {run_id}")
+        response = (
+            await self.supabase.table("run").select("*").eq("run_id", run_id).execute()
+        )
+
+        if not response.data:
+            logger.warning(f"Repository: Run metric not found for id {run_id}")
+            raise NotFoundException("Run metric", str(run_id))
+
+        logger.info(f"Repository: Found run metric: {run_id}")
+        return response.data[0]
+
     async def create(self, run_create: RunCreate) -> RunCreateResponse:
         """Create a new run."""
         logger.info(f"Repository: Creating run for athlete {run_create.athlete_id}")
@@ -47,15 +61,19 @@ class RunRepository:
         logger.info(f"Repository: Created run {response.data[0]['run_id']}")
         return RunCreateResponse(**response.data[0])
 
-    async def get_all(self) -> list[dict]:
+    async def get_all(self, coach_id: UUID) -> list[dict]:
         """Get all runs, ordered by most recent first."""
         logger.info("Repository: Fetching all runs")
         response = (
             await self.supabase.table("run")
-            .select("run_id, athlete_id, event_type, elapsed_ms, created_at")
+            .select(
+                "run_id, athlete_id, event_type, elapsed_ms, created_at, athletes!inner(coach_id)"
+            )
+            .eq("athletes.coach_id", str(coach_id))
             .order("created_at", desc=True)
             .execute()
         )
+
         logger.info(f"Repository: Found {len(response.data)} runs")
         return response.data
 

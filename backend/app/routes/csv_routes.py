@@ -5,9 +5,11 @@ import pandas as pd
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from supabase._async.client import AsyncClient
 
+from app.core.auth import get_current_coach
 from app.core.observability import get_tracer
 from app.core.supabase import get_async_supabase
 from app.repositories.csv_repository import CSVRepository
+from app.schemas.coach_schemas import Coach
 from app.schemas.csv_schemas import CSVUploadResponse
 from app.services.csv_service import CSVService
 
@@ -18,10 +20,11 @@ router = APIRouter(prefix="/csv", tags=["CSV"])
 
 # Dependency injection
 async def get_csv_service(
+    coach: Coach = Depends(get_current_coach),
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> CSVService:
     repository = CSVRepository(supabase)
-    return CSVService(repository)
+    return CSVService(repository, coach_id=coach.coach_id)
 
 
 @router.post(

@@ -4,8 +4,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
+from app.core.auth import get_current_coach
 from app.core.supabase import get_async_supabase
 from app.repositories.hurdle_repository import HurdleRepository
+from app.schemas.coach_schemas import Coach
 from app.schemas.hurdle_schemas import (
     GctIncreaseData,
     HurdleMetricRow,
@@ -24,10 +26,11 @@ router = APIRouter(prefix="/run", tags=["Run"])
 
 # Dependency injection
 async def get_hurdle_service(
+    coach: Coach = Depends(get_current_coach),
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> HurdleService:
     repository = HurdleRepository(supabase)
-    return HurdleService(repository)
+    return HurdleService(repository, coach_id=coach.coach_id)
 
 
 @router.get(

@@ -82,7 +82,7 @@ export default function RecordRunPage() {
     await bleDisconnect();
   }, [bleDisconnect]);
 
-  // Save the run to the database with CSV upload, then reset
+  // Save the run to the database, then reset
   const handleSave = async () => {
     if (!athleteId || !eventType) return;
 
