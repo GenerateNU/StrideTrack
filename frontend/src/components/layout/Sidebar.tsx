@@ -5,7 +5,7 @@ import { useAuth } from "@/context/auth.context";
 import { useTheme } from "@/hooks/useTheme";
 import { ProfileMenu } from "./ProfileMenu";
 import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
-import logo from "@/assets/stridetrack-logo.png";
+import logo from "@/assets/stridetrack_text.png";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -32,9 +32,9 @@ export function Sidebar() {
 
   return (
     <>
-      <aside className="fixed left-0 top-0 hidden h-screen w-56 flex-col border-r border-border bg-card md:flex">
-        <div className="px-5 py-6">
-          <img src={logo} alt="StrideTrack" className="h-11 w-auto" />
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-56 flex-col border-r border-border bg-card md:flex">
+        <div className="px-5 pt-10 pb-6">
+          <img src={logo} alt="StrideTrack" className="h-8 w-auto" />
         </div>
 
         <nav className="flex-1 px-3 py-2">

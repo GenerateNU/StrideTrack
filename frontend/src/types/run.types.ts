@@ -32,3 +32,14 @@ export interface CreateRunPayload {
 }
 
 export type CreateRunResponse = z.infer<typeof createRunResponseSchema>;
+
+export const runMetaSchema = z.object({
+  run_id: z.string().uuid(),
+  athlete_id: z.string().uuid(),
+  event_type: z.string(),
+  created_at: z.string(),
+  name: z.string().nullable(),
+  elapsed_ms: z.number().nullable(),
+});
+
+export type RunMeta = z.infer<typeof runMetaSchema>;

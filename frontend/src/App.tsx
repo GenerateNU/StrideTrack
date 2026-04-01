@@ -3,10 +3,11 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import LoginPage from "@/pages/LoginPage";
 import HomePage from "@/pages/HomePage";
-import RecordingPage from "@/pages/RecordRunPage";
+import RecordRunPage from "@/pages/RecordRunPage";
 import HistoryPage from "@/pages/HistoryPage";
 import AthleteProfilePage from "@/pages/AthleteProfilePage";
 import RunAnalysisPage from "@/pages/RunAnalysisPage";
+import VisualizationsPage from "@/pages/VisualizationsPage";
 
 function App() {
   return (
@@ -20,8 +21,12 @@ function App() {
               <Routes>
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<HomePage />} />
-                  <Route path="/record" element={<RecordingPage />} />
+                  <Route path="/record" element={<RecordRunPage />} />
                   <Route path="/history" element={<HistoryPage />} />
+                  <Route
+                    path="/visualizations"
+                    element={<VisualizationsPage />}
+                  />
                   <Route
                     path="/athletes/:athleteId"
                     element={<AthleteProfilePage />}

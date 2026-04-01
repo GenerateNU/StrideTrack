@@ -95,7 +95,7 @@ export default function AthleteProfilePage() {
             {[
               athlete.height_in ? `${athlete.height_in}"` : null,
               athlete.weight_lbs ? `${athlete.weight_lbs} lbs` : null,
-              `${athleteRuns.length} run${athleteRuns.length !== 1 ? "s" : ""}`,
+              `${athleteRuns.length} recording${athleteRuns.length !== 1 ? "s" : ""}`,
             ]
               .filter(Boolean)
               .join(" · ")}
@@ -115,7 +115,7 @@ export default function AthleteProfilePage() {
                 : "text-muted-foreground"
             }`}
           >
-            {t === "summary" ? "Summary" : "Runs"}
+            {t === "summary" ? "Summary" : "Recordings"}
           </button>
         ))}
       </div>
@@ -131,7 +131,9 @@ export default function AthleteProfilePage() {
               <div className="text-2xl font-bold text-foreground">
                 {athleteRuns.length}
               </div>
-              <div className="text-xs text-muted-foreground">Total Runs</div>
+              <div className="text-xs text-muted-foreground">
+                Total Recordings
+              </div>
             </div>
             <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
               <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
@@ -147,7 +149,7 @@ export default function AthleteProfilePage() {
           {/* Latest run */}
           <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Latest Run
+              Latest Recording
             </p>
             {latestRun ? (
               <button
@@ -178,7 +180,7 @@ export default function AthleteProfilePage() {
               </button>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No runs recorded yet.
+                No events recorded yet.
               </p>
             )}
           </div>
@@ -230,7 +232,7 @@ export default function AthleteProfilePage() {
           {athleteRuns.length === 0 && (
             <div className="rounded-2xl border border-dashed border-border p-12 text-center">
               <p className="text-sm font-medium text-muted-foreground">
-                No runs yet.
+                No events recorded yet.
               </p>
             </div>
           )}

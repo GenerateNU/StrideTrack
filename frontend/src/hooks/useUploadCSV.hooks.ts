@@ -1,0 +1,38 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+
+interface UploadCSVPayload {
+  athleteId: string;
+  eventType: string;
+  file: File;
+}
+
+export function useUploadCSV() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({ athleteId, eventType, file }: UploadCSVPayload) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("athlete_id", athleteId);
+      formData.append("event_type", eventType);
+
+      const response = await api.post("/csv/upload-run", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["runs"] });
+    },
+  });
+
+  return {
+    uploadCSV: mutation.mutateAsync,
+    uploadCSVIsLoading: mutation.isPending,
+    uploadCSVError: mutation.error,
+  };
+}
