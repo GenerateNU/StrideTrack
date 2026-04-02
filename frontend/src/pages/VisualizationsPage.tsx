@@ -25,7 +25,7 @@ import { MeanGCTKPI } from "@/components/charts/universal/MeanGCTKPI";
 import { MeanFTKPI } from "@/components/charts/universal/MeanFTKPI";
 import { MeanRSIKPI } from "@/components/charts/universal/MeanRSIKPI";
 import { GCTRangePieChart } from "@/components/charts/universal/GCTRangePieChart";
-import { InfoCard } from "@/components/charts/InfoCard";
+import { GraphInfoCard } from "@/components/charts/GraphInfoCard";
 import { useRunMetrics } from "@/hooks/useRunMetrics.hooks";
 
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
@@ -70,64 +70,58 @@ function UniversalMetrics() {
       <h1 className="text-3xl font-bold text-foreground">Universal Metrics</h1>
 
       {/* Item 1 — Total Steps */}
-      <TotalStepsKPI runId={HARDCODED_RUN_ID} />
-      <InfoCard text="Basic volume metric." />
+      <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+        <GraphInfoCard description="Basic volume metric." />
+        <TotalStepsKPI runId={HARDCODED_RUN_ID} />
+      </div>
 
       {/* Item 2 — Mean GCT */}
-      <div>
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-          <div className="flex items-start justify-between mb-3">
-            <SectionHeader title="Ground Contact Time — L vs R" />
-            {meanGCT != null && <MeanGCTKPI mean={meanGCT} />}
-          </div>
-          <GroundContactTimeChart runId={HARDCODED_RUN_ID} />
+      <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+        <GraphInfoCard description="Lower is better at max velocity." />
+        <div className="flex items-start justify-between mb-3">
+          <SectionHeader title="Ground Contact Time — L vs R" />
+          {meanGCT != null && <MeanGCTKPI mean={meanGCT} />}
         </div>
-        <InfoCard text="Lower is better at max velocity." />
+        <GroundContactTimeChart runId={HARDCODED_RUN_ID} />
       </div>
 
       {/* Item 3 — Mean FT */}
-      <div>
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-          <div className="flex items-start justify-between mb-3">
-            <SectionHeader title="Flight Time — L vs R" />
-            {meanFT != null && <MeanFTKPI mean={meanFT} />}
-          </div>
-          <FlightTimeChart runId={HARDCODED_RUN_ID} />
+      <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+        <GraphInfoCard description="Context-dependent (sprinting vs jumping)." />
+        <div className="flex items-start justify-between mb-3">
+          <SectionHeader title="Flight Time — L vs R" />
+          {meanFT != null && <MeanFTKPI mean={meanFT} />}
         </div>
-        <InfoCard text="Context-dependent (sprinting vs jumping)." />
+        <FlightTimeChart runId={HARDCODED_RUN_ID} />
       </div>
 
       {/* Item 4 — RSI */}
-      <div>
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-          <div className="flex items-start justify-between mb-3">
-            <SectionHeader title="Reactive Strength Index (RSI)" />
-            {meanRSI != null && <MeanRSIKPI mean={meanRSI} />}
-          </div>
-          <RSIChart runId={HARDCODED_RUN_ID} />
+      <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+        <GraphInfoCard description="Elite sprinters RSI > 1.0 at max velocity." />
+        <div className="flex items-start justify-between mb-3">
+          <SectionHeader title="Reactive Strength Index (RSI)" />
+          {meanRSI != null && <MeanRSIKPI mean={meanRSI} />}
         </div>
-        <InfoCard text="Elite sprinters RSI > 1.0 at max velocity." />
+        <RSIChart runId={HARDCODED_RUN_ID} />
       </div>
 
       {/* Items 5 & 6 — Asymmetry */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
+        <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+          <GraphInfoCard description=">10% may indicate injury risk. Target <5%." />
           <GCTAsymmetryKPI runId={HARDCODED_RUN_ID} />
-          <InfoCard text=">10% may indicate injury risk. Target <5%." />
         </div>
-        <div className="space-y-2">
+        <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+          <GraphInfoCard description="Push-off power imbalance between legs." />
           <FTAsymmetryKPI runId={HARDCODED_RUN_ID} />
-          <InfoCard text="Push-off power imbalance between legs." />
         </div>
       </div>
 
       {/* Item 8 — GCT Range */}
-      <div>
-        <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
-          <SectionHeader title="Steps in GCT Range" />
-          <GCTRangePieChart runId={HARDCODED_RUN_ID} />
-        </div>
-        <InfoCard text="Bucketing done client-side from existing per-step gct_ms data." />
+      <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+        <GraphInfoCard description="Bucketing done client-side from existing per-step gct_ms data." />
+        <SectionHeader title="Steps in GCT Range" />
+        <GCTRangePieChart runId={HARDCODED_RUN_ID} />
       </div>
     </div>
   );
