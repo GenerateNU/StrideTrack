@@ -118,14 +118,19 @@ class RunService:
         ft_asym_list = []
 
         for stride in strides.values():
-            l, r = stride.get("left"), stride.get("right")
-            if l and r:
-                gct_avg = (l.gct_ms + r.gct_ms) / 2
-                ft_avg = (l.flight_ms + r.flight_ms) / 2
+            left = stride.get("left")
+            right = stride.get("right")
+            if left and right:
+                gct_avg = (left.gct_ms + right.gct_ms) / 2
+                ft_avg = (left.flight_ms + right.flight_ms) / 2
                 if gct_avg > 0:
-                    gct_asym_list.append(abs(l.gct_ms - r.gct_ms) / gct_avg * 100)
+                    gct_asym_list.append(
+                        abs(left.gct_ms - right.gct_ms) / gct_avg * 100
+                    )
                 if ft_avg > 0:
-                    ft_asym_list.append(abs(l.flight_ms - r.flight_ms) / ft_avg * 100)
+                    ft_asym_list.append(
+                        abs(left.flight_ms - right.flight_ms) / ft_avg * 100
+                    )
 
         gct_asym = sum(gct_asym_list) / len(gct_asym_list) if gct_asym_list else 0.0
         ft_asym = sum(ft_asym_list) / len(ft_asym_list) if ft_asym_list else 0.0
