@@ -1,5 +1,5 @@
 interface FTDriftCardProps {
-  value: number;
+  value: number | undefined;
   thresholds?: { good: number; warn: number };
 }
 
@@ -14,6 +14,15 @@ export function FTDriftCard({
   value,
   thresholds = { good: 5, warn: 10 },
 }: FTDriftCardProps) {
+  if (value == null) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-lg bg-card border border-border p-5 gap-1 shadow-sm">
+        <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide"></span>
+        <span className="text-2xl font-bold text-muted-foreground">—</span>
+      </div>
+    );
+  }
+
   const colorClass = getDriftColor(value, thresholds.good, thresholds.warn);
   const sign = value > 0 ? "+" : "";
 

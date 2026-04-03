@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
@@ -51,3 +52,12 @@ class RunCreateResponse(BaseModel):
     event_type: str
     elapsed_ms: int | None = None
     created_at: str
+
+
+class RunMeta(BaseModel):
+    run_id: UUID
+    athlete_id: UUID
+    event_type: str
+    created_at: datetime
+    name: str | None = None
+    elapsed_ms: int | None = None
