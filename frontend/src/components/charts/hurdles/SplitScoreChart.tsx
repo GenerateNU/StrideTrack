@@ -34,10 +34,7 @@ function getDeviationColor(athletePct: number, idealPct: number, std: number) {
   return deviation > 0 ? "#ef4444" : "#22c55e";
 }
 
-function CustomTooltip({
-  active,
-  payload,
-}: TooltipProps<number, string>) {
+function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
   if (!active || !payload?.length) return null;
 
   const data = payload[0]?.payload as ChartDataPoint | undefined;
@@ -92,7 +89,10 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
       );
     }
     return (
-      <QueryError error={new Error(String(splitScoreError))} refetch={() => void 0} />
+      <QueryError
+        error={new Error(String(splitScoreError))}
+        refetch={() => void 0}
+      />
     );
   }
   if (!splitScoreData) return null;
