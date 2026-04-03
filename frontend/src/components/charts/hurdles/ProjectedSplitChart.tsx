@@ -64,6 +64,12 @@ export const ProjectedSplitChart = ({ runId }: { runId: string }) => {
     })),
   ];
 
+  const allValues = chartData.map((d) => d.split_ms);
+  const minSplit = Math.min(...allValues);
+  const maxSplit = Math.max(...allValues);
+  const yFloor = Math.floor((minSplit * 0.85) / 10) * 10;
+  const yCeil = Math.ceil((maxSplit * 1.05) / 10) * 10;
+
   const completedValues = completed_splits.map((s) => s.split_ms);
   const mean =
     completedValues.reduce((a, b) => a + b, 0) / completedValues.length;
@@ -114,7 +120,7 @@ export const ProjectedSplitChart = ({ runId }: { runId: string }) => {
             tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <YAxis
-            domain={["auto", "auto"]}
+            domain={[yFloor, yCeil]}
             label={{
               value: "Split Time (ms)",
               angle: -90,

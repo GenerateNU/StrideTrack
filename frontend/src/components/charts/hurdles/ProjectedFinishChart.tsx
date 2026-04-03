@@ -115,7 +115,7 @@ export const ProjectedFinishKPI = ({ runId }: { runId: string }) => {
           <p className="text-xl font-bold text-foreground">
             {formatTime(projected_final_segment_ms)}
           </p>
-          <p className="text-xs text-muted-foreground">fixed estimate</p>
+          <p className="text-xs text-muted-foreground">pace estimate</p>
         </div>
       </div>
     </div>
