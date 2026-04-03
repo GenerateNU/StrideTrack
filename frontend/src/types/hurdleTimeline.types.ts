@@ -1,7 +1,5 @@
 export interface HurdleTimelinePoint {
   time_s: number;
-  left: number | null;
-  right: number | null;
   foot: "left" | "right";
   phase: "ground" | "air";
   gct_ms: number | null;

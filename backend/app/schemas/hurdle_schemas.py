@@ -59,8 +59,6 @@ class GctIncreaseData(BaseModel):
 
 class HurdleTimelinePoint(BaseModel):
     time_s: float
-    left: float | None = None  # 0 = ground, 1 = air, None = no data
-    right: float | None = None
     foot: Literal["left", "right"]
     phase: Literal["ground", "air"]
     gct_ms: int | None = None

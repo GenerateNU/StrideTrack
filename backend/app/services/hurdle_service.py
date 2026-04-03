@@ -121,12 +121,10 @@ class HurdleService:
 
             # Ground phase — two points to make flat bottom
             gt_mid_s = (ic_ms + (to_ms - ic_ms) / 2) / 1000
-            for t in [ic_s, gt_mid_s, to_s - 0.001]:
+            for t in [ic_s, gt_mid_s, to_s]:
                 points.append(
                     HurdleTimelinePoint(
                         time_s=round(t, 4),
-                        left=0.0 if foot == "left" else None,
-                        right=0.0 if foot == "right" else None,
                         foot=foot,
                         phase="ground",
                         gct_ms=gct_ms,
@@ -138,12 +136,10 @@ class HurdleService:
             if ft_ms:
                 ft_mid_s = (to_ms + ft_ms / 2) / 1000  # midpoint of flight
                 ft_end_s = (to_ms + ft_ms) / 1000
-                for t in [to_s, ft_mid_s, ft_end_s - 0.001]:
+                for t in [to_s, ft_mid_s, ft_end_s]:
                     points.append(
                         HurdleTimelinePoint(
                             time_s=round(t, 4),
-                            left=float(ft_ms) if foot == "left" else None,
-                            right=float(ft_ms) if foot == "right" else None,
                             foot=foot,
                             phase="air",
                             gct_ms=None,

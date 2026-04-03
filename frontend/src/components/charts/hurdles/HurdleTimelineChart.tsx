@@ -19,8 +19,6 @@ const COLORS = {
   left: "#f97316",
   right: "#000000",
   hurdles: "#ef4444",
-  gctLabels: "#22c55e",
-  ftLabels: "#a855f7",
 } as const;
 
 const TOGGLE_STYLE = (active: boolean) =>
@@ -30,8 +28,8 @@ const TOGGLE_STYLE = (active: boolean) =>
       : "border-input bg-card text-muted-foreground hover:bg-secondary"
   }`;
 
-const makeGctDot =
-  (show: boolean, color: string) =>
+const makeFootDot =
+  (color: string) =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (props: any) => {
     const { cx, cy, payload, index, data } = props as {
@@ -41,52 +39,40 @@ const makeGctDot =
       index: number;
       data: HurdleTimelinePoint[];
     };
-    if (!show || payload.phase !== "ground" || !payload.gct_ms) return null;
     if (!data) return null;
     const prev = data[index - 1];
-    if (prev && prev.foot === payload.foot && prev.phase === "ground")
-      return null;
-    return (
-      <text
-        key={`gct-${index}`}
-        x={cx}
-        y={cy + 14}
-        textAnchor="middle"
-        fontSize={9}
-        fill={color}
-      >
-        {payload.gct_ms}
-      </text>
-    );
-  };
+    const isFirstOfPhase = !prev || prev.phase !== payload.phase;
+    if (!isFirstOfPhase) return null;
 
-const makeFtDot =
-  (show: boolean, color: string) =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (props: any) => {
-    const { cx, cy, payload, index, data } = props as {
-      cx: number;
-      cy: number;
-      payload: HurdleTimelinePoint;
-      index: number;
-      data: HurdleTimelinePoint[];
-    };
-    if (!show || payload.phase !== "air" || !payload.ft_ms) return null;
-    if (!data) return null;
-    const prev = data[index - 1];
-    if (prev && prev.foot === payload.foot && prev.phase === "air") return null;
-    return (
-      <text
-        key={`ft-${index}`}
-        x={cx}
-        y={cy - 6}
-        textAnchor="middle"
-        fontSize={9}
-        fill={color}
-      >
-        {payload.ft_ms}
-      </text>
-    );
+    if (payload.phase === "ground" && payload.gct_ms) {
+      return (
+        <text
+          key={`gct-${index}`}
+          x={cx}
+          y={cy + 20}
+          textAnchor="middle"
+          fontSize={9}
+          fill={color}
+        >
+          {payload.gct_ms}
+        </text>
+      );
+    }
+    if (payload.phase === "air" && payload.ft_ms) {
+      return (
+        <text
+          key={`ft-${index}`}
+          x={cx}
+          y={cy - 10}
+          textAnchor="middle"
+          fontSize={9}
+          fill={color}
+        >
+          {payload.ft_ms}
+        </text>
+      );
+    }
+    return null;
   };
 
 export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
@@ -106,6 +92,12 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
     );
   if (!timelineData || timelineData.points.length === 0) return null;
 
+  const chartPoints = timelineData.points.map((p) => ({
+    ...p,
+    left: p.foot === "left" ? (p.phase === "air" ? p.ft_ms : 0) : null,
+    right: p.foot === "right" ? (p.phase === "air" ? p.ft_ms : 0) : null,
+  }));
+
   const toggleBtn = (
     label: string,
     active: boolean,
@@ -124,7 +116,6 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
 
   return (
     <div>
-      {/* Toggles */}
       <div className="mb-3 flex flex-wrap gap-2">
         {toggleBtn(
           "Left Foot",
@@ -144,8 +135,8 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
         <div style={{ minWidth: 1200 }}>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart
-              data={timelineData.points}
-              margin={{ top: 20, right: 40, left: 20, bottom: 40 }}
+              data={chartPoints}
+              margin={{ top: 30, right: 40, left: 20, bottom: 40 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -198,7 +189,6 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
                 labelFormatter={(label) => `${(label as number).toFixed(3)}s`}
               />
 
-              {/* Hurdle reference lines */}
               {timelineData.hurdle_markers.map((m) => (
                 <ReferenceLine
                   key={m.hurdle_num}
@@ -220,7 +210,7 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
                   dataKey="left"
                   stroke={COLORS.left}
                   strokeWidth={2}
-                  dot={makeGctDot(true, COLORS.gctLabels)}
+                  dot={makeFootDot(COLORS.left)}
                   connectNulls={false}
                   name="Left"
                 />
@@ -231,7 +221,7 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
                   dataKey="right"
                   stroke={COLORS.right}
                   strokeWidth={2}
-                  dot={makeFtDot(true, COLORS.ftLabels)}
+                  dot={makeFootDot(COLORS.right)}
                   connectNulls={false}
                   name="Right"
                 />
