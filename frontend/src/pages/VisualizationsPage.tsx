@@ -13,6 +13,7 @@ import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
 import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
+import { HurdleTimelineChart } from "@/components/charts/hurdles/HurdleTimelineChart";
 import { useState } from "react";
 import EventHistoryFilterBar from "@/components/charts/EventHistoryFilterBar";
 import { EventHistoryChart } from "@/components/charts/EventHistoryChart";
@@ -189,6 +190,14 @@ export default function VisualizationsPage() {
           <h1 className="text-3xl font-bold mb-8 text-foreground">
             Hurdle Metrics
           </h1>
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Hurdle Timeline
+            </h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <HurdleTimelineChart runId={HARDCODED_HURDLE_RUN_ID} />
+            </div>
+          </div>
 
           <div>
             <h2 className="text-xl font-bold mb-3 text-primary">
