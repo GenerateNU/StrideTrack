@@ -1,5 +1,6 @@
 import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
+import { GraphInfoCard } from "@/components/charts/GraphInfoCard";
 import { useHurdleProjection } from "@/hooks/useHurdleMetrics.hooks";
 
 const formatTime = (ms: number): string => {
@@ -69,7 +70,8 @@ export const ProjectedFinishKPI = ({ runId }: { runId: string }) => {
 
   return (
     <div className="space-y-3">
-      <div className="bg-card border border-border rounded-lg p-6 text-center">
+      <div className="relative bg-card border border-border rounded-lg p-6 text-center">
+        <GraphInfoCard description="Confidence is based on how many hurdles were completed, data quality, and how many race phases (acceleration, peak speed, fatigue) the data covers. It increases as the athlete completes more hurdles across more phases." />
         <p className="text-sm text-muted-foreground mb-1">
           Projected Finish Time ({targetLabel})
         </p>
