@@ -5,7 +5,7 @@ export const runResponseSchema = z.object({
   run_id: z.string(),
   athlete_id: z.string(),
   event_type: z.string(),
-  elapsed_ms: z.number().nullable().optional(),
+  elapsed_ms: z.number(),
   created_at: z.string(),
 });
 
@@ -39,7 +39,7 @@ export const runMetaSchema = z.object({
   event_type: z.string(),
   created_at: z.string(),
   name: z.string().nullable(),
-  elapsed_ms: z.number().nullable(),
+  elapsed_ms: z.number(),
 });
 
 export type RunMeta = z.infer<typeof runMetaSchema>;

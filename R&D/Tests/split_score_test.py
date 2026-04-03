@@ -518,6 +518,10 @@ def main() -> None:
 
     hurdle_analyzer = RaceAnalyzer(hurdle_races, "400mH")
     sprint_analyzer = RaceAnalyzer(sprint_races, "400m")
+    print("400mH mean:", np.round(hurdle_analyzer.population.mean(0), 4).tolist())
+    print("400mH std: ", np.round(hurdle_analyzer.population.std(0),  4).tolist())
+    print("400m  mean:", np.round(sprint_analyzer.population.mean(0), 4).tolist())
+    print("400m  std: ", np.round(sprint_analyzer.population.std(0),  4).tolist())
 
     for analyzer, mock_runs in [
         (hurdle_analyzer, MOCK_400MH_RUNS),

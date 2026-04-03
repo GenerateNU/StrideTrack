@@ -13,6 +13,7 @@ import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
 import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
+import { SplitScoreChart } from "@/components/charts/hurdles/SplitScoreChart";
 import { ReactionTimeCard } from "@/components/charts/reaction_time/ReactionTimeCard";
 import { HurdleTimelineChart } from "@/components/charts/hurdles/HurdleTimelineChart";
 import { useState } from "react";
@@ -249,6 +250,15 @@ export default function VisualizationsPage() {
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
               <GctIncreaseChart runId={HARDCODED_HURDLE_RUN_ID} />
             </div>
+          </div>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold mb-3 text-primary">
+            Split Score Analysis
+          </h2>
+          <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+            <GraphInfoCard description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range." />
+            <SplitScoreChart runId={HARDCODED_HURDLE_RUN_ID} />
           </div>
         </div>
 

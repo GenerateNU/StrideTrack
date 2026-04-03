@@ -9,6 +9,7 @@ from app.core.exceptions import (
     InvalidTokenException,
     NotACoachException,
     NotFoundException,
+    UnsupportedEventError,
 )
 
 
@@ -46,3 +47,12 @@ async def dev_user_not_allowed_handler(
 
 async def not_a_coach_handler(_: Request, __: NotACoachException) -> JSONResponse:
     return JSONResponse(status_code=403, content={"detail": "User is not a coach"})
+
+
+async def unsupported_event_handler(
+    _: Request, exc: UnsupportedEventError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": str(exc)},
+    )

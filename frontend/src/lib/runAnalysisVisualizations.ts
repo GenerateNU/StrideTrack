@@ -11,6 +11,7 @@ import { LandingGctChart } from "@/components/charts/hurdles/LandingGctChart";
 import { StepsBetweenHurdlesChart } from "@/components/charts/hurdles/StepsBetweenHurdlesChart";
 import { TakeoffFtChart } from "@/components/charts/hurdles/TakeoffFtChart";
 import { TakeoffGctChart } from "@/components/charts/hurdles/TakeoffGctChart";
+import { SplitScoreChart } from "@/components/charts/hurdles/SplitScoreChart";
 
 // Sprint charts
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
@@ -42,6 +43,7 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     { title: "FT Drift", component: FTDriftCard },
     { title: "GCT Drift", component: GCTDriftCard },
     { title: "Step Frequency", component: StepFrequencyChart },
+    { title: "Split Score Analysis", component: SplitScoreChart },
   ],
   hurdles: [
     ...DEFAULT_CHARTS,
@@ -51,6 +53,7 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     { title: "Steps Between Hurdles", component: StepsBetweenHurdlesChart },
     { title: "Takeoff Flight Time", component: TakeoffFtChart },
     { title: "Takeoff GCT", component: TakeoffGctChart },
+    { title: "Split Score Analysis", component: SplitScoreChart },
   ],
   bosco: [
     ...DEFAULT_CHARTS,
