@@ -23,20 +23,14 @@ export const EventHistoryChart = ({
   filters,
   enabled,
 }: EventHistoryChartProps) => {
-  const { eventHistory, eventHistoryError, eventHistoryRefetch } =
+  const { eventHistory, eventHistoryIsLoading, eventHistoryError, eventHistoryRefetch } =
     useEventHistory(filters, enabled);
-
+  if (eventHistoryIsLoading) return <QueryLoading />;
   if (eventHistoryError)
     return (
       <QueryError error={eventHistoryError} refetch={eventHistoryRefetch} />
     );
-  const { eventHistory, eventHistoryIsLoading, eventHistoryError } =
-    useEventHistory(filters, enabled);
-
-  if (eventHistoryIsLoading) return <QueryLoading />;
-  if (eventHistoryError) return null;
   if (!eventHistory || eventHistory.data_points.length === 0) return null;
-
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={eventHistory.data_points}>
