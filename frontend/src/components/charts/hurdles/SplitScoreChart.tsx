@@ -33,7 +33,10 @@ function getDeviationColor(athletePct: number, idealPct: number, std: number) {
   return deviation > 0 ? "#ef4444" : "#22c55e";
 }
 
-function CustomTooltip(props: { active?: boolean; payload?: Array<{ payload: ChartDataPoint }> }) {
+function CustomTooltip(props: {
+  active?: boolean;
+  payload?: Array<{ payload: ChartDataPoint }>;
+}) {
   const { active, payload } = props;
   if (!active || !payload?.length) return null;
 
