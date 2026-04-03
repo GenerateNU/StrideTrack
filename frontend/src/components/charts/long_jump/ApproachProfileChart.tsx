@@ -110,10 +110,20 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
         ))}
       </div>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={rows} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+        <LineChart
+          data={rows}
+          margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-          <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-          <YAxis unit="ms" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} domain={["auto", "auto"]} />
+          <XAxis
+            dataKey="label"
+            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+          />
+          <YAxis
+            unit="ms"
+            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            domain={["auto", "auto"]}
+          />
           <Tooltip
             contentStyle={{
               background: "var(--card)",
@@ -121,10 +131,12 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={((value: unknown, name: unknown) => [
-              value != null ? `${String(value)} ms` : "N/A",
-              name === "left" ? "Left" : "Right",
-            ]) as never}
+            formatter={
+              ((value: unknown, name: unknown) => [
+                value != null ? `${String(value)} ms` : "N/A",
+                name === "left" ? "Left" : "Right",
+              ]) as never
+            }
           />
           <ReferenceLine
             x={`S${finalStrideIndex}`}
@@ -137,8 +149,24 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
               fill: "#f59e0b",
             }}
           />
-          <Line type="monotone" dataKey="left" stroke={LEFT_COLOR} strokeWidth={2} dot={<CustomDot />} connectNulls name="left" />
-          <Line type="monotone" dataKey="right" stroke={RIGHT_COLOR} strokeWidth={2} dot={<CustomDot />} connectNulls name="right" />
+          <Line
+            type="monotone"
+            dataKey="left"
+            stroke={LEFT_COLOR}
+            strokeWidth={2}
+            dot={<CustomDot />}
+            connectNulls
+            name="left"
+          />
+          <Line
+            type="monotone"
+            dataKey="right"
+            stroke={RIGHT_COLOR}
+            strokeWidth={2}
+            dot={<CustomDot />}
+            connectNulls
+            name="right"
+          />
         </LineChart>
       </ResponsiveContainer>
       <p className="text-xs text-muted-foreground mt-2 text-center">

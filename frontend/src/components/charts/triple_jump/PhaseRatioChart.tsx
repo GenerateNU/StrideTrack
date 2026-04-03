@@ -79,10 +79,12 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={((value: unknown, name: unknown) => [
-              value != null ? `${Number(value).toFixed(1)}%` : "N/A",
-              String(name).charAt(0).toUpperCase() + String(name).slice(1),
-            ]) as never}
+            formatter={
+              ((value: unknown, name: unknown) => [
+                value != null ? `${Number(value).toFixed(1)}%` : "N/A",
+                String(name).charAt(0).toUpperCase() + String(name).slice(1),
+              ]) as never
+            }
           />
           <Legend
             formatter={(v) => v.charAt(0).toUpperCase() + v.slice(1)}
@@ -132,10 +134,14 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
             </div>
             <div className="text-xl font-bold text-foreground">
               {data?.ft_ms ?? "—"}
-              <span className="text-xs font-normal text-muted-foreground ml-1">ms</span>
+              <span className="text-xs font-normal text-muted-foreground ml-1">
+                ms
+              </span>
             </div>
             <div className="text-xs text-muted-foreground">
-              {data?.ratio_pct != null ? `${data.ratio_pct.toFixed(1)}% of total` : "—"}
+              {data?.ratio_pct != null
+                ? `${data.ratio_pct.toFixed(1)}% of total`
+                : "—"}
             </div>
           </div>
         ))}

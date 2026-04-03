@@ -111,10 +111,12 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
             borderRadius: 6,
             fontSize: 12,
           }}
-          formatter={((value: unknown, name: unknown) => [
-            value != null ? `${String(value)} ms` : "N/A",
-            name === dataKeys.left ? leftLabel : rightLabel,
-          ]) as never}
+          formatter={
+            ((value: unknown, name: unknown) => [
+              value != null ? `${String(value)} ms` : "N/A",
+              name === dataKeys.left ? leftLabel : rightLabel,
+            ]) as never
+          }
         />
         <Legend
           formatter={(v) => (v === dataKeys.left ? "Left" : "Right")}
