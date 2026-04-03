@@ -21,7 +21,7 @@ export function useTripleJumpMetrics(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<TripleJumpMetricRow>(
-        `/api/run/athletes/${runId}/metrics/triple-jump`
+        `/run/athletes/${runId}/metrics/triple-jump`
       );
       return validateResponse(response.data, tripleJumpMetricRowSchema);
     },
@@ -42,7 +42,7 @@ export function useTjPhaseRatio(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<PhaseRatioData[]>(
-        `/api/run/athletes/${runId}/metrics/triple-jump/phase-ratio`
+        `/run/athletes/${runId}/metrics/triple-jump/phase-ratio`
       );
       return validateResponse(response.data, z.array(phaseRatioDataSchema));
     },
@@ -63,7 +63,7 @@ export function useTjContactEfficiency(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<TjContactEfficiencyData>(
-        `/api/run/athletes/${runId}/metrics/triple-jump/contact-efficiency`
+        `/run/athletes/${runId}/metrics/triple-jump/contact-efficiency`
       );
       return validateResponse(response.data, tjContactEfficiencySchema);
     },
@@ -84,7 +84,7 @@ export function useTjStepSeries(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<StepSeriesPoint[]>(
-        `/api/run/athletes/${runId}/metrics/triple-jump/universal/steps`
+        `/run/athletes/${runId}/metrics/triple-jump/universal/steps`
       );
       return validateResponse(response.data, z.array(stepSeriesPointSchema));
     },

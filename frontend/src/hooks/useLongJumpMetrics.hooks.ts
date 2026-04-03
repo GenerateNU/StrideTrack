@@ -21,7 +21,7 @@ export function useLongJumpMetrics(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<LongJumpMetricRow>(
-        `/api/run/athletes/${runId}/metrics/long-jump`
+        `/run/athletes/${runId}/metrics/long-jump`
       );
       return validateResponse(response.data, longJumpMetricRowSchema);
     },
@@ -42,7 +42,7 @@ export function useLjTakeoffData(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<LjTakeoffData>(
-        `/api/run/athletes/${runId}/metrics/long-jump/takeoff`
+        `/run/athletes/${runId}/metrics/long-jump/takeoff`
       );
       return validateResponse(response.data, ljTakeoffDataSchema);
     },
@@ -63,7 +63,7 @@ export function useLjApproachProfile(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<ApproachProfilePoint[]>(
-        `/api/run/athletes/${runId}/metrics/long-jump/approach-profile`
+        `/run/athletes/${runId}/metrics/long-jump/approach-profile`
       );
       return validateResponse(
         response.data,
@@ -87,7 +87,7 @@ export function useLjStepSeries(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<StepSeriesPoint[]>(
-        `/api/run/athletes/${runId}/metrics/long-jump/universal/steps`
+        `/run/athletes/${runId}/metrics/long-jump/universal/steps`
       );
       return validateResponse(response.data, z.array(stepSeriesPointSchema));
     },

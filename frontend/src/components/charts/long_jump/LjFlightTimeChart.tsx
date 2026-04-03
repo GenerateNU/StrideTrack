@@ -1,7 +1,7 @@
 import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
 import {
-  useLjApproachProfile,
+  useLjStepSeries,
   useLongJumpMetrics,
 } from "@/hooks/useLongJumpMetrics.hooks";
 import {
@@ -16,104 +16,99 @@ import {
   YAxis,
 } from "recharts";
 
-const LEFT_COLOR = "#3b82f6";
-const RIGHT_COLOR = "#f97316";
+const LEFT_COLOR = "#f97316";
+const RIGHT_COLOR = "#000000";
 
-interface ChartRow {
-  label: string;
+interface StepRow {
+  label: number;
   left: number | null;
   right: number | null;
   phase: string;
+  foot: string;
 }
 
 interface CustomDotProps {
   cx?: number;
   cy?: number;
-  payload?: ChartRow;
+  payload?: StepRow;
 }
 
 const CustomDot = (props: CustomDotProps) => {
   const { cx, cy, payload } = props;
   if (cx === undefined || cy === undefined || !payload) return null;
   const isTakeoff = payload.phase === "takeoff";
-  const isPenultimate = payload.phase === "penultimate";
   if (isTakeoff)
     return (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={8}
-        fill="#ef4444"
-        stroke="#fff"
-        strokeWidth={2}
-      />
+      <circle cx={cx} cy={cy} r={8} fill="#22c55e" stroke="#fff" strokeWidth={2} />
     );
-  if (isPenultimate)
-    return (
-      <circle
-        cx={cx}
-        cy={cy}
-        r={5}
-        fill="#f97316"
-        stroke="#fff"
-        strokeWidth={1.5}
-      />
-    );
-  return <circle cx={cx} cy={cy} r={3} fill="var(--primary)" opacity={0.6} />;
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={3}
+      fill={payload.foot === "left" ? LEFT_COLOR : RIGHT_COLOR}
+      opacity={0.6}
+    />
+  );
 };
 
 export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
-  const { approachData, approachLoading, approachError, refetchApproachData } =
-    useLjApproachProfile(runId);
+  const { stepSeriesData, stepSeriesLoading, stepSeriesError, refetchStepSeriesData } =
+    useLjStepSeries(runId);
   const { ljMetrics, ljMetricsLoading } = useLongJumpMetrics(runId);
 
-  if (approachLoading || ljMetricsLoading) return <QueryLoading />;
-  if (approachError)
+  if (stepSeriesLoading || ljMetricsLoading) return <QueryLoading />;
+  if (stepSeriesError)
     return (
       <QueryError
-        error={approachError as Error}
-        refetch={() => void refetchApproachData()}
+        error={stepSeriesError as Error}
+        refetch={() => void refetchStepSeriesData()}
       />
     );
-  if (!approachData) return null;
+  if (!stepSeriesData) return null;
 
-  const strideNums = [...new Set(approachData.map((d) => d.stride_num))].sort(
-    (a, b) => a - b
-  );
-  const rows: ChartRow[] = strideNums.map((stride) => {
-    const leftStep = approachData.find(
-      (d) => d.stride_num === stride && d.foot === "left"
-    );
-    const rightStep = approachData.find(
-      (d) => d.stride_num === stride && d.foot === "right"
-    );
-    return {
-      label: `S${stride}`,
-      left: leftStep?.gct_ms ?? null,
-      right: rightStep?.gct_ms ?? null,
-      phase: leftStep?.phase ?? rightStep?.phase ?? "approach",
-    };
-  });
+  const sorted = [...stepSeriesData].sort((a, b) => a.ic_time - b.ic_time);
+  const rows: StepRow[] = sorted.map((d, i) => ({
+    label: i + 1,
+    left: d.foot === "left" ? (d.flight_ms ?? null) : null,
+    right: d.foot === "right" ? (d.flight_ms ?? null) : null,
+    phase: "approach",
+    foot: d.foot,
+  }));
 
-  const takeoffLabel = rows.find((r) => r.phase === "takeoff")?.label;
   const jumpFtMs = ljMetrics?.jump_ft_ms;
+  const takeoffRow = rows[rows.length - 1];
 
   return (
     <div className="w-full">
       <ResponsiveContainer width="100%" height={300}>
         <LineChart
           data={rows}
-          margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
+          margin={{ top: 8, right: 80, left: 16, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
             dataKey="label"
             tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            label={{
+              value: "Step Number",
+              position: "insideBottom",
+              offset: -5,
+              fontSize: 11,
+              fill: "var(--muted-foreground)",
+            }}
           />
           <YAxis
-            unit="ms"
             tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
             domain={["auto", "auto"]}
+            label={{
+              value: "Flight Time (ms)",
+              angle: -90,
+              position: "insideLeft",
+              offset: -4,
+              fontSize: 11,
+              fill: "var(--muted-foreground)",
+            }}
           />
           <Tooltip
             contentStyle={{
@@ -122,27 +117,30 @@ export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={
-              ((value: unknown, name: unknown) => [
-                value != null ? `${String(value)} ms` : "N/A",
-                name === "left" ? "Left" : "Right",
-              ]) as never
-            }
+            formatter={((value: unknown, name: unknown) => [
+              value != null ? `${String(value)} ms` : "N/A",
+              name === "left" ? "Left" : "Right",
+            ]) as never}
           />
           <Legend
-            formatter={(v) => (v === "left" ? "Left" : "Right")}
-            wrapperStyle={{ fontSize: 12 }}
+            verticalAlign="bottom"
+            align="center"
+            wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 60 }}
+            iconType="circle"
+            iconSize={8}
+            formatter={(v) => (v === "left" ? "Left Foot" : "Right Foot")}
           />
-          {takeoffLabel && (
+          {takeoffRow && (
             <ReferenceLine
-              x={takeoffLabel}
-              stroke="#ef4444"
+              x={takeoffRow.label}
+              stroke="#22c55e"
               strokeDasharray="4 2"
               label={{
-                value: jumpFtMs ? `Takeoff → ${jumpFtMs}ms jump` : "Takeoff",
-                position: "insideTopRight",
+                value: jumpFtMs ? `Takeoff → ${jumpFtMs}ms` : "Takeoff",
+                position: "insideTopLeft",
+                dx: -90,
                 fontSize: 10,
-                fill: "#ef4444",
+                fill: "#22c55e",
               }}
             />
           )}
@@ -166,23 +164,6 @@ export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
           />
         </LineChart>
       </ResponsiveContainer>
-      <div className="flex items-center gap-5 mt-3 justify-center text-xs text-muted-foreground">
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block w-3 h-3 rounded-full bg-red-500" />
-          Takeoff step
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="inline-block w-3 h-3 rounded-full bg-orange-500" />
-          Penultimate step
-        </div>
-        {jumpFtMs && (
-          <div className="flex items-center gap-1.5">
-            <span className="font-medium text-foreground">
-              Jump flight: {jumpFtMs} ms
-            </span>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

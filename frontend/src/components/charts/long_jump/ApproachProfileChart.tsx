@@ -3,6 +3,7 @@ import { QueryLoading } from "@/components/QueryLoading";
 import { useLjApproachProfile } from "@/hooks/useLongJumpMetrics.hooks";
 import {
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
   ReferenceLine,
@@ -12,14 +13,14 @@ import {
   YAxis,
 } from "recharts";
 
-const LEFT_COLOR = "#3b82f6";
-const RIGHT_COLOR = "#f97316";
+const LEFT_COLOR = "#f97316";
+const RIGHT_COLOR = "#000000";
 
 const PHASE_COLORS: Record<string, string> = {
-  approach: "hsl(var(--primary))",
-  antepenultimate: "#f59e0b",
-  penultimate: "#f97316",
-  takeoff: "#ef4444",
+  approach: "#000000",
+  antepenultimate: "#facc15",
+  penultimate: "#ef4444",
+  takeoff: "#22c55e",
 };
 
 const PHASE_LABELS: Record<string, string> = {
@@ -29,25 +30,24 @@ const PHASE_LABELS: Record<string, string> = {
   takeoff: "Takeoff",
 };
 
-interface ChartRow {
-  index: number;
-  label: string;
+interface StepRow {
+  label: number;
   left: number | null;
   right: number | null;
   phase: string;
+  foot: string;
 }
 
 interface CustomDotProps {
   cx?: number;
   cy?: number;
-  payload?: ChartRow;
-  dataKey?: string;
+  payload?: StepRow;
 }
 
 const CustomDot = (props: CustomDotProps) => {
   const { cx, cy, payload } = props;
   if (cx === undefined || cy === undefined || !payload) return null;
-  const color = PHASE_COLORS[payload.phase] ?? "hsl(var(--primary))";
+  const color = PHASE_COLORS[payload.phase] ?? "#000000";
   const isHighlighted = payload.phase !== "approach";
   return (
     <circle
@@ -75,26 +75,16 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
     );
   if (!approachData) return null;
 
-  const strideNums = [...new Set(approachData.map((d) => d.stride_num))].sort(
-    (a, b) => a - b
-  );
-  const rows: ChartRow[] = strideNums.map((stride) => {
-    const leftStep = approachData.find(
-      (d) => d.stride_num === stride && d.foot === "left"
-    );
-    const rightStep = approachData.find(
-      (d) => d.stride_num === stride && d.foot === "right"
-    );
-    return {
-      index: stride,
-      label: `S${stride}`,
-      left: leftStep?.gct_ms ?? null,
-      right: rightStep?.gct_ms ?? null,
-      phase: leftStep?.phase ?? rightStep?.phase ?? "approach",
-    };
-  });
+  const sorted = [...approachData].sort((a, b) => a.ic_time - b.ic_time);
+  const rows: StepRow[] = sorted.map((d, i) => ({
+    label: i + 1,
+    left: d.foot === "left" ? d.gct_ms : null,
+    right: d.foot === "right" ? d.gct_ms : null,
+    phase: d.phase,
+    foot: d.foot,
+  }));
 
-  const finalStrideIndex = strideNums[strideNums.length - 3] ?? 0;
+  const finalStepLabel = rows.length >= 3 ? rows[rows.length - 3].label : null;
 
   return (
     <div className="w-full">
@@ -112,17 +102,33 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
       <ResponsiveContainer width="100%" height={300}>
         <LineChart
           data={rows}
-          margin={{ top: 8, right: 16, left: 0, bottom: 0 }}
+          margin={{ top: 8, right: 16, left: 16, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
           <XAxis
             dataKey="label"
             tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            label={{
+              value: "Step Number",
+              position: "insideBottom",
+              offset: -5,
+              style: { fill: "var(--muted-foreground)", fontSize: 10 },
+            }}
           />
           <YAxis
-            unit="ms"
             tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
             domain={["auto", "auto"]}
+            label={{
+              value: "GCT (ms)",
+              angle: -90,
+              position: "insideLeft",
+              offset: 0,
+              style: {
+                fill: "var(--muted-foreground)",
+                fontSize: 10,
+                textAnchor: "middle",
+              },
+            }}
           />
           <Tooltip
             contentStyle={{
@@ -131,24 +137,32 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={
-              ((value: unknown, name: unknown) => [
-                value != null ? `${String(value)} ms` : "N/A",
-                name === "left" ? "Left" : "Right",
-              ]) as never
-            }
+            formatter={((value: unknown, name: unknown) => [
+              value != null ? `${String(value)} ms` : "N/A",
+              name === "left" ? "Left" : "Right",
+            ]) as never}
           />
-          <ReferenceLine
-            x={`S${finalStrideIndex}`}
-            stroke="#f59e0b"
-            strokeDasharray="4 2"
-            label={{
-              value: "Final 3 Steps",
-              position: "insideTopRight",
-              fontSize: 10,
-              fill: "#f59e0b",
-            }}
+          <Legend
+            verticalAlign="bottom"
+            align="center"
+            wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 60 }}
+            iconType="circle"
+            iconSize={8}
+            formatter={(v) => (v === "left" ? "Left Foot" : "Right Foot")}
           />
+          {finalStepLabel && (
+            <ReferenceLine
+              x={finalStepLabel}
+              stroke="#f59e0b"
+              strokeDasharray="4 2"
+              label={{
+                value: "Final 3 Steps",
+                position: "insideTopRight",
+                fontSize: 10,
+                fill: "#f59e0b",
+              }}
+            />
+          )}
           <Line
             type="monotone"
             dataKey="left"
@@ -169,9 +183,6 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
           />
         </LineChart>
       </ResponsiveContainer>
-      <p className="text-xs text-muted-foreground mt-2 text-center">
-        GCT decreasing into takeoff — final 3 steps highlighted
-      </p>
     </div>
   );
 };

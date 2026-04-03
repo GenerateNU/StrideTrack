@@ -5,7 +5,6 @@ import {
   Bar,
   BarChart,
   LabelList,
-  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -79,18 +78,13 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={
-              ((value: unknown, name: unknown) => [
-                value != null ? `${Number(value).toFixed(1)}%` : "N/A",
-                String(name).charAt(0).toUpperCase() + String(name).slice(1),
-              ]) as never
-            }
+            formatter={((value: unknown, name: unknown) => [
+              value != null ? `${Number(value).toFixed(1)}%` : "N/A",
+              String(name).charAt(0).toUpperCase() + String(name).slice(1),
+            ]) as never}
           />
-          <Legend
-            formatter={(v) => v.charAt(0).toUpperCase() + v.slice(1)}
-            wrapperStyle={{ fontSize: 12 }}
-          />
-          <Bar dataKey="hop" stackId="a" fill={PHASE_COLORS.hop} name="hop">
+          {/* Custom legend — fixed order Hop → Step → Jump */}
+          <Bar dataKey="hop" stackId="a" fill={PHASE_COLORS.hop} name="Hop">
             <LabelList
               dataKey="hop"
               position="center"
@@ -98,7 +92,7 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
               style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
             />
           </Bar>
-          <Bar dataKey="step" stackId="a" fill={PHASE_COLORS.step} name="step">
+          <Bar dataKey="step" stackId="a" fill={PHASE_COLORS.step} name="Step">
             <LabelList
               dataKey="step"
               position="center"
@@ -106,7 +100,7 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
               style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
             />
           </Bar>
-          <Bar dataKey="jump" stackId="a" fill={PHASE_COLORS.jump} name="jump">
+          <Bar dataKey="jump" stackId="a" fill={PHASE_COLORS.jump} name="Jump">
             <LabelList
               dataKey="jump"
               position="center"
@@ -116,6 +110,24 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
+
+      {/* Manual legend in correct order */}
+      <div className="flex justify-center gap-4 text-xs mt-1">
+        {[
+          { label: "Hop", color: PHASE_COLORS.hop },
+          { label: "Step", color: PHASE_COLORS.step },
+          { label: "Jump", color: PHASE_COLORS.jump },
+        ].map(({ label, color }) => (
+          <div key={label} className="flex items-center gap-1.5">
+            <span
+              className="inline-block w-3 h-3 rounded-sm"
+              style={{ backgroundColor: color }}
+            />
+            <span style={{ color: "var(--muted-foreground)" }}>{label}</span>
+          </div>
+        ))}
+      </div>
+
       <div className="grid grid-cols-3 gap-3">
         {[
           { phase: "Hop", data: hop, color: PHASE_COLORS.hop },
@@ -134,14 +146,10 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
             </div>
             <div className="text-xl font-bold text-foreground">
               {data?.ft_ms ?? "—"}
-              <span className="text-xs font-normal text-muted-foreground ml-1">
-                ms
-              </span>
+              <span className="text-xs font-normal text-muted-foreground ml-1">ms</span>
             </div>
             <div className="text-xs text-muted-foreground">
-              {data?.ratio_pct != null
-                ? `${data.ratio_pct.toFixed(1)}% of total`
-                : "—"}
+              {data?.ratio_pct != null ? `${data.ratio_pct.toFixed(1)}% of total` : "—"}
             </div>
           </div>
         ))}
