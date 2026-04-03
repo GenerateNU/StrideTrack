@@ -20,24 +20,26 @@ class AthleteRepository:
         self.supabase = supabase
         self.table = "athletes"
 
-    async def get_all(self) -> list[AthleteResponse]:
+    async def get_all(self, coach_id: UUID) -> list[AthleteResponse]:
         """Get all athletes."""
         logger.info("Repository: Fetching all athletes")
         response = (
             await self.supabase.table(self.table)
             .select("*")
+            .eq("coach_id", str(coach_id))
             .order("created_at", desc=True)
             .execute()
         )
         logger.info(f"Repository: Found {len(response.data)} athletes")
         return [AthleteResponse(**athlete) for athlete in response.data]
 
-    async def get_by_id(self, athlete_id: UUID) -> AthleteResponse:
+    async def get_by_id(self, athlete_id: UUID, coach_id: UUID) -> AthleteResponse:
         """Get an athlete by ID."""
         logger.info(f"Repository: Fetching athlete {athlete_id}")
         response = (
             await self.supabase.table(self.table)
             .select("*")
+            .eq("coach_id", str(coach_id))
             .eq("athlete_id", str(athlete_id))
             .execute()
         )
@@ -49,18 +51,20 @@ class AthleteRepository:
         logger.info(f"Repository: Found athlete {athlete_id}")
         return AthleteResponse(**response.data[0])
 
-    async def create(self, athlete_create: AthleteCreate) -> AthleteResponse:
+    async def create(
+        self, athlete_create: AthleteCreate, coach_id: UUID
+    ) -> AthleteResponse:
         """Create a new athlete."""
         logger.info(f"Repository: Creating athlete {athlete_create.name}")
         data = athlete_create.model_dump()
-        data["coach_id"] = str(data["coach_id"])
+        data["coach_id"] = str(coach_id)
         response = await self.supabase.table(self.table).insert(data).execute()
         created = response.data[0]
         logger.info(f"Repository: Created athlete {created['athlete_id']}")
         return AthleteResponse(**created)
 
     async def update(
-        self, athlete_id: UUID, athlete_update: AthleteUpdate
+        self, athlete_id: UUID, athlete_update: AthleteUpdate, coach_id: UUID
     ) -> AthleteResponse:
         """Update an athlete."""
         logger.info(f"Repository: Updating athlete {athlete_id}")
@@ -68,6 +72,7 @@ class AthleteRepository:
         response = (
             await self.supabase.table(self.table)
             .update(data)
+            .eq("coach_id", str(coach_id))
             .eq("athlete_id", str(athlete_id))
             .execute()
         )
@@ -80,12 +85,13 @@ class AthleteRepository:
         logger.info(f"Repository: Updated athlete {athlete_id}")
         return AthleteResponse(**updated)
 
-    async def delete(self, athlete_id: UUID) -> None:
+    async def delete(self, athlete_id: UUID, coach_id: UUID) -> None:
         """Delete an athlete."""
         logger.info(f"Repository: Deleting athlete {athlete_id}")
         response = (
             await self.supabase.table(self.table)
             .delete()
+            .eq("coach_id", str(coach_id))
             .eq("athlete_id", str(athlete_id))
             .execute()
         )
