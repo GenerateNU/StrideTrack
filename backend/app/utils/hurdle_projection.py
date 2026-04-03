@@ -5,18 +5,18 @@ import numpy as np
 from app.schemas.hurdle_schemas import HurdleMetricRow
 
 
-# Per-event race parameters and normalised three-phase split templates.
- 
+
 # The athlete covers ground faster per metre than during hurdled segments.
 SPRINT_SCALAR: float = 0.98
- 
+
+# Per-event race parameters and normalised three-phase split templates
 EVENT_CONFIG: dict[str, dict] = {
     "hurdles_60m": {
         "hurdle_count": 5,
         "inter_hurdle_m": 9.14,
-        "final_segment_m": 8.72, # 9.72m,  ~1m landing offset
+        "final_segment_m": 8.72, # 9.72m, ~1m landing offset
         "phase_boundaries": (3, 4),
-        "template_ratios": [1.12, 1.03, 0.97, 0.95, 0.97],
+        "template_ratios": [0.0, 1.03, 1.00, 0.98, 0.99],
     },
     "hurdles_100m": {
         "hurdle_count": 10,
@@ -24,9 +24,10 @@ EVENT_CONFIG: dict[str, dict] = {
         "final_segment_m": 9.50, # 10.50m, ~1m landing offset
         "phase_boundaries": (4, 7),
         "template_ratios": [
-            1.15, 1.06, 1.00, 0.97, # acceleration  (H1-H4)
-            0.95, 0.95, 0.96,       # peak speed    (H5-H7)
-            0.97, 0.99, 1.00,       # fatigue       (H8-H10)
+            0.0,
+            1.02, 1.00, 0.98, # acceleration  (H1-H3)
+            0.98, 0.98, 0.99, # peak speed    (H4-H6)
+            1.00, 1.02, 1.03, # fatigue       (H7-H9)
         ],
     },
     "hurdles_110m": {
@@ -35,20 +36,22 @@ EVENT_CONFIG: dict[str, dict] = {
         "final_segment_m": 13.02, # 14.02m, ~1m landing offset
         "phase_boundaries": (4, 7),
         "template_ratios": [
-            1.15, 1.05, 1.00, 0.97,
-            0.95, 0.95, 0.96,
-            0.97, 0.99, 1.00,
+            0.0,
+            1.02, 1.00, 0.98,
+            0.98, 0.98, 0.99,
+            1.00, 1.02, 1.03,
         ],
     },
     "hurdles_400m": {
         "hurdle_count": 10,
         "inter_hurdle_m": 35.0,
         "final_segment_m": 39.0, # 40m, ~1m landing offset
-        "phase_boundaries": (3, 7),
+        "phase_boundaries": (4, 7),
         "template_ratios": [
-            1.10, 1.03, 0.98,
-            0.95, 0.94, 0.95, 0.96,
-            0.99, 1.02, 1.06,
+            0.0,
+            1.03, 1.00, 0.97,
+            0.96, 0.96, 0.97,
+            0.99, 1.03, 1.09,
         ],
     },
 }
@@ -154,11 +157,11 @@ def _estimate_final_segment(
     there are no hurdles to clear."""
     if not all_splits_ms:
         return 0
- 
+
     # Use the last 2 splits (or all if fewer) to capture late-race pace
     late_splits = all_splits_ms[-2:] if len(all_splits_ms) >= 2 else all_splits_ms
     avg_late_ms = sum(late_splits) / len(late_splits)
- 
+
     ms_per_m = avg_late_ms / inter_hurdle_m
     return int(round(ms_per_m * final_segment_m * SPRINT_SCALAR))
 
@@ -174,14 +177,14 @@ def project_hurdle_race(
             f"Unknown target event '{target_event}'. "
             f"Must be one of {sorted(EVENT_CONFIG.keys())}"
         )
- 
+
     config = EVENT_CONFIG[target_event]
     total_hurdles: int = config["hurdle_count"]
     inter_hurdle_m: float = config["inter_hurdle_m"]
     final_segment_m: float = config["final_segment_m"]
     boundaries: tuple[int, int] = config["phase_boundaries"]
     template_ratios: list[float] = config["template_ratios"]
- 
+
     # Extract completed splits
     completed_splits: list[dict] = []
     for m in completed_metrics:
@@ -189,9 +192,9 @@ def project_hurdle_race(
             completed_splits.append(
                 {"hurdle_num": m.hurdle_num, "split_ms": m.hurdle_split_ms}
             )
- 
+
     num_completed = len(completed_splits)
- 
+
     if num_completed < 2:
         return {
             "completed_splits": completed_splits,
@@ -202,20 +205,20 @@ def project_hurdle_race(
             "target_event": target_event,
             "total_hurdles": total_hurdles,
         }
- 
+
     hurdle_indices = np.array([s["hurdle_num"] for s in completed_splits])
     split_values = np.array([s["split_ms"] for s in completed_splits])
- 
+
     # Phase-aware fitting
     phase_trends = _fit_phase_trends(hurdle_indices, split_values, boundaries)
- 
+
     # Scale template to athlete's observed splits
     scaled_template = _scale_template(template_ratios, completed_splits)
- 
+
     # Project remaining hurdles
     last_observed_idx = int(hurdle_indices.max())
     remaining_start = last_observed_idx + 1
- 
+
     projected_splits: list[dict] = []
     for h in range(remaining_start, total_hurdles):
         proj_ms = _blend_projection(
@@ -229,7 +232,7 @@ def project_hurdle_race(
             "hurdle_num": h,
             "split_ms": max(0, int(round(proj_ms))),
         })
- 
+
     # Estimate final segment from athlete's pace
     all_split_values = (
         [s["split_ms"] for s in completed_splits]
@@ -238,23 +241,23 @@ def project_hurdle_race(
     final_segment_ms = _estimate_final_segment(
         all_split_values, inter_hurdle_m, final_segment_m,
     )
- 
+
     # Total time
     first_clearance_ms = (
         completed_metrics[0].clearance_start_ms if completed_metrics else 0
     )
     completed_total = sum(s["split_ms"] for s in completed_splits)
     projected_total = sum(s["split_ms"] for s in projected_splits)
- 
+
     projected_total_ms = (
         first_clearance_ms + completed_total + projected_total + final_segment_ms
     )
- 
+
     # Confidence
     observed_indices = [s["hurdle_num"] for s in completed_splits]
     phases = _phases_covered(observed_indices, boundaries)
     confidence = _compute_confidence(num_completed, total_hurdles, phases)
- 
+
     return {
         "completed_splits": completed_splits,
         "projected_splits": projected_splits,
