@@ -120,7 +120,8 @@ class HurdleService:
             to_s = to_ms / 1000
 
             # Ground phase — two points to make flat bottom
-            for t in [ic_s, to_s - 0.001]:
+            gt_mid_s = (ic_ms + (to_ms - ic_ms) / 2) / 1000
+            for t in [ic_s, gt_mid_s, to_s - 0.001]:
                 points.append(
                     HurdleTimelinePoint(
                         time_s=round(t, 4),
@@ -133,15 +134,16 @@ class HurdleService:
                     )
                 )
 
-            # Air phase — two points to make flat top
+            # Air phase
             if ft_ms:
+                ft_mid_s = (to_ms + ft_ms / 2) / 1000  # midpoint of flight
                 ft_end_s = (to_ms + ft_ms) / 1000
-                for t in [to_s, ft_end_s - 0.001]:
+                for t in [to_s, ft_mid_s, ft_end_s - 0.001]:
                     points.append(
                         HurdleTimelinePoint(
                             time_s=round(t, 4),
-                            left=1.0 if foot == "left" else None,
-                            right=1.0 if foot == "right" else None,
+                            left=float(ft_ms) if foot == "left" else None,
+                            right=float(ft_ms) if foot == "right" else None,
                             foot=foot,
                             phase="air",
                             gct_ms=None,
@@ -149,7 +151,14 @@ class HurdleService:
                         )
                     )
 
-        points.sort(key=lambda p: p.time_s)
+        # Sort per foot separately to preserve ground→air→ground sequence
+        left_points = sorted(
+            [p for p in points if p.foot == "left"], key=lambda p: p.time_s
+        )
+        right_points = sorted(
+            [p for p in points if p.foot == "right"], key=lambda p: p.time_s
+        )
+        points = left_points + right_points
 
         hurdle_rows = await self._get_hurdle_metric_rows(run_id)
         markers = [
@@ -163,4 +172,9 @@ class HurdleService:
         logger.info(
             f"Service: Returning {len(points)} timeline points for run {run_id}"
         )
-        return HurdleTimelineResponse(points=points, hurdle_markers=markers)
+        return HurdleTimelineResponse(
+            points=points,
+            left_points=left_points,
+            right_points=right_points,
+            hurdle_markers=markers,
+        )

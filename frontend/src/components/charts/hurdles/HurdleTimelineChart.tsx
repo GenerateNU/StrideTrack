@@ -15,6 +15,14 @@ import {
 } from "recharts";
 import { useState } from "react";
 
+const COLORS = {
+  left: "#f97316",
+  right: "#000000",
+  hurdles: "#ef4444",
+  gctLabels: "#22c55e",
+  ftLabels: "#a855f7",
+} as const;
+
 const TOGGLE_STYLE = (active: boolean) =>
   `px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
     active
@@ -34,7 +42,7 @@ const makeGctDot =
       data: HurdleTimelinePoint[];
     };
     if (!show || payload.phase !== "ground" || !payload.gct_ms) return null;
-    if (!data) return null; // add this line
+    if (!data) return null;
     const prev = data[index - 1];
     if (prev && prev.foot === payload.foot && prev.phase === "ground")
       return null;
@@ -87,9 +95,6 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
 
   const [showLeft, setShowLeft] = useState(true);
   const [showRight, setShowRight] = useState(true);
-  const [showHurdles, setShowHurdles] = useState(true);
-  const [showGctLabels, setShowGctLabels] = useState(true);
-  const [showFtLabels, setShowFtLabels] = useState(true);
 
   if (timelineLoading) return <QueryLoading />;
   if (timelineError)
@@ -125,129 +130,116 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
           "Left Foot",
           showLeft,
           () => setShowLeft((v) => !v),
-          "#3b82f6"
+          COLORS.left
         )}
         {toggleBtn(
           "Right Foot",
           showRight,
           () => setShowRight((v) => !v),
-          "#f97316"
-        )}
-        {toggleBtn(
-          "Hurdles",
-          showHurdles,
-          () => setShowHurdles((v) => !v),
-          "#ef4444"
-        )}
-        {toggleBtn(
-          "GCT Labels",
-          showGctLabels,
-          () => setShowGctLabels((v) => !v),
-          "#22c55e"
-        )}
-        {toggleBtn(
-          "FT Labels",
-          showFtLabels,
-          () => setShowFtLabels((v) => !v),
-          "#a855f7"
+          COLORS.right
         )}
       </div>
 
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart
-          data={timelineData.points}
-          margin={{ top: 20, right: 40, left: 20, bottom: 40 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
-          <XAxis
-            dataKey="time_s"
-            type="number"
-            domain={["dataMin", "dataMax"]}
-            tickFormatter={(v: number) => `${v.toFixed(1)}`}
-            label={{
-              value: "Time (s)",
-              position: "insideBottom",
-              offset: -25,
-              style: {
-                fill: chartColors.mutedForeground,
-                fontSize: 10,
-                textAnchor: "middle",
-              },
-            }}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
-          />
-          <YAxis
-            ticks={[0, 1]}
-            tickFormatter={(v: number) => (v === 0 ? "Ground" : "Air")}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
-          />
-          <Tooltip
-            contentStyle={{
-              borderRadius: 12,
-              border: "none",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              fontSize: 13,
-              backgroundColor: chartColors.card,
-              color: chartColors.foreground,
-            }}
-            formatter={(_value, _name, props) => {
-              const point = props.payload;
-              const phase = point.phase === "air" ? "Air" : "Ground";
-              const footLabel = point.foot === "left" ? "Left" : "Right";
-              const duration =
-                point.phase === "air" && point.ft_ms != null
-                  ? `FT: ${point.ft_ms}ms`
-                  : point.gct_ms != null
-                    ? `GCT: ${point.gct_ms}ms`
-                    : "";
-              return [
-                `${footLabel}: ${phase}${duration ? ` — ${duration}` : ""}`,
-              ];
-            }}
-            labelFormatter={(label) => `${(label as number).toFixed(3)}s`}
-          />
-
-          {/* Hurdle reference lines */}
-          {showHurdles &&
-            timelineData.hurdle_markers.map((m) => (
-              <ReferenceLine
-                key={m.hurdle_num}
-                x={m.time_s}
-                stroke="#ef4444"
-                strokeDasharray="4 3"
-                label={{
-                  value: `H${m.hurdle_num}`,
-                  position: "top",
-                  fill: "#ef4444",
-                  fontSize: 10,
-                }}
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: 1200 }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={timelineData.points}
+              margin={{ top: 20, right: 40, left: 20, bottom: 40 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke={chartColors.border}
               />
-            ))}
+              <XAxis
+                dataKey="time_s"
+                type="number"
+                domain={["dataMin", "dataMax"]}
+                tickFormatter={(v: number) => `${v.toFixed(1)}`}
+                label={{
+                  value: "Time (s)",
+                  position: "insideBottom",
+                  offset: -25,
+                  style: {
+                    fill: chartColors.mutedForeground,
+                    fontSize: 10,
+                    textAnchor: "middle",
+                  },
+                }}
+                tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
+              />
+              <YAxis
+                tickFormatter={(v: number) => (v === 0 ? "Ground" : `${v}ms`)}
+                tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
+              />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: 12,
+                  border: "none",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  fontSize: 13,
+                  backgroundColor: chartColors.card,
+                  color: chartColors.foreground,
+                }}
+                formatter={(_value, _name, props) => {
+                  const point = props.payload as HurdleTimelinePoint;
+                  const phase = point.phase === "air" ? "Air" : "Ground";
+                  const footLabel = point.foot === "left" ? "Left" : "Right";
+                  const duration =
+                    point.phase === "air" && point.ft_ms != null
+                      ? `FT: ${point.ft_ms}ms`
+                      : point.gct_ms != null
+                        ? `GCT: ${point.gct_ms}ms`
+                        : "";
+                  return [
+                    `${footLabel}: ${phase}${duration ? ` — ${duration}` : ""}`,
+                  ];
+                }}
+                labelFormatter={(label) => `${(label as number).toFixed(3)}s`}
+              />
 
-          {showLeft && (
-            <Line
-              type="stepAfter"
-              dataKey="left"
-              stroke="#3b82f6"
-              strokeWidth={2}
-              dot={makeGctDot(showGctLabels, "#22c55e")}
-              connectNulls={false}
-              name="Left"
-            />
-          )}
-          {showRight && (
-            <Line
-              type="stepAfter"
-              dataKey="right"
-              stroke="#f97316"
-              strokeWidth={2}
-              dot={makeFtDot(showFtLabels, "#a855f7")}
-              connectNulls={false}
-              name="Right"
-            />
-          )}
-        </LineChart>
-      </ResponsiveContainer>
+              {/* Hurdle reference lines */}
+              {timelineData.hurdle_markers.map((m) => (
+                <ReferenceLine
+                  key={m.hurdle_num}
+                  x={m.time_s}
+                  stroke={COLORS.hurdles}
+                  strokeDasharray="4 3"
+                  label={{
+                    value: `H${m.hurdle_num}`,
+                    position: "top",
+                    fill: COLORS.hurdles,
+                    fontSize: 10,
+                  }}
+                />
+              ))}
+
+              {showLeft && (
+                <Line
+                  type="basis"
+                  dataKey="left"
+                  stroke={COLORS.left}
+                  strokeWidth={2}
+                  dot={makeGctDot(true, COLORS.gctLabels)}
+                  connectNulls={false}
+                  name="Left"
+                />
+              )}
+              {showRight && (
+                <Line
+                  type="basis"
+                  dataKey="right"
+                  stroke={COLORS.right}
+                  strokeWidth={2}
+                  dot={makeFtDot(true, COLORS.ftLabels)}
+                  connectNulls={false}
+                  name="Right"
+                />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 };
