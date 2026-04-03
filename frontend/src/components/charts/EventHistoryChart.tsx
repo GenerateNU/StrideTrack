@@ -1,6 +1,7 @@
 import { useEventHistory } from "@/hooks/useEventHistory.hooks";
 import { chartColors } from "@/lib/chartColors";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
+import { QueryError } from "@/components/QueryError";
 import { QueryLoading } from "@/components/QueryLoading";
 import {
   LineChart,
@@ -22,13 +23,18 @@ export const EventHistoryChart = ({
   filters,
   enabled,
 }: EventHistoryChartProps) => {
-  const { eventHistory, eventHistoryIsLoading, eventHistoryError } =
-    useEventHistory(filters, enabled);
-
+  const {
+    eventHistory,
+    eventHistoryIsLoading,
+    eventHistoryError,
+    eventHistoryRefetch,
+  } = useEventHistory(filters, enabled);
   if (eventHistoryIsLoading) return <QueryLoading />;
-  if (eventHistoryError) return null;
+  if (eventHistoryError)
+    return (
+      <QueryError error={eventHistoryError} refetch={eventHistoryRefetch} />
+    );
   if (!eventHistory || eventHistory.data_points.length === 0) return null;
-
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={eventHistory.data_points}>

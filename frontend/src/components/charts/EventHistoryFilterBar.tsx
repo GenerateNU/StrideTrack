@@ -23,7 +23,9 @@ export default function EventHistoryFilterBar({
   const [dateFrom, setDateFrom] = useState<string | null>(null);
   const [dateTo, setDateTo] = useState<string | null>(null);
 
-  const canSubmit = eventType !== null;
+  const canSubmit =
+    eventType !== null &&
+    (amountMode === "count" || (dateFrom !== null && dateTo !== null));
 
   function handleApply() {
     if (!canSubmit) return;

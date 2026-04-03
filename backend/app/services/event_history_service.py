@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 from uuid import UUID
 
 # from supabase._async.client import AsyncClient
@@ -17,8 +18,8 @@ class EventHistoryService:
         athlete_id: UUID,
         event_type: str,
         limit: int | None = None,
-        date_from: str | None = None,
-        date_to: str | None = None,
+        date_from: date | None = None,
+        date_to: date | None = None,
     ) -> EventHistoryResponse:
         logger.info(f"Service: Getting {event_type} history for athlete {athlete_id}")
 

@@ -1,7 +1,10 @@
 import logging
+from datetime import date
 from uuid import UUID
 
 from supabase._async.client import AsyncClient
+
+from app.schemas.event_history_schemas import EventHistoryRun
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +18,9 @@ class EventHistoryRepository:
         athlete_id: UUID,
         event_type: str,
         limit: int | None = None,
-        date_from: str | None = None,
-        date_to: str | None = None,
-    ) -> list[dict]:
+        date_from: date | None = None,
+        date_to: date | None = None,
+    ) -> list[EventHistoryRun]:
         logger.info(f"Repository: Fetching {event_type} runs for athlete {athlete_id}")
 
         query = (

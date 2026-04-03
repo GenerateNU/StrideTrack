@@ -5,6 +5,9 @@ import { useGetAllRuns } from "@/hooks/useRuns.hooks";
 import { QueryLoading } from "@/components/QueryLoading";
 import { QueryError } from "@/components/QueryError";
 import { ArrowLeft, Activity, Calendar } from "lucide-react";
+import EventHistoryFilterBar from "@/components/charts/EventHistoryFilterBar";
+import { EventHistoryChart } from "@/components/charts/EventHistoryChart";
+import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
 
 function nameToHue(name: string): number {
   let hash = 0;
@@ -20,8 +23,9 @@ export default function AthleteProfilePage() {
   const { athletes, athletesIsLoading, athletesError, athletesRefetch } =
     useGetAllAthletes();
   const { runs, runsIsLoading, runsError, runsRefetch } = useGetAllRuns();
-  const [tab, setTab] = useState<"summary" | "runs">("summary");
-
+  const [tab, setTab] = useState<"summary" | "runs" | "trends">("summary");
+  const [eventHistoryFilters, setEventHistoryFilters] =
+    useState<EventHistoryFilters | null>(null);
   const athlete = athletes.find((a) => a.athlete_id === athleteId);
   const athleteRuns = useMemo(
     () =>
@@ -105,7 +109,7 @@ export default function AthleteProfilePage() {
 
       {/* Tabs */}
       <div className="mb-5 flex gap-1 rounded-xl bg-secondary p-1">
-        {(["summary", "runs"] as const).map((t) => (
+        {(["summary", "runs", "trends"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -115,7 +119,7 @@ export default function AthleteProfilePage() {
                 : "text-muted-foreground"
             }`}
           >
-            {t === "summary" ? "Summary" : "Recordings"}
+            {t === "summary" ? "Summary" : t === "runs" ? "Runs" : "Trends"}
           </button>
         ))}
       </div>
@@ -235,6 +239,17 @@ export default function AthleteProfilePage() {
                 No events recorded yet.
               </p>
             </div>
+          )}
+        </div>
+      )}
+      {tab === "trends" && (
+        <div className="space-y-4">
+          <EventHistoryFilterBar
+            athleteId={athleteId!}
+            onApply={(filters) => setEventHistoryFilters(filters)}
+          />
+          {eventHistoryFilters && (
+            <EventHistoryChart filters={eventHistoryFilters} enabled={true} />
           )}
         </div>
       )}
