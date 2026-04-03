@@ -1,44 +1,26 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import type { ReactionTimeMetrics } from "@/types/reactionTime.types";
+import { reactionTimeMetricsSchema } from "@/types/reactionTime.types";
+import { validateResponse } from "@/utils/validation";
 
-interface ReactionTimeMetrics {
-  run_id: string;
-  reaction_time_ms: number;
-  onset_timestamp_ms: number;
-  zone: "green" | "yellow" | "red";
-  zone_description: string;
+export function useReactionTimeMetrics(runId: string | null) {
+  const query = useQuery({
+    queryKey: ["reaction-time-metrics", runId],
+    queryFn: async () => {
+      if (!runId) return null;
+      const response = await api.get<ReactionTimeMetrics>(
+        `/reaction-time/${runId}`
+      );
+      return validateResponse(response.data, reactionTimeMetricsSchema);
+    },
+    enabled: !!runId,
+  });
+
+  return {
+    rtMetrics: query.data ?? null,
+    rtLoading: query.isLoading,
+    rtError: query.error,
+    rtRefetch: query.refetch,
+  };
 }
-
-interface UseReactionTimeMetricsResult {
-  rtMetrics: ReactionTimeMetrics | null;
-  loading: boolean;
-  error: string | null;
-}
-
-export const useReactionTimeMetrics = (
-  runId: string
-): UseReactionTimeMetricsResult => {
-  const [rtMetrics, setRtMetrics] = useState<ReactionTimeMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        setLoading(true);
-        const res = await api.get<ReactionTimeMetrics>(
-          `/reaction-time/${runId}`
-        );
-        setRtMetrics(res.data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMetrics();
-  }, [runId]);
-
-  return { rtMetrics, loading, error };
-};

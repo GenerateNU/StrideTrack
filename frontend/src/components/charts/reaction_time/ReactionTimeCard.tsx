@@ -1,4 +1,6 @@
 import { useReactionTimeMetrics } from "@/hooks/useReactionTimeMetrics.hooks";
+import { QueryLoading } from "@/components/QueryLoading";
+import { QueryError } from "@/components/QueryError";
 
 interface ReactionTimeCardProps {
   runId: string;
@@ -30,9 +32,16 @@ function getZoneStyles(zone: string | undefined): {
 }
 
 export const ReactionTimeCard = ({ runId }: ReactionTimeCardProps) => {
-  const { rtMetrics } = useReactionTimeMetrics(runId);
-  const value = rtMetrics?.reaction_time_ms;
-  const styles = getZoneStyles(rtMetrics?.zone);
+  const { rtMetrics, rtLoading, rtError, rtRefetch } =
+    useReactionTimeMetrics(runId);
+
+  if (rtLoading) return <QueryLoading />;
+  if (rtError)
+    return <QueryError error={rtError} refetch={() => void rtRefetch()} />;
+  if (!rtMetrics) return null;
+
+  const value = rtMetrics.reaction_time_ms;
+  const styles = getZoneStyles(rtMetrics.zone);
 
   return (
     <div className="flex flex-col items-center justify-center h-[300px] gap-2">
