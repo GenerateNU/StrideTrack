@@ -7,7 +7,7 @@ import { useAuth } from "@/context/auth.context";
 import { useTheme } from "@/hooks/useTheme";
 import { ProfileMenu } from "./ProfileMenu";
 import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
-import logo from "@/assets/stridetrack-logo.png";
+import logo from "@/assets/full_logo.png";
 
 export function AppLayout() {
   const { logout, profile } = useAuth();
@@ -59,7 +59,7 @@ export function AppLayout() {
         </div>
       </header>
 
-      <main className="relative mx-auto w-full max-w-2xl flex-1 px-5 pb-20 md:pl-56 md:pb-8">
+      <main className="relative w-full flex-1 px-5 pb-20 md:pt-6 md:pl-64 md:pr-8 md:pb-8">
         <Outlet />
       </main>
 

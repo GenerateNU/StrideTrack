@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 from supabase._async.client import AsyncClient
 
+from app.core.auth import get_current_coach
 from app.core.supabase import get_async_supabase
 from app.repositories.athlete_repository import AthleteRepository
 from app.schemas.athlete_schemas import (
@@ -11,6 +12,7 @@ from app.schemas.athlete_schemas import (
     AthleteResponse,
     AthleteUpdate,
 )
+from app.schemas.coach_schemas import Coach
 from app.services.athlete_service import AthleteService
 
 logger = logging.getLogger(__name__)
@@ -19,10 +21,11 @@ router = APIRouter(prefix="/athletes", tags=["Athletes"])
 
 
 async def get_athlete_service(
+    coach: Coach = Depends(get_current_coach),
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> AthleteService:
     repository = AthleteRepository(supabase)
-    return AthleteService(repository)
+    return AthleteService(repository, coach_id=coach.coach_id)
 
 
 @router.get("", response_model=list[AthleteResponse])
