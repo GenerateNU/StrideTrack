@@ -2,7 +2,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useGetRunMeta } from "@/hooks/useRuns.hooks";
 import { getChartsForEventType } from "@/lib/runAnalysisVisualizations";
 import { ArrowLeft } from "lucide-react";
-import { HurdleTimelineChart } from "@/components/charts/hurdles/HurdleTimelineChart";
 
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -50,25 +49,6 @@ export default function RunAnalysisPage() {
       </div>
 
       {runId ? (
-<<<<<<< 110-hurdling-group-visualization
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
-            <SectionHeader title="Ground Contact Time — L vs R" />
-            <GroundContactTimeChart runId={runId} />
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
-            <SectionHeader title="Flight Time — L vs R" />
-            <FlightTimeChart runId={runId} />
-          </div>
-
-          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
-            <SectionHeader title="Hurdle Timeline" />
-            <HurdleTimelineChart runId={runId} />
-          </div>
-
-          <StepDataTable metrics={metrics ?? []} isLoading={metricsIsLoading} />
-=======
         <div className="flex flex-1 flex-col gap-6">
           {charts.map(({ title, component: ChartComponent }) => (
             <div
@@ -81,7 +61,6 @@ export default function RunAnalysisPage() {
               </div>
             </div>
           ))}
->>>>>>> main
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center">

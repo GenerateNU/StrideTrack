@@ -13,14 +13,11 @@ import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
 import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
-<<<<<<< 110-hurdling-group-visualization
 import { HurdleTimelineChart } from "@/components/charts/hurdles/HurdleTimelineChart";
-=======
 import { useState } from "react";
 import EventHistoryFilterBar from "@/components/charts/EventHistoryFilterBar";
 import { EventHistoryChart } from "@/components/charts/EventHistoryChart";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
->>>>>>> main
 
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 const HARDCODED_BOSCO_RUN_ID = "b1a2c3d4-5678-9abc-def0-111111111111";
