@@ -3,23 +3,15 @@ import { QueryLoading } from "@/components/QueryLoading";
 import { useSplitScore } from "@/hooks/useSplitScore.hooks";
 import { chartColors } from "@/lib/chartColors";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
-  Cell,
+  Line,
+  LineChart,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
-
-const ON_PACE_THRESHOLD = 0.1;
-
-function getBarColor(diff_s: number): string {
-  if (Math.abs(diff_s) <= ON_PACE_THRESHOLD) return chartColors.primary;
-  return diff_s > 0 ? "#ef4444" : "#22c55e"; // red if slower, green if faster
-}
 
 export const SplitScoreChart = ({ runId }: { runId: string }) => {
   const { splitScoreData, loading, error } = useSplitScore(runId);
@@ -31,11 +23,18 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
 
   const { segments, coaching_notes } = splitScoreData;
 
+  const data = segments.map((seg, i) => ({
+    segment: i + 1,
+    label: seg.label,
+    diff_s: seg.diff_s,
+    diff_pct: seg.diff_pct,
+  }));
+
   return (
     <div>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart
-          data={segments}
+        <LineChart
+          data={data}
           margin={{ top: 20, right: 60, left: 20, bottom: 40 }}
         >
           <CartesianGrid vertical={false} stroke={chartColors.border} />
@@ -81,7 +80,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
               const diff_pct = (props.payload as { diff_pct: number }).diff_pct;
               const sign = num > 0 ? "+" : "";
               const direction =
-                Math.abs(num) <= ON_PACE_THRESHOLD
+                Math.abs(num) <= 0.1
                   ? "on pace"
                   : num > 0
                     ? "slower"
@@ -91,18 +90,49 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
                 "vs average",
               ];
             }}
+            labelFormatter={(label) => `${label}`}
           />
           <ReferenceLine
             y={0}
-            stroke={chartColors.mutedForeground}
+            stroke={chartColors.primary}
             strokeWidth={1}
+            strokeDasharray="4 4"
+            label={{
+              value: "Ideal Pace",
+              position: "right",
+              fill: chartColors.primary,
+              fontSize: 10,
+            }}
           />
-          <Bar dataKey="diff_s" radius={[6, 6, 0, 0]} name="Diff vs Average">
-            {segments.map((seg, i) => (
-              <Cell key={i} fill={getBarColor(seg.diff_s)} />
-            ))}
-          </Bar>
-        </BarChart>
+          <Line
+            type="monotone"
+            dataKey="diff_s"
+            stroke={chartColors.mutedForeground}
+            strokeWidth={2}
+            dot={(props) => {
+              const { cx, cy, payload } = props;
+              const diff_s = payload.diff_s as number;
+              const fill =
+                Math.abs(diff_s) <= 0.1
+                  ? chartColors.primary
+                  : diff_s > 0
+                    ? "#ef4444"
+                    : "#22c55e";
+              return (
+                <circle
+                  key={payload.label}
+                  cx={cx}
+                  cy={cy}
+                  r={4}
+                  fill={fill}
+                  stroke="none"
+                />
+              );
+            }}
+            activeDot={{ r: 6 }}
+            name="Diff vs Average"
+          />
+        </LineChart>
       </ResponsiveContainer>
 
       {/* Coaching Notes */}
@@ -113,7 +143,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
         {coaching_notes.map((note, i) => {
           const seg = segments[i];
           let color = "text-foreground";
-          if (Math.abs(seg.diff_s) > ON_PACE_THRESHOLD) {
+          if (Math.abs(seg.diff_s) > 0.1) {
             color = seg.diff_s > 0 ? "text-red-500" : "text-green-500";
           }
           return (
