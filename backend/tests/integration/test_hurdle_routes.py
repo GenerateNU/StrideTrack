@@ -359,17 +359,18 @@ class TestGetHurdleProjection:
         assert data["projected_total_ms"] is not None
         assert data["projected_total_ms"] > 0
 
-    def test_projection_final_segment_matches_110m_config(
+    def test_projection_final_segment_is_positive(
         self, test_client: TestClient
     ) -> None:
-        """The final segment should be 1400ms for a 110mH target."""
+        """The final segment should be a positive pace-based estimate."""
         response = test_client.get(
             f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
         data = response.json()
-        assert data["projected_final_segment_ms"] == 1400
+        assert data["projected_final_segment_ms"] is not None
+        assert data["projected_final_segment_ms"] > 0
 
     def test_projection_non_partial_run_returns_error(
         self, test_client: TestClient

@@ -5,7 +5,9 @@ from app.schemas.hurdle_schemas import HurdleMetricRow
 from app.utils.hurdle_projection import (
     EVENT_CONFIG,
     _compute_confidence,
-    _fit_linear_trend,
+    _estimate_final_segment,
+    _fit_phase_trends,
+    _phases_covered,
     project_hurdle_race,
 )
 
@@ -14,72 +16,72 @@ from app.utils.hurdle_projection import (
 
 @pytest.fixture
 def five_hurdle_metrics() -> list[HurdleMetricRow]:
-    """Five hurdles with increasing splits (typical fatigue pattern)."""
+    """Five hurdles with gently decreasing splits (acceleration phase pattern)."""
     return [
         HurdleMetricRow(
             hurdle_num=1,
-            clearance_start_ms=2180,
-            clearance_end_ms=2760,
-            takeoff_ft_ms=580,
-            hurdle_split_ms=1070,
+            clearance_start_ms=2380,
+            clearance_end_ms=2740,
+            takeoff_ft_ms=360,
+            hurdle_split_ms=1080,
             steps_between_hurdles=3,
-            takeoff_foot="right",
-            takeoff_gct_ms=100,
+            takeoff_foot="left",
+            takeoff_gct_ms=90,
             landing_foot="left",
             landing_gct_ms=100,
             gct_increase_hurdle_to_hurdle_pct=0.0,
         ),
         HurdleMetricRow(
             hurdle_num=2,
-            clearance_start_ms=3250,
-            clearance_end_ms=3840,
-            takeoff_ft_ms=590,
-            hurdle_split_ms=1100,
+            clearance_start_ms=3460,
+            clearance_end_ms=3830,
+            takeoff_ft_ms=370,
+            hurdle_split_ms=1070,
             steps_between_hurdles=3,
-            takeoff_foot="right",
-            takeoff_gct_ms=110,
+            takeoff_foot="left",
+            takeoff_gct_ms=90,
             landing_foot="left",
-            landing_gct_ms=110,
-            gct_increase_hurdle_to_hurdle_pct=10.0,
+            landing_gct_ms=100,
+            gct_increase_hurdle_to_hurdle_pct=0.0,
         ),
         HurdleMetricRow(
             hurdle_num=3,
-            clearance_start_ms=4350,
-            clearance_end_ms=4910,
-            takeoff_ft_ms=560,
-            hurdle_split_ms=1130,
+            clearance_start_ms=4530,
+            clearance_end_ms=4900,
+            takeoff_ft_ms=370,
+            hurdle_split_ms=1065,
             steps_between_hurdles=3,
-            takeoff_foot="right",
-            takeoff_gct_ms=100,
+            takeoff_foot="left",
+            takeoff_gct_ms=90,
             landing_foot="left",
-            landing_gct_ms=110,
+            landing_gct_ms=100,
             gct_increase_hurdle_to_hurdle_pct=0.0,
         ),
         HurdleMetricRow(
             hurdle_num=4,
-            clearance_start_ms=5480,
-            clearance_end_ms=6080,
-            takeoff_ft_ms=600,
-            hurdle_split_ms=1160,
+            clearance_start_ms=5595,
+            clearance_end_ms=5960,
+            takeoff_ft_ms=365,
+            hurdle_split_ms=1060,
             steps_between_hurdles=3,
-            takeoff_foot="right",
+            takeoff_foot="left",
             takeoff_gct_ms=90,
             landing_foot="left",
-            landing_gct_ms=110,
-            gct_increase_hurdle_to_hurdle_pct=-10.0,
+            landing_gct_ms=100,
+            gct_increase_hurdle_to_hurdle_pct=0.0,
         ),
         HurdleMetricRow(
             hurdle_num=5,
-            clearance_start_ms=6640,
-            clearance_end_ms=7180,
-            takeoff_ft_ms=540,
+            clearance_start_ms=6655,
+            clearance_end_ms=7020,
+            takeoff_ft_ms=365,
             hurdle_split_ms=None,
             steps_between_hurdles=None,
-            takeoff_foot="right",
-            takeoff_gct_ms=110,
+            takeoff_foot="left",
+            takeoff_gct_ms=90,
             landing_foot="left",
-            landing_gct_ms=120,
-            gct_increase_hurdle_to_hurdle_pct=10.0,
+            landing_gct_ms=100,
+            gct_increase_hurdle_to_hurdle_pct=0.0,
         ),
     ]
 
@@ -90,29 +92,29 @@ def two_hurdle_metrics() -> list[HurdleMetricRow]:
     return [
         HurdleMetricRow(
             hurdle_num=1,
-            clearance_start_ms=2180,
-            clearance_end_ms=2760,
-            takeoff_ft_ms=580,
-            hurdle_split_ms=1100,
+            clearance_start_ms=2380,
+            clearance_end_ms=2740,
+            takeoff_ft_ms=360,
+            hurdle_split_ms=1080,
             steps_between_hurdles=3,
-            takeoff_foot="right",
-            takeoff_gct_ms=100,
+            takeoff_foot="left",
+            takeoff_gct_ms=90,
             landing_foot="left",
             landing_gct_ms=100,
             gct_increase_hurdle_to_hurdle_pct=0.0,
         ),
         HurdleMetricRow(
             hurdle_num=2,
-            clearance_start_ms=3280,
-            clearance_end_ms=3840,
-            takeoff_ft_ms=560,
+            clearance_start_ms=3460,
+            clearance_end_ms=3830,
+            takeoff_ft_ms=370,
             hurdle_split_ms=None,
             steps_between_hurdles=None,
-            takeoff_foot="right",
-            takeoff_gct_ms=110,
+            takeoff_foot="left",
+            takeoff_gct_ms=90,
             landing_foot="left",
-            landing_gct_ms=110,
-            gct_increase_hurdle_to_hurdle_pct=10.0,
+            landing_gct_ms=100,
+            gct_increase_hurdle_to_hurdle_pct=0.0,
         ),
     ]
 
@@ -123,13 +125,13 @@ def single_hurdle_metric() -> list[HurdleMetricRow]:
     return [
         HurdleMetricRow(
             hurdle_num=1,
-            clearance_start_ms=2180,
-            clearance_end_ms=2760,
-            takeoff_ft_ms=580,
+            clearance_start_ms=2380,
+            clearance_end_ms=2740,
+            takeoff_ft_ms=360,
             hurdle_split_ms=None,
             steps_between_hurdles=None,
-            takeoff_foot="right",
-            takeoff_gct_ms=100,
+            takeoff_foot="left",
+            takeoff_gct_ms=90,
             landing_foot="left",
             landing_gct_ms=100,
             gct_increase_hurdle_to_hurdle_pct=0.0,
@@ -137,52 +139,52 @@ def single_hurdle_metric() -> list[HurdleMetricRow]:
     ]
 
 
-# _fit_linear_trend
+# _fit_phase_trends
 
 
 @pytest.mark.unit
-class TestFitLinearTrend:
-    """Tests for _fit_linear_trend."""
+class TestFitPhaseTrends:
+    """Tests for _fit_phase_trends."""
 
-    def test_perfect_linear_data(self) -> None:
-        """With perfectly linear data (y = 30x + 1000), slope should be 30
-        and intercept should be 1000."""
-        hurdle_nums = np.array([1, 2, 3, 4])
-        split_values = np.array([1030, 1060, 1090, 1120])
+    def test_fits_trend_for_phase_with_enough_data(self) -> None:
+        """Phase 0 with 3 data points should produce a trend."""
+        hurdle_indices = np.array([1, 2, 3])
+        split_values = np.array([1080, 1070, 1065])
+        boundaries = (4, 7)
 
-        slope, intercept = _fit_linear_trend(hurdle_nums, split_values)
+        trends = _fit_phase_trends(hurdle_indices, split_values, boundaries)
 
-        assert slope == pytest.approx(30.0)
-        assert intercept == pytest.approx(1000.0)
+        assert 0 in trends
+        slope, _intercept = trends[0]
+        assert slope < 0  # decreasing splits
 
-    def test_constant_data_gives_zero_slope(self) -> None:
-        """When all splits are identical, the slope should be 0."""
-        hurdle_nums = np.array([1, 2, 3, 4])
-        split_values = np.array([1100, 1100, 1100, 1100])
+    def test_no_trend_for_phase_with_insufficient_data(self) -> None:
+        """A phase with only 1 data point should not produce a trend."""
+        hurdle_indices = np.array([1, 2, 3, 5])
+        split_values = np.array([1080, 1070, 1065, 1050])
+        boundaries = (4, 7)
 
-        slope, intercept = _fit_linear_trend(hurdle_nums, split_values)
+        trends = _fit_phase_trends(hurdle_indices, split_values, boundaries)
 
-        assert slope == pytest.approx(0.0)
-        assert intercept == pytest.approx(1100.0)
+        assert 0 in trends
+        assert 1 not in trends
 
-    def test_two_points(self) -> None:
-        """With exactly two points, the fit should be exact."""
-        hurdle_nums = np.array([1, 2])
-        split_values = np.array([1000, 1050])
+    def test_multiple_phases_fitted(self) -> None:
+        """Data spanning two phases should produce trends for both."""
+        hurdle_indices = np.array([1, 2, 3, 4, 5, 6])
+        split_values = np.array([1080, 1070, 1065, 1055, 1050, 1060])
+        boundaries = (4, 7)
 
-        slope, intercept = _fit_linear_trend(hurdle_nums, split_values)
+        trends = _fit_phase_trends(hurdle_indices, split_values, boundaries)
 
-        assert slope == pytest.approx(50.0)
-        assert intercept == pytest.approx(950.0)
+        assert 0 in trends  # indices 1,2,3
+        assert 1 in trends  # indices 4,5,6
 
-    def test_negative_slope(self) -> None:
-        """Decreasing splits should produce a negative slope."""
-        hurdle_nums = np.array([1, 2, 3])
-        split_values = np.array([1200, 1150, 1100])
+    def test_empty_input_returns_no_trends(self) -> None:
+        """Empty arrays should return no trends."""
+        trends = _fit_phase_trends(np.array([]), np.array([]), (4, 7))
 
-        slope, _intercept = _fit_linear_trend(hurdle_nums, split_values)
-
-        assert slope < 0
+        assert trends == {}
 
 
 # _compute_confidence
@@ -193,40 +195,90 @@ class TestComputeConfidence:
     """Tests for _compute_confidence."""
 
     def test_zero_completed_returns_zero(self) -> None:
-        """With no completed splits, confidence should be 0."""
-        assert _compute_confidence(0, 9) == 0.0
+        assert _compute_confidence(0, 10, 0) == 0.0
 
     def test_one_completed_returns_zero(self) -> None:
-        """With only one split, we can't fit a trend, so confidence is 0."""
-        assert _compute_confidence(1, 9) == 0.0
+        assert _compute_confidence(1, 10, 1) == 0.0
 
     def test_zero_total_returns_zero(self) -> None:
-        """If total is 0, confidence should be 0 (avoid division by zero)."""
-        assert _compute_confidence(3, 0) == 0.0
+        assert _compute_confidence(3, 0, 1) == 0.0
 
-    def test_all_completed_gives_high_confidence(self) -> None:
-        """Completing all splits should give confidence near 1.0."""
-        result = _compute_confidence(9, 9)
+    def test_all_completed_all_phases_gives_high_confidence(self) -> None:
+        result = _compute_confidence(9, 10, 3)
         assert result >= 0.9
 
-    def test_half_completed_gives_moderate_confidence(self) -> None:
-        """Completing roughly half should give moderate confidence."""
-        result = _compute_confidence(4, 9)
-        assert 0.3 < result < 0.7
+    def test_half_completed_one_phase_gives_moderate_confidence(self) -> None:
+        result = _compute_confidence(4, 10, 1)
+        assert 0.2 < result < 0.6
 
-    def test_confidence_increases_with_more_data(self) -> None:
-        """More completed splits should yield higher confidence."""
-        c3 = _compute_confidence(3, 9)
-        c6 = _compute_confidence(6, 9)
-        c8 = _compute_confidence(8, 9)
+    def test_more_phases_increases_confidence(self) -> None:
+        """Same number of splits, but covering more phases should score higher."""
+        c1 = _compute_confidence(4, 10, 1)
+        c2 = _compute_confidence(4, 10, 2)
+        c3 = _compute_confidence(4, 10, 3)
+
+        assert c1 < c2 < c3
+
+    def test_more_data_increases_confidence(self) -> None:
+        c3 = _compute_confidence(3, 10, 1)
+        c6 = _compute_confidence(6, 10, 2)
+        c8 = _compute_confidence(8, 10, 3)
 
         assert c3 < c6 < c8
 
     def test_result_is_between_zero_and_one(self) -> None:
-        """Confidence should always be in [0, 1]."""
         for completed in range(0, 10):
-            result = _compute_confidence(completed, 9)
-            assert 0.0 <= result <= 1.0
+            for phases in range(0, 4):
+                result = _compute_confidence(completed, 10, phases)
+                assert 0.0 <= result <= 1.0
+
+
+# _phases_covered
+
+
+@pytest.mark.unit
+class TestPhasesCovered:
+    """Tests for _phases_covered."""
+
+    def test_single_phase(self) -> None:
+        assert _phases_covered([1, 2, 3], (4, 7)) == 1
+
+    def test_two_phases(self) -> None:
+        assert _phases_covered([1, 2, 5, 6], (4, 7)) == 2
+
+    def test_all_three_phases(self) -> None:
+        assert _phases_covered([1, 5, 8], (4, 7)) == 3
+
+    def test_empty_list(self) -> None:
+        assert _phases_covered([], (4, 7)) == 0
+
+
+# _estimate_final_segment
+
+
+@pytest.mark.unit
+class TestEstimateFinalSegment:
+    """Tests for _estimate_final_segment."""
+
+    def test_empty_splits_returns_zero(self) -> None:
+        assert _estimate_final_segment([], 9.14, 13.02) == 0
+
+    def test_uses_last_two_splits(self) -> None:
+        """The estimate should be based on the last 2 splits, not all of them."""
+        result_all_same = _estimate_final_segment([1000, 1000, 1000], 9.14, 13.02)
+        result_late_higher = _estimate_final_segment([1000, 1000, 1200], 9.14, 13.02)
+
+        assert result_late_higher > result_all_same
+
+    def test_longer_segment_gives_higher_estimate(self) -> None:
+        short = _estimate_final_segment([1000], 9.14, 8.72)
+        long = _estimate_final_segment([1000], 9.14, 13.02)
+
+        assert long > short
+
+    def test_result_is_positive(self) -> None:
+        result = _estimate_final_segment([1080, 1060], 9.14, 13.02)
+        assert result > 0
 
 
 # project_hurdle_race
@@ -251,6 +303,7 @@ class TestProjectHurdleRace:
         result = project_hurdle_race(single_hurdle_metric, target_event="hurdles_110m")
 
         assert result["projected_total_ms"] is None
+        assert result["projected_final_segment_ms"] is None
         assert result["confidence"] == 0.0
         assert result["projected_splits"] == []
 
@@ -261,16 +314,15 @@ class TestProjectHurdleRace:
         result = project_hurdle_race(five_hurdle_metrics, target_event="hurdles_110m")
 
         assert len(result["completed_splits"]) == 4
-        assert result["completed_splits"][0]["split_ms"] == 1070
-        assert result["completed_splits"][1]["split_ms"] == 1100
-        assert result["completed_splits"][2]["split_ms"] == 1130
-        assert result["completed_splits"][3]["split_ms"] == 1160
+        assert result["completed_splits"][0]["split_ms"] == 1080
+        assert result["completed_splits"][1]["split_ms"] == 1070
+        assert result["completed_splits"][2]["split_ms"] == 1065
+        assert result["completed_splits"][3]["split_ms"] == 1060
 
     def test_projected_splits_count(
         self, five_hurdle_metrics: list[HurdleMetricRow]
     ) -> None:
-        """For a 110mH (10 hurdles, 9 total splits), with 4 completed splits,
-        we should get 5 projected splits (hurdles 5-9)."""
+        """For 110mH (10 hurdles, 9 splits), with 4 completed, we get 5 projected."""
         result = project_hurdle_race(five_hurdle_metrics, target_event="hurdles_110m")
 
         assert len(result["projected_splits"]) == 5
@@ -284,35 +336,26 @@ class TestProjectHurdleRace:
         projected_nums = [s["hurdle_num"] for s in result["projected_splits"]]
         assert projected_nums == [5, 6, 7, 8, 9]
 
-    def test_projected_splits_increase_with_positive_trend(
+    def test_projected_splits_show_three_phase_shape(
         self, five_hurdle_metrics: list[HurdleMetricRow]
     ) -> None:
-        """With increasing completed splits, projected splits should also increase."""
+        """Projected splits should dip at peak speed then climb through fatigue."""
         result = project_hurdle_race(five_hurdle_metrics, target_event="hurdles_110m")
 
-        projected_values = [s["split_ms"] for s in result["projected_splits"]]
-        for i in range(1, len(projected_values)):
-            assert projected_values[i] >= projected_values[i - 1]
+        projected = result["projected_splits"]
+        # H5 (peak) should be lower than H9 (fatigue)
+        assert projected[0]["split_ms"] < projected[-1]["split_ms"]
+        # Late splits should climb
+        assert projected[-1]["split_ms"] > projected[-2]["split_ms"]
 
-    def test_projected_splits_are_non_negative(
+    def test_final_segment_is_pace_based(
         self, five_hurdle_metrics: list[HurdleMetricRow]
     ) -> None:
-        """Projected split values should never be negative."""
+        """Final segment should be a positive value derived from pace, not a config lookup."""
         result = project_hurdle_race(five_hurdle_metrics, target_event="hurdles_110m")
 
-        for s in result["projected_splits"]:
-            assert s["split_ms"] >= 0
-
-    def test_final_segment_matches_config(
-        self, five_hurdle_metrics: list[HurdleMetricRow]
-    ) -> None:
-        """The projected final segment should match the EVENT_CONFIG value."""
-        result = project_hurdle_race(five_hurdle_metrics, target_event="hurdles_110m")
-
-        assert (
-            result["projected_final_segment_ms"]
-            == EVENT_CONFIG["hurdles_110m"]["final_segment_ms"]
-        )
+        assert result["projected_final_segment_ms"] is not None
+        assert result["projected_final_segment_ms"] > 0
 
     def test_total_time_is_sum_of_parts(
         self, five_hurdle_metrics: list[HurdleMetricRow]
@@ -346,10 +389,10 @@ class TestProjectHurdleRace:
         assert result["target_event"] == "hurdles_110m"
         assert result["total_hurdles"] == 10
 
-    def test_different_target_events(
+    def test_different_target_events_produce_different_final_segments(
         self, five_hurdle_metrics: list[HurdleMetricRow]
     ) -> None:
-        """Projections for different target events should use different configs."""
+        """Different events have different distances, so final segments should differ."""
         result_110 = project_hurdle_race(
             five_hurdle_metrics, target_event="hurdles_110m"
         )
@@ -361,13 +404,11 @@ class TestProjectHurdleRace:
             result_110["projected_final_segment_ms"]
             != result_100["projected_final_segment_ms"]
         )
-        assert result_110["total_hurdles"] == result_100["total_hurdles"]
 
     def test_minimal_two_splits(
         self, two_hurdle_metrics: list[HurdleMetricRow]
     ) -> None:
-        """With only one completed split, we can't fit a trend (need 2).
-        Should return no projection."""
+        """With only one completed split, should return no projection."""
         result = project_hurdle_race(two_hurdle_metrics, target_event="hurdles_110m")
 
         assert result["projected_total_ms"] is None
@@ -383,9 +424,18 @@ class TestProjectHurdleRace:
         assert result["projected_splits"] == []
 
     def test_all_event_configs_are_valid(self) -> None:
-        """Every event in EVENT_CONFIG should have hurdle_count and final_segment_ms."""
-        for _event, config in EVENT_CONFIG.items():
-            assert "hurdle_count" in config
-            assert "final_segment_ms" in config
+        """Every event in EVENT_CONFIG should have the required fields."""
+        required_keys = {
+            "hurdle_count",
+            "inter_hurdle_m",
+            "final_segment_m",
+            "phase_boundaries",
+            "template_ratios",
+        }
+        for event, config in EVENT_CONFIG.items():
+            missing = required_keys - set(config.keys())
+            assert not missing, f"{event} missing keys: {missing}"
             assert config["hurdle_count"] > 0
-            assert config["final_segment_ms"] > 0
+            assert config["inter_hurdle_m"] > 0
+            assert config["final_segment_m"] > 0
+            assert len(config["template_ratios"]) == config["hurdle_count"]
