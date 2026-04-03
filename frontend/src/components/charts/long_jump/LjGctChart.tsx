@@ -87,10 +87,12 @@ export const LjGctChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={((value: unknown, name: unknown) => [
-              value != null ? `${String(value)} ms` : "N/A",
-              name === "left" ? "Left" : "Right",
-            ]) as never}
+            formatter={
+              ((value: unknown, name: unknown) => [
+                value != null ? `${String(value)} ms` : "N/A",
+                name === "left" ? "Left" : "Right",
+              ]) as never
+            }
           />
           <Legend
             verticalAlign="bottom"
@@ -98,7 +100,9 @@ export const LjGctChart = ({ runId }: { runId: string }) => {
             wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 60 }}
             iconType="circle"
             iconSize={8}
-            formatter={(value) => (value === "left" ? "Left Foot" : "Right Foot")}
+            formatter={(value) =>
+              value === "left" ? "Left Foot" : "Right Foot"
+            }
           />
           {finalStepLabel && (
             <ReferenceLine

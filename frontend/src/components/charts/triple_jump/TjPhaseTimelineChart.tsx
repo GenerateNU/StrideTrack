@@ -78,7 +78,10 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
     yAxisLabel: string
   ) => (
     <ResponsiveContainer width="100%" height={250}>
-      <LineChart data={rows} margin={{ top: 8, right: 16, left: 16, bottom: 0 }}>
+      <LineChart
+        data={rows}
+        margin={{ top: 8, right: 16, left: 16, bottom: 0 }}
+      >
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
         <XAxis
           dataKey="label"
@@ -110,10 +113,12 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
             borderRadius: 6,
             fontSize: 12,
           }}
-          formatter={((value: unknown, name: unknown) => [
-            value != null ? `${String(value)} ms` : "N/A",
-            name === dataKeys.left ? leftLabel : rightLabel,
-          ]) as never}
+          formatter={
+            ((value: unknown, name: unknown) => [
+              value != null ? `${String(value)} ms` : "N/A",
+              name === dataKeys.left ? leftLabel : rightLabel,
+            ]) as never
+          }
         />
         <Legend
           verticalAlign="bottom"

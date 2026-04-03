@@ -137,10 +137,12 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={((value: unknown, name: unknown) => [
-              value != null ? `${String(value)} ms` : "N/A",
-              name === "left" ? "Left" : "Right",
-            ]) as never}
+            formatter={
+              ((value: unknown, name: unknown) => [
+                value != null ? `${String(value)} ms` : "N/A",
+                name === "left" ? "Left" : "Right",
+              ]) as never
+            }
           />
           <Legend
             verticalAlign="bottom"

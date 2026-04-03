@@ -39,7 +39,14 @@ const CustomDot = (props: CustomDotProps) => {
   const isTakeoff = payload.phase === "takeoff";
   if (isTakeoff)
     return (
-      <circle cx={cx} cy={cy} r={8} fill="#22c55e" stroke="#fff" strokeWidth={2} />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={8}
+        fill="#22c55e"
+        stroke="#fff"
+        strokeWidth={2}
+      />
     );
   return (
     <circle
@@ -53,8 +60,12 @@ const CustomDot = (props: CustomDotProps) => {
 };
 
 export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
-  const { stepSeriesData, stepSeriesLoading, stepSeriesError, refetchStepSeriesData } =
-    useLjStepSeries(runId);
+  const {
+    stepSeriesData,
+    stepSeriesLoading,
+    stepSeriesError,
+    refetchStepSeriesData,
+  } = useLjStepSeries(runId);
   const { ljMetrics, ljMetricsLoading } = useLongJumpMetrics(runId);
 
   if (stepSeriesLoading || ljMetricsLoading) return <QueryLoading />;
@@ -117,10 +128,12 @@ export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
               borderRadius: 6,
               fontSize: 12,
             }}
-            formatter={((value: unknown, name: unknown) => [
-              value != null ? `${String(value)} ms` : "N/A",
-              name === "left" ? "Left" : "Right",
-            ]) as never}
+            formatter={
+              ((value: unknown, name: unknown) => [
+                value != null ? `${String(value)} ms` : "N/A",
+                name === "left" ? "Left" : "Right",
+              ]) as never
+            }
           />
           <Legend
             verticalAlign="bottom"
