@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
@@ -39,6 +40,19 @@ class StepFrequencyData(BaseModel):
     step_frequency_hz: float
 
 
+class AsymmetryData(BaseModel):
+    gct_asymmetry_pct: float
+    ft_asymmetry_pct: float
+
+
+class GCTRangeData(BaseModel):
+    below: int
+    in_range: int
+    above: int
+    min_ms: float
+    max_ms: float
+
+
 class RunCreate(BaseModel):
     athlete_id: UUID
     event_type: str
@@ -51,3 +65,12 @@ class RunCreateResponse(BaseModel):
     event_type: str
     elapsed_ms: int | None = None
     created_at: str
+
+
+class RunMeta(BaseModel):
+    run_id: UUID
+    athlete_id: UUID
+    event_type: str
+    created_at: datetime
+    name: str | None = None
+    elapsed_ms: int | None = None

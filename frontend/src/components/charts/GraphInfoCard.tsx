@@ -8,7 +8,7 @@ export const GraphInfoCard = ({ description }: GraphInfoCardProps) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="absolute top-4 right-4">
+    <div className="absolute top-1 right-1">
       <button
         className="text-muted-foreground hover:text-foreground transition-colors"
         onMouseEnter={() => setOpen(true)}
@@ -32,7 +32,6 @@ export const GraphInfoCard = ({ description }: GraphInfoCardProps) => {
           <line x1="12" y1="8" x2="12.01" y2="8" />
         </svg>
       </button>
-
       {open && (
         <div className="absolute right-0 top-6 z-50 w-64 rounded-lg border border-border bg-card p-3 shadow-lg">
           <p className="text-xs text-muted-foreground leading-relaxed">

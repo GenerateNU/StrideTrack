@@ -5,9 +5,11 @@ import pandas as pd
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from supabase._async.client import AsyncClient
 
+from app.core.auth import get_current_coach
 from app.core.observability import get_tracer
 from app.core.supabase import get_async_supabase
 from app.repositories.csv_repository import CSVRepository
+from app.schemas.coach_schemas import Coach
 from app.schemas.csv_schemas import CSVUploadResponse
 from app.services.csv_service import CSVService
 
@@ -18,10 +20,11 @@ router = APIRouter(prefix="/csv", tags=["CSV"])
 
 # Dependency injection
 async def get_csv_service(
+    coach: Coach = Depends(get_current_coach),
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> CSVService:
     repository = CSVRepository(supabase)
-    return CSVService(repository)
+    return CSVService(repository, coach_id=coach.coach_id)
 
 
 @router.post(
@@ -32,6 +35,7 @@ async def upload_data_csv(
     athlete_id: str = Form(...),
     event_type: str = Form(...),
     name: str = Form(None),
+    elapsed_ms: int | None = Form(None),
     service: CSVService = Depends(get_csv_service),
 ) -> CSVUploadResponse:
     tracer = get_tracer()
@@ -64,7 +68,11 @@ async def upload_data_csv(
 
         try:
             result = await service.ingest_stride_csv(
-                raw_df, athlete_id=athlete_id, event_type=event_type, name=name
+                raw_df,
+                athlete_id=athlete_id,
+                event_type=event_type,
+                name=name,
+                elapsed_ms=elapsed_ms,
             )
             return result
         except HTTPException:
