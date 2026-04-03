@@ -1,4 +1,4 @@
-import { apiClient } from "@/axios.config";
+import api from "@/lib/api";
 import type {
   ApproachProfilePoint,
   LjTakeoffData,
@@ -20,7 +20,7 @@ export function useLongJumpMetrics(runId: string | null) {
     queryKey: ["long-jump-metrics", runId],
     queryFn: async () => {
       if (!runId) return null;
-      const response = await apiClient.get<LongJumpMetricRow>(
+      const response = await api.get<LongJumpMetricRow>(
         `/api/run/athletes/${runId}/metrics/long-jump`
       );
       return validateResponse(response.data, longJumpMetricRowSchema);
@@ -41,7 +41,7 @@ export function useLjTakeoffData(runId: string | null) {
     queryKey: ["long-jump-takeoff", runId],
     queryFn: async () => {
       if (!runId) return null;
-      const response = await apiClient.get<LjTakeoffData>(
+      const response = await api.get<LjTakeoffData>(
         `/api/run/athletes/${runId}/metrics/long-jump/takeoff`
       );
       return validateResponse(response.data, ljTakeoffDataSchema);
@@ -62,7 +62,7 @@ export function useLjApproachProfile(runId: string | null) {
     queryKey: ["long-jump-approach-profile", runId],
     queryFn: async () => {
       if (!runId) return null;
-      const response = await apiClient.get<ApproachProfilePoint[]>(
+      const response = await api.get<ApproachProfilePoint[]>(
         `/api/run/athletes/${runId}/metrics/long-jump/approach-profile`
       );
       return validateResponse(
@@ -86,7 +86,7 @@ export function useLjStepSeries(runId: string | null) {
     queryKey: ["long-jump-step-series", runId],
     queryFn: async () => {
       if (!runId) return null;
-      const response = await apiClient.get<StepSeriesPoint[]>(
+      const response = await api.get<StepSeriesPoint[]>(
         `/api/run/athletes/${runId}/metrics/long-jump/universal/steps`
       );
       return validateResponse(response.data, z.array(stepSeriesPointSchema));
