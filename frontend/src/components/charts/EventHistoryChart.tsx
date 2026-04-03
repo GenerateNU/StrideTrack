@@ -23,8 +23,12 @@ export const EventHistoryChart = ({
   filters,
   enabled,
 }: EventHistoryChartProps) => {
-  const { eventHistory, eventHistoryIsLoading, eventHistoryError, eventHistoryRefetch } =
-    useEventHistory(filters, enabled);
+  const {
+    eventHistory,
+    eventHistoryIsLoading,
+    eventHistoryError,
+    eventHistoryRefetch,
+  } = useEventHistory(filters, enabled);
   if (eventHistoryIsLoading) return <QueryLoading />;
   if (eventHistoryError)
     return (
