@@ -13,6 +13,7 @@ import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
 import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
+import { ReactionTimeCard } from "@/components/charts/reaction_time/ReactionTimeCard";
 import { HurdleTimelineChart } from "@/components/charts/hurdles/HurdleTimelineChart";
 import { useState } from "react";
 import EventHistoryFilterBar from "@/components/charts/EventHistoryFilterBar";
@@ -32,6 +33,7 @@ import { useRunMetrics } from "@/hooks/useRunMetrics.hooks";
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 const HARDCODED_BOSCO_RUN_ID = "b1a2c3d4-5678-9abc-def0-111111111111";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
+const HARDCODED_RT_RUN_ID = "cccccccc-0001-4000-8000-000000000001";
 
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -292,6 +294,17 @@ export default function VisualizationsPage() {
               Fatigue Index
             </h3>
             <FatigueIndexKPI runId={HARDCODED_BOSCO_RUN_ID} />
+          </div>
+        </div>
+        {/* Reaction Time */}
+        <h2 className="text-2xl font-bold mt-8 mb-6 text-foreground">
+          Reaction Time Test
+        </h2>
+        <div className="space-y-8">
+          <div className="flex flex-col gap-3">
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <ReactionTimeCard runId={HARDCODED_RT_RUN_ID} />
+            </div>
           </div>
         </div>
       </div>
