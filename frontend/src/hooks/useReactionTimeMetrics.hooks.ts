@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import api from "@/lib/api";
 
 interface ReactionTimeMetrics {
+  run_id: string;
   reaction_time_ms: number;
   onset_timestamp_ms: number;
-  stimulus_timestamp_ms: number;
   zone: "green" | "yellow" | "red";
   zone_description: string;
 }
@@ -14,19 +14,6 @@ interface UseReactionTimeMetricsResult {
   loading: boolean;
   error: string | null;
 }
-
-// Hardcoded mock payload — replace with real sensor data once pipeline is wired up.
-const MOCK_REQUEST = {
-  stimulus_timestamp_ms: 1000,
-  sensor_data: [
-    { timestamp_ms: 900, timestamp_iso: "", sensor_id: "left", value: 5 },
-    { timestamp_ms: 1100, timestamp_iso: "", sensor_id: "left", value: 5 },
-    { timestamp_ms: 1200, timestamp_iso: "", sensor_id: "left", value: 10 },
-    { timestamp_ms: 1210, timestamp_iso: "", sensor_id: "left", value: 25 },
-    { timestamp_ms: 1300, timestamp_iso: "", sensor_id: "left", value: 80 },
-  ],
-  force_threshold_n: 20,
-};
 
 export const useReactionTimeMetrics = (
   runId: string
@@ -39,9 +26,8 @@ export const useReactionTimeMetrics = (
     const fetchMetrics = async () => {
       try {
         setLoading(true);
-        const res = await api.post<ReactionTimeMetrics>(
-          "/reaction-time/analyze",
-          MOCK_REQUEST
+        const res = await api.get<ReactionTimeMetrics>(
+          `/reaction-time/${runId}`
         );
         setRtMetrics(res.data);
       } catch (err) {

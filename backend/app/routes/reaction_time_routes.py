@@ -1,8 +1,13 @@
 import logging
+from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
+from supabase._async.client import AsyncClient
 
-from app.schemas.reaction_time_schemas import ReactionTimeRequest, ReactionTimeResponse
+from app.core.exceptions import NotFoundException
+from app.core.supabase import get_async_supabase
+from app.repositories.reaction_time_repository import ReactionTimeRepository
+from app.schemas.reaction_time_schemas import ReactionTimeResponse
 from app.services.reaction_time_service import ReactionTimeService
 
 logger = logging.getLogger(__name__)
@@ -10,22 +15,29 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/reaction-time", tags=["Reaction Time"])
 
 
-def get_reaction_time_service() -> ReactionTimeService:
-    return ReactionTimeService()
+async def get_reaction_time_service(
+    supabase: AsyncClient = Depends(get_async_supabase),
+) -> ReactionTimeService:
+    return ReactionTimeService(ReactionTimeRepository(supabase))
 
 
-@router.post("/analyze", response_model=ReactionTimeResponse)
-async def analyze_reaction_time(
-    data: ReactionTimeRequest,
+@router.get(
+    "/{run_id}",
+    response_model=ReactionTimeResponse,
+    summary="Get reaction time for a run",
+)
+async def get_reaction_time(
+    run_id: UUID,
+    service: ReactionTimeService = Depends(get_reaction_time_service),
 ) -> ReactionTimeResponse:
-    logger.info("Route: POST /reaction-time/analyze")
+    logger.info(f"Route: GET /reaction-time/{run_id}")
     try:
-        service = get_reaction_time_service()
-        result = service.compute(data)
-        logger.info(
-            f"Route: Reaction time result = {result.reaction_time_ms}ms ({result.zone})"
-        )
-        return result
-    except ValueError as e:
-        logger.warning(f"Route: Bad request - {e}")
-        raise HTTPException(status_code=422, detail=str(e)) from e
+        return await service.get_reaction_time(run_id)
+    except NotFoundException as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc

@@ -1,10 +1,12 @@
 import logging
+from uuid import UUID
 
-import pandas as pd
-
-from app.schemas.reaction_time_schemas import ReactionTimeRequest, ReactionTimeResponse
+from app.repositories.reaction_time_repository import ReactionTimeRepository
+from app.schemas.reaction_time_schemas import ReactionTimeResponse
 
 logger = logging.getLogger(__name__)
+
+FORCE_THRESHOLD_GCT_MS = 20
 
 
 def _classify_zone(reaction_time_ms: float) -> tuple[str, str]:
@@ -17,40 +19,38 @@ def _classify_zone(reaction_time_ms: float) -> tuple[str, str]:
 
 
 class ReactionTimeService:
-    def compute(self, data: ReactionTimeRequest) -> ReactionTimeResponse:
-        logger.info("Service: Computing reaction time")
+    def __init__(self, repository: ReactionTimeRepository) -> None:
+        self.repository = repository
 
-        df = pd.DataFrame(data.sensor_data)
+    async def get_reaction_time(self, run_id: UUID) -> ReactionTimeResponse:
+        logger.info(f"Service: Computing reaction time for run {run_id}")
 
-        # Ensure correct types
-        df["timestamp_ms"] = pd.to_numeric(df["timestamp_ms"])
-        df["value"] = pd.to_numeric(df["value"])
+        metrics = await self.repository.get_run_metrics(run_id)
 
-        # Only look at samples after the stimulus
-        post_stimulus = df[df["timestamp_ms"] > data.stimulus_timestamp_ms].copy()
+        # Stimulus is the start of the run (ic_time = 0)
+        stimulus_ms = 0.0
 
-        if post_stimulus.empty:
-            raise ValueError("No sensor data found after stimulus timestamp.")
+        # First metric where gct_ms crosses threshold indicates GCT onset
+        onset = next(
+            (m for m in metrics if m.gct_ms >= FORCE_THRESHOLD_GCT_MS),
+            None,
+        )
 
-        # First sample where force crosses the GCT onset threshold
-        onset_rows = post_stimulus[post_stimulus["value"] >= data.force_threshold_n]
-
-        if onset_rows.empty:
+        if onset is None:
             raise ValueError(
-                f"No GCT onset detected above {data.force_threshold_n}N after stimulus."
+                f"No GCT onset detected above {FORCE_THRESHOLD_GCT_MS}ms threshold."
             )
 
-        onset_timestamp_ms = float(onset_rows.iloc[0]["timestamp_ms"])
-        reaction_time_ms = onset_timestamp_ms - data.stimulus_timestamp_ms
-
+        onset_timestamp_ms = float(onset.ic_time)
+        reaction_time_ms = onset_timestamp_ms - stimulus_ms
         zone, zone_description = _classify_zone(reaction_time_ms)
 
         logger.info(f"Service: Reaction time = {reaction_time_ms:.2f}ms, zone = {zone}")
 
         return ReactionTimeResponse(
+            run_id=str(run_id),
             reaction_time_ms=round(reaction_time_ms, 2),
             onset_timestamp_ms=onset_timestamp_ms,
-            stimulus_timestamp_ms=data.stimulus_timestamp_ms,
             zone=zone,
             zone_description=zone_description,
         )

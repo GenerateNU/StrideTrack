@@ -307,3 +307,13 @@ INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_tim
     ('11111111-1111-1111-1111-111111111111', 25, 'left',  13110, 13200, 13730, 90,  530, 620),
     ('11111111-1111-1111-1111-111111111111', 25, 'right', 13420, 13510, 14040, 90,  530, 620),
     ('11111111-1111-1111-1111-111111111111', 26, 'left',  13730, 13840, 14320, 110, 480, 590);
+
+INSERT INTO RUN (run_id, athlete_id, event_type, name) VALUES
+    ('cccccccc-0001-4000-8000-000000000001', '00000000-0000-0000-0000-000000000002', 'reaction_time_test', 'Ben Reaction Time Test 1');
+
+INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms) VALUES
+    ('cccccccc-0001-4000-8000-000000000001', 1, 'right', 0,   50,  175,  5,   125, 175),
+    ('cccccccc-0001-4000-8000-000000000001', 2, 'right', 175, 200, 350,  25,  150, 175),
+    ('cccccccc-0001-4000-8000-000000000001', 3, 'right', 350, 390, 530,  40,  140, 180),
+    ('cccccccc-0001-4000-8000-000000000001', 4, 'right', 530, 580, 710,  50,  130, 180),
+    ('cccccccc-0001-4000-8000-000000000001', 5, 'right', 710, 760, 890,  50,  130, 180);
