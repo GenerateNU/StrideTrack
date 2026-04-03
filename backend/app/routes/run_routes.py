@@ -2,7 +2,7 @@ import logging
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from supabase._async.client import AsyncClient
 
 from app.core.auth import get_current_coach
@@ -10,6 +10,8 @@ from app.core.supabase import get_async_supabase
 from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRepository
 from app.schemas.coach_schemas import Coach
 from app.schemas.run_schemas import (
+    AsymmetryData,
+    GCTRangeData,
     LROverlayData,
     RunMeta,
     RunResponse,
@@ -70,7 +72,7 @@ async def get_run_metric_record(
 async def get_run_metadata(
     run_id: UUID, service: RunService = Depends(get_run_service)
 ) -> RunMeta:
-    """Get a specific run's metadata'."""
+    """Get a specific run's metadata."""
     logger.info(f"Route: GET /athletes/{run_id}/metadata")
     meta = await service.get_meta_by_run_id(run_id)
     logger.info(f"Route: Returning metadata for run: {run_id}")
@@ -120,6 +122,30 @@ async def get_step_frequency(
     """Get step frequency data for a specific run."""
     logger.info(f"Route: GET /athletes/{run_id}/metrics/step-frequency")
     return await service.transform_step_frequency(run_id)
+
+
+@router.get("/athletes/{run_id}/metrics/asymmetry", response_model=AsymmetryData)
+async def get_asymmetry(
+    run_id: UUID,
+    service: RunService = Depends(get_run_service),
+) -> AsymmetryData:
+    """Get GCT and FT asymmetry % between left and right foot."""
+    logger.info(f"Route: GET /athletes/{run_id}/metrics/asymmetry")
+    return await service.get_asymmetry(run_id)
+
+
+@router.get("/athletes/{run_id}/metrics/gct-range", response_model=GCTRangeData)
+async def get_gct_range(
+    run_id: UUID,
+    min_ms: float = Query(default=100.0),
+    max_ms: float = Query(default=200.0),
+    service: RunService = Depends(get_run_service),
+) -> GCTRangeData:
+    """Bucket steps by GCT into below / in / above a user-defined range."""
+    logger.info(
+        f"Route: GET /athletes/{run_id}/metrics/gct-range?min_ms={min_ms}&max_ms={max_ms}"
+    )
+    return await service.get_gct_range(run_id, min_ms, max_ms)
 
 
 @router.post("", response_model=RunCreateResponse, status_code=status.HTTP_201_CREATED)

@@ -5,6 +5,8 @@ from uuid import UUID
 from app.core.exceptions import NotFoundException
 from app.repositories.run_repository import RunCreate, RunCreateResponse, RunRepository
 from app.schemas.run_schemas import (
+    AsymmetryData,
+    GCTRangeData,
     LROverlayData,
     RunMeta,
     RunResponse,
@@ -32,7 +34,6 @@ class RunService:
     async def get_metrics_by_run_id(self, run_id: UUID) -> list[RunResponse]:
         """Get all run metrics for a specific run."""
 
-        # Verify run belongs to an athlete under this coach
         run_check = (
             await self.repository.supabase.table("run")
             .select("run_id, athletes!inner(coach_id)")
@@ -52,7 +53,6 @@ class RunService:
     async def get_meta_by_run_id(self, run_id: UUID) -> RunMeta:
         """Get metadata for a specific run."""
 
-        # Verify run belongs to an athlete under this coach
         run_check = (
             await self.repository.supabase.table("run")
             .select("run_id, athletes!inner(coach_id)")
@@ -102,6 +102,52 @@ class RunService:
         transformed = transform_data_for_step_frequency(data)
         logger.info(f"Service: Transformed run {run_id} for step frequency chart")
         return transformed
+
+    async def get_asymmetry(self, run_id: UUID) -> AsymmetryData:
+        """Calculate GCT and FT asymmetry % between left and right foot."""
+        logger.info(f"Service: Calculating asymmetry for run {run_id}")
+        data = await self.repository.get_run_metrics(run_id)
+
+        from collections import defaultdict
+
+        strides: dict = defaultdict(dict)
+        for m in data:
+            strides[m.stride_num][m.foot.lower()] = m
+
+        gct_asym_list = []
+        ft_asym_list = []
+
+        for stride in strides.values():
+            l, r = stride.get("left"), stride.get("right")
+            if l and r:
+                gct_avg = (l.gct_ms + r.gct_ms) / 2
+                ft_avg = (l.flight_ms + r.flight_ms) / 2
+                if gct_avg > 0:
+                    gct_asym_list.append(abs(l.gct_ms - r.gct_ms) / gct_avg * 100)
+                if ft_avg > 0:
+                    ft_asym_list.append(abs(l.flight_ms - r.flight_ms) / ft_avg * 100)
+
+        gct_asym = sum(gct_asym_list) / len(gct_asym_list) if gct_asym_list else 0.0
+        ft_asym = sum(ft_asym_list) / len(ft_asym_list) if ft_asym_list else 0.0
+
+        logger.info(f"Service: Calculated asymmetry for run {run_id}")
+        return AsymmetryData(gct_asymmetry_pct=gct_asym, ft_asymmetry_pct=ft_asym)
+
+    async def get_gct_range(
+        self, run_id: UUID, min_ms: float, max_ms: float
+    ) -> GCTRangeData:
+        """Bucket steps by GCT into below / in / above a user-defined range."""
+        logger.info(f"Service: Calculating GCT range for run {run_id}")
+        data = await self.repository.get_run_metrics(run_id)
+
+        below = sum(1 for m in data if m.gct_ms < min_ms)
+        in_range = sum(1 for m in data if min_ms <= m.gct_ms <= max_ms)
+        above = sum(1 for m in data if m.gct_ms > max_ms)
+
+        logger.info(f"Service: Calculated GCT range for run {run_id}")
+        return GCTRangeData(
+            below=below, in_range=in_range, above=above, min_ms=min_ms, max_ms=max_ms
+        )
 
     async def create_run(self, data: RunCreate) -> RunCreateResponse:
         """Create a new run."""

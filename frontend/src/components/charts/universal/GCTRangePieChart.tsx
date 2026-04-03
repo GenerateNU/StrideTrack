@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRunMetrics } from "@/hooks/useRunMetrics.hooks";
+import { useGCTRangeData } from "@/hooks/useRunMetrics.hooks";
 import { QueryLoading } from "@/components/QueryLoading";
 import { QueryError } from "@/components/QueryError";
 import {
@@ -12,33 +12,31 @@ import {
 } from "recharts";
 
 const COLORS = {
-  below: "#22c55e", // green
-  in: "#f59e0b", // yellow
-  above: "#ef4444", // red
+  below: "#22c55e",
+  in_range: "#f59e0b",
+  above: "#ef4444",
 };
 
 export const GCTRangePieChart = ({ runId }: { runId: string }) => {
-  const { metrics, metricsIsLoading, metricsError, metricsRefetch } =
-    useRunMetrics(runId);
-
   const [minMs, setMinMs] = useState(100);
   const [maxMs, setMaxMs] = useState(200);
 
-  if (metricsIsLoading) return <QueryLoading />;
-  if (metricsError)
-    return <QueryError error={metricsError} refetch={metricsRefetch} />;
-  if (!metrics) return null;
+  const { gctRangeData, gctRangeLoading, gctRangeError, gctRangeRefetch } =
+    useGCTRangeData(runId, minMs, maxMs);
 
-  const below = metrics.filter((m) => m.gct_ms < minMs).length;
-  const inRange = metrics.filter(
-    (m) => m.gct_ms >= minMs && m.gct_ms <= maxMs
-  ).length;
-  const above = metrics.filter((m) => m.gct_ms > maxMs).length;
+  if (gctRangeLoading) return <QueryLoading />;
+  if (gctRangeError)
+    return <QueryError error={gctRangeError} refetch={gctRangeRefetch} />;
+  if (!gctRangeData) return null;
 
   const data = [
-    { name: `Below ${minMs}ms`, value: below, key: "below" },
-    { name: `${minMs}–${maxMs}ms`, value: inRange, key: "in" },
-    { name: `Above ${maxMs}ms`, value: above, key: "above" },
+    { name: `Below ${minMs}ms`, value: gctRangeData.below, key: "below" },
+    {
+      name: `${minMs}–${maxMs}ms`,
+      value: gctRangeData.in_range,
+      key: "in_range",
+    },
+    { name: `Above ${maxMs}ms`, value: gctRangeData.above, key: "above" },
   ].filter((d) => d.value > 0);
 
   return (

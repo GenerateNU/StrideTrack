@@ -40,6 +40,19 @@ class StepFrequencyData(BaseModel):
     step_frequency_hz: float
 
 
+class AsymmetryData(BaseModel):
+    gct_asymmetry_pct: float
+    ft_asymmetry_pct: float
+
+
+class GCTRangeData(BaseModel):
+    below: int
+    in_range: int
+    above: int
+    min_ms: float
+    max_ms: float
+
+
 class RunCreate(BaseModel):
     athlete_id: UUID
     event_type: str
