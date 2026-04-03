@@ -256,7 +256,8 @@ export default function VisualizationsPage() {
           <h2 className="text-xl font-bold mb-3 text-primary">
             Split Score Analysis
           </h2>
-          <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+          <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+            <GraphInfoCard description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range." />
             <SplitScoreChart runId={HARDCODED_HURDLE_RUN_ID} />
           </div>
         </div>

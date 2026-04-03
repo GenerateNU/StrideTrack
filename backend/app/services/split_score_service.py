@@ -10,7 +10,11 @@ from app.repositories.split_score_repository import SplitScoreRepository
 from app.schemas.split_score_schemas import RunMetric, SegmentScore, SplitScoreResponse
 from app.utils.hurdle_metrics import transform_stride_cycles_to_hurdle_metrics
 from app.utils.split_score import compute_diffs, generate_coaching_notes
-from app.utils.split_score_constants import SEGMENT_LABELS, SUPPORTED_EVENTS
+from app.utils.split_score_constants import (
+    POPULATION_STATS,
+    SEGMENT_LABELS,
+    SUPPORTED_EVENTS,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +59,7 @@ class SplitScoreService:
             segments=segment_scores,
             coaching_notes=notes,
             population_mean_pcts=POPULATION_STATS[event_type]["mean"],
+            population_std_pcts=POPULATION_STATS[event_type]["std"],
         )
 
     def _compute_segments(

@@ -31,3 +31,4 @@ class SplitScoreResponse(BaseModel):
     segments: list[SegmentScore]
     coaching_notes: list[str]
     population_mean_pcts: list[float]
+    population_std_pcts: list[float]
