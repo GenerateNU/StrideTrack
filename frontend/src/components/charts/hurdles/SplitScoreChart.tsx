@@ -3,7 +3,6 @@ import { QueryLoading } from "@/components/QueryLoading";
 import { useSplitScore } from "@/hooks/useSplitScore.hooks";
 import { chartColors } from "@/lib/chartColors";
 import axios from "axios";
-import type { TooltipProps } from "recharts";
 import {
   Area,
   CartesianGrid,
@@ -34,7 +33,8 @@ function getDeviationColor(athletePct: number, idealPct: number, std: number) {
   return deviation > 0 ? "#ef4444" : "#22c55e";
 }
 
-function CustomTooltip({ active, payload }: TooltipProps<number, string>) {
+function CustomTooltip(props: { active?: boolean; payload?: Array<{ payload: ChartDataPoint }> }) {
+  const { active, payload } = props;
   if (!active || !payload?.length) return null;
 
   const data = payload[0]?.payload as ChartDataPoint | undefined;

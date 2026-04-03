@@ -56,11 +56,11 @@ VALUES (
 );
 
 -- Insert RUN records
-INSERT INTO RUN (run_id, athlete_id, event_type, name) VALUES
-    ('d0271452-4bec-4759-84ef-c62beaafdbf0', '00000000-0000-0000-0000-000000000002', 'sprint_100m', 'Ben Sprint 1'),
-    ('86fb3baf-264d-4047-ad17-d97be11eaec3', '00000000-0000-0000-0000-000000000003', 'sprint_100m', 'Michael Sprint 1'),
-    ('acf9da17-bf30-4eb2-8494-3d641de4301b', '00000000-0000-0000-0000-000000000003', 'sprint_100m', 'Michael Sprint 2'),
-    ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000002', 'hurdles_110m', 'Ben 110mH Example 1');
+INSERT INTO RUN (run_id, athlete_id, event_type, name, elapsed_ms) VALUES
+    ('d0271452-4bec-4759-84ef-c62beaafdbf0', '00000000-0000-0000-0000-000000000002', 'sprint_100m', 'Ben Sprint 1', 16960),
+    ('86fb3baf-264d-4047-ad17-d97be11eaec3', '00000000-0000-0000-0000-000000000003', 'sprint_100m', 'Michael Sprint 1', 19180),
+    ('acf9da17-bf30-4eb2-8494-3d641de4301b', '00000000-0000-0000-0000-000000000003', 'sprint_100m', 'Michael Sprint 2', 19329),
+    ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000002', 'hurdles_110m', 'Ben 110mH Example 1', 14320);
 
 -- Insert RUN_METRICS (all processed data from 3 sprint runs)
 INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms) VALUES
@@ -203,10 +203,10 @@ INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_tim
     ('acf9da17-bf30-4eb2-8494-3d641de4301b', 25, 'left', 18319, 19119, 19329, 800, 210, 1010);
 
     -- Insert Bosco RUN record
-INSERT INTO RUN (run_id, athlete_id, event_type, name) VALUES
-    ('b1a2c3d4-5678-9abc-def0-111111111111', '00000000-0000-0000-0000-000000000002', 'bosco_test', 'Ben Bosco Test 1'),
-    ('b2a2c3d4-5678-9abc-def0-222222222222', '00000000-0000-0000-0000-000000000003', 'bosco_test', 'Michael Bosco Test 1'),
-    ('b3a2c3d4-5678-9abc-def0-333333333333', '00000000-0000-0000-0000-000000000003', 'bosco_test', 'Michael Bosco Test 2');
+INSERT INTO RUN (run_id, athlete_id, event_type, name, elapsed_ms) VALUES
+    ('b1a2c3d4-5678-9abc-def0-111111111111', '00000000-0000-0000-0000-000000000002', 'bosco_test', 'Ben Bosco Test 1', 11090),
+    ('b2a2c3d4-5678-9abc-def0-222222222222', '00000000-0000-0000-0000-000000000003', 'bosco_test', 'Michael Bosco Test 1', 11600),
+    ('b3a2c3d4-5678-9abc-def0-333333333333', '00000000-0000-0000-0000-000000000003', 'bosco_test', 'Michael Bosco Test 2', 10920);
 
 -- Insert Bosco RUN_METRICS 
 INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms) VALUES
@@ -308,8 +308,8 @@ INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_tim
     ('11111111-1111-1111-1111-111111111111', 25, 'right', 13420, 13510, 14040, 90,  530, 620),
     ('11111111-1111-1111-1111-111111111111', 26, 'left',  13730, 13840, 14320, 110, 480, 590);
 
-INSERT INTO RUN (run_id, athlete_id, event_type, name) VALUES
-    ('cccccccc-0001-4000-8000-000000000001', '00000000-0000-0000-0000-000000000002', 'reaction_time_test', 'Ben Reaction Time Test 1');
+INSERT INTO RUN (run_id, athlete_id, event_type, name, elapsed_ms) VALUES
+    ('cccccccc-0001-4000-8000-000000000001', '00000000-0000-0000-0000-000000000002', 'reaction_time_test', 'Ben Reaction Time Test 1', 890);
 
 INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms) VALUES
     ('cccccccc-0001-4000-8000-000000000001', 1, 'right', 0,   50,  175,  5,   125, 175),

@@ -23,7 +23,7 @@ class EventHistoryRun(BaseModel):
     run_id: str
     name: str
     event_type: str
-    elapsed_ms: int | None = None
+    elapsed_ms: int
     created_at: str
 
 

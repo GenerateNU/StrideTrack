@@ -42,8 +42,7 @@ export default function RunAnalysisPage() {
               .replace(/_/g, " ")
               .replace(/\b\w/g, (c) => c.toUpperCase())}{" "}
             · {new Date(runMeta.created_at).toLocaleDateString()}
-            {runMeta.elapsed_ms !== null &&
-              ` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
+            {` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
           </p>
         )}
       </div>
