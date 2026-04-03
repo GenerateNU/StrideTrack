@@ -8,20 +8,34 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
 
 interface LROverlayLineChartProps {
   runId: string;
   metric: "gct_ms" | "flight_ms";
+  showMeanReferenceLine?: boolean;
 }
 
 export const LROverlayLineChart = ({
   runId,
   metric,
+  showMeanReferenceLine = false,
 }: LROverlayLineChartProps) => {
   const { lrData } = useLROverlayData(runId, metric);
   if (!lrData) return null;
+
+  // Compute mean across all non-null left + right values
+  const allValues: number[] = [];
+  for (const d of lrData) {
+    if (d.left != null) allValues.push(d.left);
+    if (d.right != null) allValues.push(d.right);
+  }
+  const mean =
+    allValues.length > 0
+      ? allValues.reduce((s, v) => s + v, 0) / allValues.length
+      : null;
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -71,6 +85,14 @@ export const LROverlayLineChart = ({
           iconType="circle"
           iconSize={8}
         />
+        {showMeanReferenceLine && mean != null && (
+          <ReferenceLine
+            y={mean}
+            stroke={chartColors.primary}
+            strokeDasharray="6 3"
+            strokeWidth={1.5}
+          />
+        )}
         <Line
           type="monotone"
           dataKey="left"

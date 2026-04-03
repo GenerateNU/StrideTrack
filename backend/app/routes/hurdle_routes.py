@@ -4,13 +4,16 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
+from app.core.auth import get_current_coach
 from app.core.supabase import get_async_supabase
 from app.repositories.hurdle_repository import HurdleRepository
+from app.schemas.coach_schemas import Coach
 from app.schemas.hurdle_schemas import (
     GctIncreaseData,
     HurdleMetricRow,
     HurdleProjectionResponse,
     HurdleSplitBarData,
+    HurdleTimelineResponse,
     LandingGctBarData,
     StepsBetweenHurdlesData,
     TakeoffFtBarData,
@@ -25,10 +28,11 @@ router = APIRouter(prefix="/run", tags=["Run"])
 
 # Dependency injection
 async def get_hurdle_service(
+    coach: Coach = Depends(get_current_coach),
     supabase: AsyncClient = Depends(get_async_supabase),
 ) -> HurdleService:
     repository = HurdleRepository(supabase)
-    return HurdleService(repository)
+    return HurdleService(repository, coach_id=coach.coach_id)
 
 
 @router.get(
@@ -121,7 +125,6 @@ async def get_gct_increase(
     logger.info(f"Route: GET /run/athletes/{run_id}/metrics/hurdles/gct-increase")
     return await service.get_gct_increase(run_id)
 
-
 @router.get(
     "/athletes/{run_id}/metrics/hurdles/projection",
     response_model=HurdleProjectionResponse,
@@ -133,3 +136,16 @@ async def get_hurdle_projection(
     """Get projected race time for a partial hurdle run."""
     logger.info(f"Route: GET /run/athletes/{run_id}/metrics/hurdles/projection")
     return await service.get_hurdle_projection(run_id)
+
+
+@router.get(
+    "/athletes/{run_id}/metrics/hurdles/timeline",
+    response_model=HurdleTimelineResponse,
+)
+async def get_hurdle_timeline(
+    run_id: UUID,
+    service: HurdleService = Depends(get_hurdle_service),
+) -> HurdleTimelineResponse:
+    """Get time-series data for the hurdle timeline chart."""
+    logger.info(f"Route: GET /run/athletes/{run_id}/metrics/hurdles/timeline")
+    return await service.get_hurdle_timeline(run_id)

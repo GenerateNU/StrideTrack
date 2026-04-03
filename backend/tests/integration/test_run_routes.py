@@ -2,8 +2,8 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from supabase import Client
 
+from app.schemas.coach_schemas import Coach
 from tests.factories.athlete_factory import AthleteFactory
 
 BASE = "/api/run"
@@ -75,15 +75,13 @@ class TestCreateRun:
     def test_create_run_returns_201(
         self,
         test_client: TestClient,
-        supabase_client: Client,
+        test_coach: Coach,
         created_ids: dict,
     ) -> None:
         """Creating a run with valid data should return 201 with run_id and created_at."""
-        coach = supabase_client.table("coaches").insert({}).execute()
-        coach_id = coach.data[0]["coach_id"]
-        created_ids["coach_ids"].append(coach_id)
-
-        athlete_data = AthleteFactory.create(coach_id=coach_id, name="Run Test Athlete")
+        athlete_data = AthleteFactory.create(
+            coach_id=str(test_coach.coach_id), name="Run Test Athlete"
+        )
         athlete_resp = test_client.post(ATHLETE_BASE, json=athlete_data)
         assert athlete_resp.status_code == 201
         athlete_id = athlete_resp.json()["athlete_id"]

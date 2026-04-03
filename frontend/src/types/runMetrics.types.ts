@@ -36,8 +36,23 @@ export const stepFrequencySchema = z.object({
   step_frequency_hz: z.number(),
 });
 
+export const asymmetrySchema = z.object({
+  gct_asymmetry_pct: z.number(),
+  ft_asymmetry_pct: z.number(),
+});
+
+export const gctRangeSchema = z.object({
+  below: z.number(),
+  in_range: z.number(),
+  above: z.number(),
+  min_ms: z.number(),
+  max_ms: z.number(),
+});
+
 export type RunMetric = z.infer<typeof runMetricSchema>;
 export type LROverlayData = z.infer<typeof lrOverlaySchema>;
 export type StackedBarData = z.infer<typeof stackedBarSchema>;
 export type SprintDriftData = z.infer<typeof sprintDriftSchema>;
 export type StepFrequencyData = z.infer<typeof stepFrequencySchema>;
+export type AsymmetryData = z.infer<typeof asymmetrySchema>;
+export type GCTRangeData = z.infer<typeof gctRangeSchema>;

@@ -4,7 +4,7 @@ import AthleteProfilePage from "@/pages/AthleteProfilePage";
 import HistoryPage from "@/pages/HistoryPage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
-import RecordingPage from "@/pages/RecordRunPage";
+import RecordRunPage from "@/pages/RecordRunPage";
 import RunAnalysisPage from "@/pages/RunAnalysisPage";
 import VisualizationsPage from "@/pages/VisualizationsPage";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -21,7 +21,7 @@ function App() {
               <Routes>
                 <Route element={<AppLayout />}>
                   <Route path="/" element={<HomePage />} />
-                  <Route path="/record" element={<RecordingPage />} />
+                  <Route path="/record" element={<RecordRunPage />} />
                   <Route path="/history" element={<HistoryPage />} />
                   <Route
                     path="/visualizations"

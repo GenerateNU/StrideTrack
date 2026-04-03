@@ -4,12 +4,16 @@ from uuid import UUID
 import numpy as np
 import pandas as pd
 
+from app.core.exceptions import NotFoundException
 from app.repositories.hurdle_repository import HurdleRepository
 from app.schemas.hurdle_schemas import (
     GctIncreaseData,
+    HurdleMarker,
     HurdleMetricRow,
     HurdleProjectionResponse,
     HurdleSplitBarData,
+    HurdleTimelinePoint,
+    HurdleTimelineResponse,
     LandingGctBarData,
     StepsBetweenHurdlesData,
     TakeoffFtBarData,
@@ -32,11 +36,23 @@ logger = logging.getLogger(__name__)
 class HurdleService:
     """Service for hurdle-metric related business logic."""
 
-    def __init__(self, repository: HurdleRepository) -> None:
+    def __init__(self, repository: HurdleRepository, coach_id: UUID) -> None:
         self.repository = repository
+        self.coach_id = coach_id
 
     async def _get_hurdle_metric_rows(self, run_id: UUID) -> list[HurdleMetricRow]:
         """Fetch raw steps, run the hurdle transform, and return validated HurdleMetricRow objects."""
+        run_check = (
+            await self.repository.supabase.table("run")
+            .select("run_id, athletes!inner(coach_id)")
+            .eq("run_id", str(run_id))
+            .eq("athletes.coach_id", str(self.coach_id))
+            .execute()
+        )
+
+        if not run_check.data:
+            raise NotFoundException("Run", str(run_id))
+
         steps = await self.repository.get_hurdle_metrics(run_id)
 
         df = pd.DataFrame(steps)
@@ -106,3 +122,78 @@ class HurdleService:
         completed_metrics = await self._get_hurdle_metric_rows(run_id)
         result = project_hurdle_race(completed_metrics, target_event)
         return HurdleProjectionResponse(**result)
+
+    async def get_hurdle_timeline(self, run_id: UUID) -> HurdleTimelineResponse:
+        """Build time-series points for the hurdle timeline chart."""
+        logger.info(f"Service: Getting hurdle timeline for run {run_id}")
+        steps = await self.repository.get_hurdle_metrics(run_id)
+        points: list[HurdleTimelinePoint] = []
+
+        for step in steps:
+            foot = step["foot"]
+            ic_ms = step["ic_time"]
+            to_ms = step["to_time"]
+            gct_ms = step["gct_ms"]
+            ft_ms = step["flight_ms"]
+
+            if ic_ms is None or to_ms is None:
+                continue
+
+            ic_s = ic_ms / 1000
+            to_s = to_ms / 1000
+
+            # Ground phase — two points to make flat bottom
+            gt_mid_s = (ic_ms + (to_ms - ic_ms) / 2) / 1000
+            for t in [ic_s, gt_mid_s, to_s]:
+                points.append(
+                    HurdleTimelinePoint(
+                        time_s=round(t, 4),
+                        foot=foot,
+                        phase="ground",
+                        gct_ms=gct_ms,
+                        ft_ms=None,
+                    )
+                )
+
+            # Air phase
+            if ft_ms:
+                ft_mid_s = (to_ms + ft_ms / 2) / 1000  # midpoint of flight
+                ft_end_s = (to_ms + ft_ms) / 1000
+                for t in [to_s, ft_mid_s, ft_end_s]:
+                    points.append(
+                        HurdleTimelinePoint(
+                            time_s=round(t, 4),
+                            foot=foot,
+                            phase="air",
+                            gct_ms=None,
+                            ft_ms=ft_ms,
+                        )
+                    )
+
+        # Sort per foot separately to preserve ground→air→ground sequence
+        left_points = sorted(
+            [p for p in points if p.foot == "left"], key=lambda p: p.time_s
+        )
+        right_points = sorted(
+            [p for p in points if p.foot == "right"], key=lambda p: p.time_s
+        )
+        points = left_points + right_points
+
+        hurdle_rows = await self._get_hurdle_metric_rows(run_id)
+        markers = [
+            HurdleMarker(
+                time_s=round(row.clearance_start_ms / 1000, 4),
+                hurdle_num=row.hurdle_num,
+            )
+            for row in hurdle_rows
+        ]
+
+        logger.info(
+            f"Service: Returning {len(points)} timeline points for run {run_id}"
+        )
+        return HurdleTimelineResponse(
+            points=points,
+            left_points=left_points,
+            right_points=right_points,
+            hurdle_markers=markers,
+        )
