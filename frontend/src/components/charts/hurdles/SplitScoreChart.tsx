@@ -4,14 +4,16 @@ import { useSplitScore } from "@/hooks/useSplitScore.hooks";
 import { chartColors } from "@/lib/chartColors";
 import {
   CartesianGrid,
+  Legend,
   Line,
   LineChart,
-  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+
+const ON_PACE_THRESHOLD = 0.1;
 
 export const SplitScoreChart = ({ runId }: { runId: string }) => {
   const { splitScoreData, loading, error } = useSplitScore(runId);
@@ -21,11 +23,12 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
     return <QueryError error={new Error(error)} refetch={() => void 0} />;
   if (!splitScoreData) return null;
 
-  const { segments, coaching_notes } = splitScoreData;
+  const { segments, coaching_notes, population_mean_pcts } = splitScoreData;
 
   const data = segments.map((seg, i) => ({
-    segment: i + 1,
     label: seg.label,
+    athlete: parseFloat(seg.pct_of_total.toFixed(2)),
+    ideal: parseFloat(population_mean_pcts[i].toFixed(2)),
     diff_s: seg.diff_s,
     diff_pct: seg.diff_pct,
   }));
@@ -54,7 +57,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
           />
           <YAxis
             label={{
-              value: "Diff vs Average (s)",
+              value: "% of Total Time",
               angle: -90,
               position: "insideLeft",
               offset: 0,
@@ -65,6 +68,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
               },
             }}
             tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
+            domain={["auto", "auto"]}
           />
           <Tooltip
             contentStyle={{
@@ -75,45 +79,52 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
               backgroundColor: chartColors.card,
               color: chartColors.foreground,
             }}
-            formatter={(value, _name, props) => {
+            formatter={(value, name, props) => {
               const num = typeof value === "number" ? value : 0;
+              if (name === "ideal") return [`${num.toFixed(2)}%`, "Ideal Pace"];
+              const diff_s = (props.payload as { diff_s: number }).diff_s;
               const diff_pct = (props.payload as { diff_pct: number }).diff_pct;
-              const sign = num > 0 ? "+" : "";
+              const sign = diff_s > 0 ? "+" : "";
               const direction =
-                Math.abs(num) <= 0.1
+                Math.abs(diff_s) <= ON_PACE_THRESHOLD
                   ? "on pace"
-                  : num > 0
+                  : diff_s > 0
                     ? "slower"
                     : "faster";
               return [
-                `${sign}${num.toFixed(2)}s (${Math.abs(diff_pct).toFixed(1)}% ${direction})`,
-                "vs average",
+                `${num.toFixed(2)}% (${sign}${diff_s.toFixed(2)}s, ${Math.abs(diff_pct).toFixed(1)}% ${direction})`,
+                "Athlete",
               ];
             }}
             labelFormatter={(label) => `${label}`}
           />
-          <ReferenceLine
-            y={0}
-            stroke={chartColors.primary}
-            strokeWidth={1}
-            strokeDasharray="4 4"
-            label={{
-              value: "Ideal Pace",
-              position: "right",
-              fill: chartColors.primary,
-              fontSize: 10,
-            }}
+          <Legend
+            verticalAlign="top"
+            align="right"
+            iconType="line"
+            wrapperStyle={{ fontSize: 11 }}
           />
+          {/* Ideal pace — population mean curve */}
           <Line
             type="monotone"
-            dataKey="diff_s"
+            dataKey="ideal"
             stroke={chartColors.mutedForeground}
+            strokeWidth={1.5}
+            strokeDasharray="4 4"
+            dot={false}
+            name="Ideal Pace"
+          />
+          {/* Athlete line with colored dots */}
+          <Line
+            type="monotone"
+            dataKey="athlete"
+            stroke={chartColors.primary}
             strokeWidth={2}
             dot={(props) => {
               const { cx, cy, payload } = props;
               const diff_s = payload.diff_s as number;
               const fill =
-                Math.abs(diff_s) <= 0.1
+                Math.abs(diff_s) <= ON_PACE_THRESHOLD
                   ? chartColors.primary
                   : diff_s > 0
                     ? "#ef4444"
@@ -130,7 +141,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
               );
             }}
             activeDot={{ r: 6 }}
-            name="Diff vs Average"
+            name="Athlete"
           />
         </LineChart>
       </ResponsiveContainer>
@@ -143,7 +154,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
         {coaching_notes.map((note, i) => {
           const seg = segments[i];
           let color = "text-foreground";
-          if (Math.abs(seg.diff_s) > 0.1) {
+          if (Math.abs(seg.diff_s) > ON_PACE_THRESHOLD) {
             color = seg.diff_s > 0 ? "text-red-500" : "text-green-500";
           }
           return (

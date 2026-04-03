@@ -54,6 +54,7 @@ class SplitScoreService:
             total_ms=elapsed_ms,
             segments=segment_scores,
             coaching_notes=notes,
+            population_mean_pcts=POPULATION_STATS[event_type]["mean"],
         )
 
     def _compute_segments(
@@ -95,6 +96,8 @@ class SplitScoreService:
         )
         n = len(df)
         q = n // 4
+        # Divides strides into 4 equal quartiles as a proxy for 100m segments
+        # since we do not have distance data
         splits: list[float] = []
         for i in range(4):
             start_idx = i * q

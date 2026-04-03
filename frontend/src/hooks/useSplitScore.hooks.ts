@@ -15,6 +15,7 @@ interface SplitScoreData {
   total_ms: number;
   segments: SegmentScore[];
   coaching_notes: string[];
+  population_mean_pcts: number[];
 }
 
 interface UseSplitScoreResult {
@@ -119,6 +120,14 @@ const MOCK_DATA: SplitScoreData = {
     "H8→H9: 0.61s slower than average (1.2% slower)",
     "H9→H10: on pace",
     "H10→Fin: 0.18s faster than average (0.4% faster)",
+  ],
+  population_mean_pcts: [
+    12.0721, 7.7015, 7.8618, 8.1616, 8.2444, 7.9165, 8.7185, 9.1875, 9.5192,
+    9.5428, 11.0741,
+  ],
+  population_mean_pcts: [
+    12.0721, 7.7015, 7.8618, 8.1616, 8.2444, 7.9165, 8.7185, 9.1875, 9.5192,
+    9.5428, 11.0741,
   ],
 };
 
