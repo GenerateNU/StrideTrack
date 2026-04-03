@@ -125,6 +125,7 @@ async def get_gct_increase(
     logger.info(f"Route: GET /run/athletes/{run_id}/metrics/hurdles/gct-increase")
     return await service.get_gct_increase(run_id)
 
+
 @router.get(
     "/athletes/{run_id}/metrics/hurdles/projection",
     response_model=HurdleProjectionResponse,
