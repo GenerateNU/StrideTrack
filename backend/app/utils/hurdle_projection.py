@@ -4,8 +4,6 @@ import numpy as np
 
 from app.schemas.hurdle_schemas import HurdleMetricRow
 
-
-
 # The athlete covers ground faster per metre than during hurdled segments.
 SPRINT_SCALAR: float = 0.98
 
@@ -14,44 +12,62 @@ EVENT_CONFIG: dict[str, dict] = {
     "hurdles_60m": {
         "hurdle_count": 5,
         "inter_hurdle_m": 9.14,
-        "final_segment_m": 8.72, # 9.72m, ~1m landing offset
+        "final_segment_m": 8.72,  # 9.72m, ~1m landing offset
         "phase_boundaries": (3, 4),
         "template_ratios": [0.0, 1.03, 1.00, 0.98, 0.99],
     },
     "hurdles_100m": {
         "hurdle_count": 10,
         "inter_hurdle_m": 8.50,
-        "final_segment_m": 9.50, # 10.50m, ~1m landing offset
+        "final_segment_m": 9.50,  # 10.50m, ~1m landing offset
         "phase_boundaries": (4, 7),
         "template_ratios": [
             0.0,
-            1.02, 1.00, 0.98, # acceleration  (H1-H3)
-            0.98, 0.98, 0.99, # peak speed    (H4-H6)
-            1.00, 1.02, 1.03, # fatigue       (H7-H9)
+            1.02,
+            1.00,
+            0.98,  # acceleration  (H1-H3)
+            0.98,
+            0.98,
+            0.99,  # peak speed    (H4-H6)
+            1.00,
+            1.02,
+            1.03,  # fatigue       (H7-H9)
         ],
     },
     "hurdles_110m": {
         "hurdle_count": 10,
         "inter_hurdle_m": 9.14,
-        "final_segment_m": 13.02, # 14.02m, ~1m landing offset
+        "final_segment_m": 13.02,  # 14.02m, ~1m landing offset
         "phase_boundaries": (4, 7),
         "template_ratios": [
             0.0,
-            1.02, 1.00, 0.98,
-            0.98, 0.98, 0.99,
-            1.00, 1.02, 1.03,
+            1.02,
+            1.00,
+            0.98,
+            0.98,
+            0.98,
+            0.99,
+            1.00,
+            1.02,
+            1.03,
         ],
     },
     "hurdles_400m": {
         "hurdle_count": 10,
         "inter_hurdle_m": 35.0,
-        "final_segment_m": 39.0, # 40m, ~1m landing offset
+        "final_segment_m": 39.0,  # 40m, ~1m landing offset
         "phase_boundaries": (4, 7),
         "template_ratios": [
             0.0,
-            1.03, 1.00, 0.97,
-            0.96, 0.96, 0.97,
-            0.99, 1.03, 1.09,
+            1.03,
+            1.00,
+            0.97,
+            0.96,
+            0.96,
+            0.97,
+            0.99,
+            1.03,
+            1.09,
         ],
     },
 }
@@ -80,7 +96,9 @@ def _fit_phase_trends(
     trends: dict[int, tuple[float, float]] = {}
 
     for phase_id in (0, 1, 2):
-        mask = np.array([_get_phase(int(i), boundaries) == phase_id for i in hurdle_indices])
+        mask = np.array(
+            [_get_phase(int(i), boundaries) == phase_id for i in hurdle_indices]
+        )
         if mask.sum() >= 2:
             coeffs = np.polyfit(hurdle_indices[mask], split_values[mask], deg=1)
             trends[phase_id] = (float(coeffs[0]), float(coeffs[1]))
@@ -94,11 +112,16 @@ def _scale_template(
 ) -> list[float]:
     """Compute a least-squares scaling factor that fits the template ratios to the observed splits. Applies
     that factor to the full template so projections are anchored to actual performance."""
-    observed_ratios = np.array([template_ratios[s["hurdle_num"]] for s in completed_splits])
+    observed_ratios = np.array(
+        [template_ratios[s["hurdle_num"]] for s in completed_splits]
+    )
     observed_values = np.array([s["split_ms"] for s in completed_splits])
 
     # Least-squares scaling factor
-    scale_factor = float(np.dot(observed_ratios, observed_values) / np.dot(observed_ratios, observed_ratios))
+    scale_factor = float(
+        np.dot(observed_ratios, observed_values)
+        / np.dot(observed_ratios, observed_ratios)
+    )
 
     return [r * scale_factor for r in template_ratios]
 
@@ -228,18 +251,21 @@ def project_hurdle_race(
             boundaries=boundaries,
             scaled_template=scaled_template,
         )
-        projected_splits.append({
-            "hurdle_num": h,
-            "split_ms": max(0, int(round(proj_ms))),
-        })
+        projected_splits.append(
+            {
+                "hurdle_num": h,
+                "split_ms": max(0, int(round(proj_ms))),
+            }
+        )
 
     # Estimate final segment from athlete's pace
-    all_split_values = (
-        [s["split_ms"] for s in completed_splits]
-        + [s["split_ms"] for s in projected_splits]
-    )
+    all_split_values = [s["split_ms"] for s in completed_splits] + [
+        s["split_ms"] for s in projected_splits
+    ]
     final_segment_ms = _estimate_final_segment(
-        all_split_values, inter_hurdle_m, final_segment_m,
+        all_split_values,
+        inter_hurdle_m,
+        final_segment_m,
     )
 
     # Total time
