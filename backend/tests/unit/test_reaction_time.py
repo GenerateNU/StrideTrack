@@ -1,7 +1,7 @@
 import pytest
 
 from app.schemas.reaction_time_schemas import ReactionTimeRunMetric
-from app.services.reaction_time_service import ReactionTimeService, _classify_zone
+from app.services.reaction_time_service import _classify_zone
 
 
 def _make_metric(
@@ -49,18 +49,12 @@ class TestClassifyZone:
 class TestGetReactionTime:
     """Unit tests for reaction time computation using to_time of first stride."""
 
-    def _make_service(self) -> ReactionTimeService:
-        """Create a service with a None repository (not needed for unit tests)."""
-        return ReactionTimeService(repository=None)  # type: ignore
-
     def test_uses_to_time_of_first_metric(self) -> None:
         """Reaction time should equal to_time of the first row."""
-        service = self._make_service()
         metrics = [
             _make_metric(ic_time=0, to_time=175),
             _make_metric(ic_time=175, to_time=350),
         ]
-        # Call the internal computation directly
         first = metrics[0]
         reaction_time_ms = float(first.to_time)
         assert reaction_time_ms == 175.0
