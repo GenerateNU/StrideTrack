@@ -6,6 +6,7 @@ import type { EventTypeEnum } from "@/types/event.types";
 // Universal charts
 import { GroundContactTimeChart } from "@/components/charts/universal/GroundContactChart";
 import { FlightTimeChart } from "@/components/charts/universal/FlightTimeChart";
+import { ReactionTimeCard } from "@/components/charts/reaction-time/ReactionTimeCard";
 
 // Hurdle charts
 import { GctIncreaseChart } from "@/components/charts/hurdles/GctIncreaseChart";
@@ -46,6 +47,7 @@ const DEFAULT_CHARTS: VisualizationConfig[] = [
   RSIChart,
   StepTimeChart,
   TotalStepsKPI,
+  ReactionTimeCard,
 ];
 
 const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
@@ -77,6 +79,7 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     TakeoffFtChart,
     TakeoffGctChart,
     SplitScoreChart,
+    ReactionTimeCard,
     ProjectedFinishKPI,
     ProjectedSplitChart,
     HurdleTimelineChart,

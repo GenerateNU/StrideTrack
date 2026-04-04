@@ -14,7 +14,6 @@ export const EVENT_DISPLAY_NAMES: Record<EventTypeEnum, string> = {
   triple_jump: "Triple Jump",
   high_jump: "High Jump",
   bosco_test: "Bosco Test",
-  reaction_time_test: "Reaction Time Test",
 };
 
 export const EVENT_OPTIONS: EventOption[] = (
