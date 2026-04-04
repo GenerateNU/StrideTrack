@@ -62,3 +62,43 @@ export function useCreateAthlete() {
     createAthleteError: mutation.error,
   };
 }
+
+
+export function useUpdateAthlete() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({ athleteId, payload }: { athleteId: string; payload: Partial<Athlete> }) => {
+      const response = await api.patch(`/athletes/${athleteId}`, payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["athletes"] });
+    },
+  });
+
+  return {
+    updateAthlete: mutation.mutateAsync,
+    updateAthleteIsLoading: mutation.isPending,
+    updateAthleteError: mutation.error,
+  };
+}
+
+export function useDeleteAthlete() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (athleteId: string) => {
+      await api.delete(`/athletes/${athleteId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["athletes"] });
+    },
+  });
+
+  return {
+    deleteAthlete: mutation.mutateAsync,
+    deleteAthleteIsLoading: mutation.isPending,
+    deleteAthleteError: mutation.error,
+  };
+}

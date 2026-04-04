@@ -1,6 +1,6 @@
 // TODO: Scope to authenticated coach — currently returns all runs regardless of user.
 // Future ticket: pass coach_id as query param or use auth-scoped backend endpoint.
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import api from "@/lib/api";
 import { runResponseSchema, runMetaSchema } from "@/types/run.types";
@@ -46,5 +46,50 @@ export function useGetRunMeta(runId: string | undefined) {
     runMetaIsLoading: query.isLoading,
     runMetaError: query.error,
     runMetaRefetch: query.refetch,
+  };
+}
+
+export function useUpdateRun() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({
+      runId,
+      payload,
+    }: {
+      runId: string;
+      payload: Partial<Run>;
+    }) => {
+      const response = await api.patch(`/runs/${runId}`, payload);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["runs"] });
+    },
+  });
+
+  return {
+    updateRun: mutation.mutateAsync,
+    updateRunIsLoading: mutation.isPending,
+    updateRunError: mutation.error,
+  };
+}
+
+export function useDeleteRun() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async (runId: string) => {
+      await api.delete(`/runs/${runId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["runs"] });
+    },
+  });
+
+  return {
+    deleteRun: mutation.mutateAsync,
+    deleteRunIsLoading: mutation.isPending,
+    deleteRunError: mutation.error,
   };
 }

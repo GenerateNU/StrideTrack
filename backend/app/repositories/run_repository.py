@@ -4,7 +4,7 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta, RunResponse
+from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta, RunResponse, RunUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -122,3 +122,31 @@ class RunRepository:
             f"Repository: Found {len(response.data)} runs for athlete {athlete_id}"
         )
         return [RunCreateResponse(**run) for run in response.data]
+
+    async def update(self, run_id: UUID, run_update: RunUpdate) -> RunCreateResponse:
+        """Update a run."""
+        logger.info(f"Repository: Updating run {run_id}")
+        data = run_update.model_dump(exclude_unset=True)
+        response = (
+            await self.supabase.table("run")
+            .update(data)
+            .eq("run_id", str(run_id))
+            .execute()
+        )
+        if not response.data:
+            logger.warning(f"Repository: Run not found for update {run_id}")
+            raise NotFoundException("Run", str(run_id))
+        logger.info(f"Repository: Updated run {run_id}")
+        return RunCreateResponse(**response.data[0])
+
+
+    async def delete(self, run_id: UUID) -> None:
+        """Delete a run."""
+        logger.info(f"Repository: Deleting run {run_id}")
+        response = (
+            await self.supabase.table("run").delete().eq("run_id", str(run_id)).execute()
+        )
+        if not response.data:
+            logger.warning(f"Repository: Run not found for deletion {run_id}")
+            raise NotFoundException("Run", str(run_id))
+        logger.info(f"Repository: Deleted run {run_id}")
