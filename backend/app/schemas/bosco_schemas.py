@@ -5,7 +5,7 @@ from app.schemas.event_type import EventType
 
 class RunMetrics(BaseModel):
     stride_num: int = Field(..., gt=0)
-    foot: str = Field(..., min_length=1, max_length=255)
+    foot: str | None = Field(None, min_length=1, max_length=255)
     ic_time: int = Field(..., ge=0)
     to_time: int = Field(..., gt=0)
     next_ic_time: int = Field(..., gt=0)

@@ -43,6 +43,16 @@ export const JumpHeightChart = ({ runId }: ChartProps) => {
     <ChartCard
       title="Jump Height"
       description="Estimated jump height per repetition. Derived from flight time using ballistic equations."
+      headerRight={
+        <div className="flex flex-col items-end">
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+            Mean Height
+          </span>
+          <span className="text-2xl font-bold text-foreground">
+            {boscoMetrics.mean_jump_height.toFixed(3)} m
+          </span>
+        </div>
+      }
     >
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData}>
@@ -83,16 +93,6 @@ export const JumpHeightChart = ({ runId }: ChartProps) => {
               color: chartColors.foreground,
             }}
             formatter={(value) => [`${value} m`, "Jump Height"]}
-          />
-          <ReferenceLine
-            y={boscoMetrics.mean_jump_height}
-            stroke={chartColors.mutedForeground}
-            strokeDasharray="4 4"
-            label={{
-              value: "Mean",
-              fill: chartColors.mutedForeground,
-              fontSize: 10,
-            }}
           />
           <Bar
             dataKey="height"

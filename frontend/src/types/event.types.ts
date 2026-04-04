@@ -20,6 +20,12 @@ export type HurdleTargetEvent =
   | "hurdles_100m"
   | "hurdles_400m";
 
+export enum EventCategory {
+  SPRINT = "sprint",
+  HURDLES = "hurdles",
+  BOSCO = "bosco",
+}
+
 export interface EventOption {
   value: EventTypeEnum;
   label: string;
