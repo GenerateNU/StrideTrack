@@ -427,10 +427,10 @@ class TestTopNSelection:
         With expected_count=1, only the longest should be kept."""
         return pd.DataFrame(
             {
-                "foot": ["left", "right", "left", "right", "left", "right", "left"],
-                "ic_time": [0, 210, 700, 910, 1400, 1610, 2300],
-                "to_time": [200, 400, 900, 1100, 1600, 1800, 2500],
-                "gct_ms": [200, 190, 200, 190, 200, 190, 200],
+                "foot": ["left", "left", "left", "left", "left", "left", "left"],
+                "ic_time": [0, 500, 1000, 1500, 2100, 2600, 3100],
+                "to_time": [200, 700, 1200, 1700, 2300, 2800, 3300],
+                "gct_ms": [200, 200, 200, 200, 200, 200, 200],
             }
         )
 
