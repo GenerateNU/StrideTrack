@@ -1,4 +1,5 @@
 import type { EventTypeEnum, HurdleTargetEvent } from "@/types/event.types";
+import { eventTypeEnum } from "@/types/event.types";
 import { z } from "zod";
 
 export const runResponseSchema = z.object({
@@ -8,6 +9,7 @@ export const runResponseSchema = z.object({
   target_event: z.string().nullable().optional(),
   elapsed_ms: z.number(),
   created_at: z.string(),
+  name: z.string().nullable().optional(),
 });
 
 export type Run = z.infer<typeof runResponseSchema>;
@@ -26,6 +28,7 @@ export const createRunResponseSchema = z.object({
   target_event: z.string().nullable().optional(),
   elapsed_ms: z.number(),
   created_at: z.string(),
+  name: z.string().nullable().optional(),
 });
 
 export interface CreateRunPayload {
@@ -40,7 +43,7 @@ export type CreateRunResponse = z.infer<typeof createRunResponseSchema>;
 export const runMetaSchema = z.object({
   run_id: z.string().uuid(),
   athlete_id: z.string().uuid(),
-  event_type: z.string(),
+  event_type: eventTypeEnum,
   created_at: z.string(),
   name: z.string().nullable(),
   elapsed_ms: z.number(),
