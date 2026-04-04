@@ -132,8 +132,8 @@ export const HurdleTimelineChart = ({ runId }: ChartProps) => {
       {label}
     </button>
   );
-  
-  const minWidth = Math.max(800, chartPoints.length * 10); 
+
+  const minWidth = Math.max(800, chartPoints.length * 10);
 
   return (
     <ChartCard
@@ -244,9 +244,9 @@ export const HurdleTimelineChart = ({ runId }: ChartProps) => {
           </ResponsiveContainer>
         </div>
       </div>
-    <div className="sticky bottom-0 text-center text-xs text-muted-foreground py-2">
-      Time (s)
-    </div>
+      <div className="sticky bottom-0 text-center text-xs text-muted-foreground py-2">
+        Time (s)
+      </div>
     </ChartCard>
   );
 };
