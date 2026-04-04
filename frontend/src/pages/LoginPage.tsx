@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/auth.context";
 import { config } from "@/lib/config";
-import { QueryLoading } from "@/components/QueryLoading";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 import logo from "@/assets/full_logo.png";
 

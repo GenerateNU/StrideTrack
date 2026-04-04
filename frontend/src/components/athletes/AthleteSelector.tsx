@@ -1,6 +1,6 @@
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
-import { QueryLoading } from "@/components/QueryLoading";
-import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
 import { ChevronDown } from "lucide-react";
 
 interface Athlete {

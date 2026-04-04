@@ -35,10 +35,10 @@ export function useRunMetrics(runId: string | null) {
   });
 
   return {
-    metrics: query.data ?? null,
-    metricsIsLoading: query.isLoading,
-    metricsError: query.error,
-    metricsRefetch: query.refetch,
+    runMetrics: query.data ?? null,
+    runMetricsIsLoading: query.isLoading,
+    runMetricsError: query.error,
+    runMetricsRefetch: query.refetch,
   };
 }
 
@@ -60,9 +60,10 @@ export function useLROverlayData(
   });
 
   return {
-    lrData: query.data ?? null,
-    lrLoading: query.isLoading,
-    lrError: query.error,
+    lrOverlay: query.data ?? null,
+    lrOverlayIsLoading: query.isLoading,
+    lrOverlayError: query.error,
+    lrOverlayRefetch: query.refetch,
   };
 }
 
@@ -80,9 +81,10 @@ export function useStackedBarData(runId: string | null) {
   });
 
   return {
-    stackedData: query.data ?? null,
-    stackedLoading: query.isLoading,
-    stackedError: query.error,
+    stackedBar: query.data ?? null,
+    stackedBarIsLoading: query.isLoading,
+    stackedBarError: query.error,
+    stackedBarRefetch: query.refetch,
   };
 }
 
@@ -100,10 +102,10 @@ export function useSprintDrift(runId: string | null) {
   });
 
   return {
-    driftData: query.data ?? null,
-    driftLoading: query.isLoading,
-    driftError: query.error,
-    driftRefetch: query.refetch,
+    sprintDrift: query.data ?? null,
+    sprintDriftIsLoading: query.isLoading,
+    sprintDriftError: query.error,
+    sprintDriftRefetch: query.refetch,
   };
 }
 
@@ -121,8 +123,8 @@ export function useStepFrequencyData(runId: string | null) {
   });
 
   return {
-    stepFrequencyData: query.data ?? null,
-    stepFrequencyLoading: query.isLoading,
+    stepFrequency: query.data ?? null,
+    stepFrequencyIsLoading: query.isLoading,
     stepFrequencyError: query.error,
     stepFrequencyRefetch: query.refetch,
   };
@@ -142,8 +144,8 @@ export function useAsymmetryData(runId: string | null) {
   });
 
   return {
-    asymmetryData: query.data ?? null,
-    asymmetryLoading: query.isLoading,
+    asymmetry: query.data ?? null,
+    asymmetryIsLoading: query.isLoading,
     asymmetryError: query.error,
     asymmetryRefetch: query.refetch,
   };
@@ -168,8 +170,8 @@ export function useGCTRangeData(
   });
 
   return {
-    gctRangeData: query.data ?? null,
-    gctRangeLoading: query.isLoading,
+    gctRange: query.data ?? null,
+    gctRangeIsLoading: query.isLoading,
     gctRangeError: query.error,
     gctRangeRefetch: query.refetch,
   };

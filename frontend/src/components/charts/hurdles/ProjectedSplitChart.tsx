@@ -1,7 +1,9 @@
-import { QueryError } from "@/components/QueryError";
-import { QueryLoading } from "@/components/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 import { useHurdleProjection } from "@/hooks/useHurdleMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
 import {
   Bar,
   BarChart,
@@ -20,32 +22,42 @@ interface ChartRow {
   type: "completed" | "projected";
 }
 
-export const ProjectedSplitChart = ({ runId }: { runId: string }) => {
+const TITLE = "Projected Splits";
+const DESCRIPTION =
+  "Completed splits shown solid, projected splits shown hatched. Reference line marks average of completed splits.";
+
+export const ProjectedSplitChart = ({ runId }: ChartProps) => {
   const {
-    projectionData,
-    projectionLoading,
-    projectionError,
-    refetchProjectionData,
+    hurdleProjection,
+    hurdleProjectionIsLoading,
+    hurdleProjectionError,
+    hurdleProjectionRefetch,
   } = useHurdleProjection(runId);
 
-  if (projectionLoading) {
-    return <QueryLoading />;
-  }
-
-  if (projectionError) {
+  if (hurdleProjectionIsLoading) {
     return (
-      <QueryError
-        error={projectionError as Error}
-        refetch={() => void refetchProjectionData()}
-      />
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryLoading />
+      </ChartCard>
     );
   }
 
-  if (!projectionData) {
+  if (hurdleProjectionError) {
+    return (
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryError
+          error={hurdleProjectionError as Error}
+          refetch={() => void hurdleProjectionRefetch()}
+        />
+      </ChartCard>
+    );
+  }
+
+  if (!hurdleProjection) {
     return null;
   }
 
-  const { completed_splits, projected_splits } = projectionData;
+  const { completed_splits, projected_splits } = hurdleProjection;
 
   if (completed_splits.length === 0 && projected_splits.length === 0) {
     return null;
@@ -75,7 +87,7 @@ export const ProjectedSplitChart = ({ runId }: { runId: string }) => {
     completedValues.reduce((a, b) => a + b, 0) / completedValues.length;
 
   return (
-    <div>
+    <ChartCard title={TITLE} description={DESCRIPTION}>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={chartData}
@@ -200,6 +212,6 @@ export const ProjectedSplitChart = ({ runId }: { runId: string }) => {
           <span className="text-xs text-muted-foreground">Projected</span>
         </div>
       </div>
-    </div>
+    </ChartCard>
   );
 };

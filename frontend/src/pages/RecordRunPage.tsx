@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AthleteSelector } from "@/components/athletes/AthleteSelector";
 import EventSelector from "@/components/events/EventSelector";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
-import { useEvents } from "@/hooks/useEvents";
+import { useEvents } from "@/hooks/useEvents.hooks";
 import { useBle } from "@/hooks/useBle.hooks";
 import api from "@/lib/api";
 import type { EventTypeEnum } from "@/types/event.types";

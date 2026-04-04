@@ -47,5 +47,6 @@ export function useGetRunMeta(runId: string | undefined) {
     runMeta: query.data ?? null,
     runMetaIsLoading: query.isLoading,
     runMetaError: query.error,
+    runMetaRefetch: query.refetch,
   };
 }

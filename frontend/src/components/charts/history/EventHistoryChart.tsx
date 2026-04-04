@@ -1,8 +1,8 @@
 import { useEventHistory } from "@/hooks/useEventHistory.hooks";
 import { chartColors } from "@/lib/chartColors";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
-import { QueryError } from "@/components/QueryError";
-import { QueryLoading } from "@/components/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import {
   LineChart,
   Line,

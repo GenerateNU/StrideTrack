@@ -3,18 +3,6 @@ import { useGetRunMeta } from "@/hooks/useRuns.hooks";
 import { getChartsForEventType } from "@/lib/runAnalysisVisualizations";
 import { ArrowLeft } from "lucide-react";
 
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <div className="mb-6 flex items-center gap-2.5">
-      <div
-        className="h-5 w-1 rounded-full"
-        style={{ backgroundColor: "hsl(var(--primary))" }}
-      />
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-    </div>
-  );
-}
-
 export default function RunAnalysisPage() {
   const { athleteId, runId } = useParams<{
     athleteId: string;
@@ -49,16 +37,8 @@ export default function RunAnalysisPage() {
 
       {runId ? (
         <div className="flex flex-1 flex-col gap-6">
-          {charts.map(({ title, component: ChartComponent }) => (
-            <div
-              key={title}
-              className="flex-1 rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]"
-            >
-              <SectionHeader title={title} />
-              <div className="h-[calc(100%-2rem)]">
-                <ChartComponent runId={runId} />
-              </div>
-            </div>
+          {charts.map((ChartComponent, i) => (
+            <ChartComponent key={i} runId={runId} />
           ))}
         </div>
       ) : (

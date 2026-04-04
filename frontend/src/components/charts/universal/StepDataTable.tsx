@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import type { RunMetric } from "@/types/runMetrics.types";
-import { QueryLoading } from "@/components/QueryLoading";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 
 interface StepDataTableProps {
   metrics: RunMetric[];

@@ -1,4 +1,6 @@
 import { useLROverlayData } from "@/hooks/useRunMetrics.hooks";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import { chartColors } from "@/lib/chartColors";
 import {
   LineChart,
@@ -23,12 +25,22 @@ export const LROverlayLineChart = ({
   metric,
   showMeanReferenceLine = false,
 }: LROverlayLineChartProps) => {
-  const { lrData } = useLROverlayData(runId, metric);
-  if (!lrData) return null;
+  const { lrOverlay, lrOverlayIsLoading, lrOverlayError, lrOverlayRefetch } =
+    useLROverlayData(runId, metric);
+
+  if (lrOverlayIsLoading) return <QueryLoading />;
+  if (lrOverlayError)
+    return (
+      <QueryError
+        error={lrOverlayError}
+        refetch={() => void lrOverlayRefetch()}
+      />
+    );
+  if (!lrOverlay) return null;
 
   // Compute mean across all non-null left + right values
   const allValues: number[] = [];
-  for (const d of lrData) {
+  for (const d of lrOverlay) {
     if (d.left != null) allValues.push(d.left);
     if (d.right != null) allValues.push(d.right);
   }
@@ -39,7 +51,7 @@ export const LROverlayLineChart = ({
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={lrData}>
+      <LineChart data={lrOverlay}>
         <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
         <XAxis
           dataKey="stride_num"

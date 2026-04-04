@@ -18,9 +18,9 @@ export function useReactionTimeMetrics(runId: string | null) {
   });
 
   return {
-    rtMetrics: query.data ?? null,
-    rtLoading: query.isLoading,
-    rtError: query.error,
-    rtRefetch: query.refetch,
+    reactionTime: query.data ?? null,
+    reactionTimeIsLoading: query.isLoading,
+    reactionTimeError: query.error,
+    reactionTimeRefetch: query.refetch,
   };
 }

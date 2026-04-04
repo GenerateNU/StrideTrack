@@ -1,7 +1,9 @@
-import { QueryError } from "@/components/QueryError";
-import { QueryLoading } from "@/components/QueryLoading";
+import { ChartCard } from "@/components/charts/shared/ChartCard";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useSplitScore } from "@/hooks/useSplitScore.hooks";
 import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
 import axios from "axios";
 import {
   Area,
@@ -75,35 +77,70 @@ function CustomTooltip(props: {
   );
 }
 
-export const SplitScoreChart = ({ runId }: { runId: string }) => {
-  const { splitScoreData, splitScoreLoading, splitScoreError } =
-    useSplitScore(runId);
+export const SplitScoreChart = ({ runId }: ChartProps) => {
+  const {
+    splitScore,
+    splitScoreIsLoading,
+    splitScoreError,
+    splitScoreRefetch,
+  } = useSplitScore(runId);
 
-  if (splitScoreLoading) return <QueryLoading />;
+  if (splitScoreIsLoading)
+    return (
+      <ChartCard
+        title="Split Score Analysis"
+        description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range."
+      >
+        <QueryLoading />
+      </ChartCard>
+    );
   if (splitScoreError) {
     const isUnsupported =
       axios.isAxiosError(splitScoreError) &&
       splitScoreError.response?.status === 422;
     if (isUnsupported) {
       return (
-        <p className="text-sm text-muted-foreground py-6 text-center">
-          Split score analysis is only available for 400m events.
-        </p>
+        <ChartCard
+          title="Split Score Analysis"
+          description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range."
+        >
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            Split score analysis is only available for 400m events.
+          </p>
+        </ChartCard>
       );
     }
     return (
-      <QueryError
-        error={new Error(String(splitScoreError))}
-        refetch={() => void 0}
-      />
+      <ChartCard
+        title="Split Score Analysis"
+        description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range."
+      >
+        <QueryError
+          error={new Error(String(splitScoreError))}
+          refetch={() => void splitScoreRefetch()}
+        />
+      </ChartCard>
     );
   }
-  if (!splitScoreData) return null;
+  if (!splitScore) return null;
 
-  const { segments, population_mean_pcts, population_std_pcts } =
-    splitScoreData;
+  const { segments, population_mean_pcts, population_std_pcts } = splitScore;
 
-  const data: ChartDataPoint[] = segments.map((seg, i) => {
+  const allPcts = [
+    ...segments.map((s) => s.pct_of_total),
+    ...population_mean_pcts,
+    ...population_mean_pcts.map((m, i) => m + population_std_pcts[i]),
+    ...population_mean_pcts.map((m, i) => m - population_std_pcts[i]),
+  ];
+  const pctMin = Math.min(...allPcts);
+  const pctMax = Math.max(...allPcts);
+  const pctRange = pctMax - pctMin || 1;
+  const yDomain: [number, number] = [
+    Math.max(0, pctMin - pctRange * 0.2),
+    pctMax + pctRange * 0.1,
+  ];
+
+  const chartData: ChartDataPoint[] = segments.map((seg, i) => {
     const mean = population_mean_pcts[i];
     const std = population_std_pcts[i];
     return {
@@ -129,10 +166,13 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
   });
 
   return (
-    <div>
+    <ChartCard
+      title="Split Score Analysis"
+      description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range."
+    >
       <ResponsiveContainer width="100%" height={300}>
         <ComposedChart
-          data={data}
+          data={chartData}
           margin={{ top: 20, right: 60, left: 20, bottom: 40 }}
         >
           <CartesianGrid vertical={false} stroke={chartColors.border} />
@@ -163,7 +203,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
               },
             }}
             tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
-            domain={["auto", "auto"]}
+            domain={yDomain}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
@@ -173,7 +213,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
             wrapperStyle={{ fontSize: 11 }}
           />
 
-          {/* ±1 std dev — outermost, very light */}
+          {/* +/-1 std dev -- outermost, very light */}
           <Area
             type="monotone"
             dataKey="stdBand100"
@@ -182,7 +222,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
             stroke="none"
             legendType="none"
           />
-          {/* ±0.5 std dev — middle band */}
+          {/* +/-0.5 std dev -- middle band */}
           <Area
             type="monotone"
             dataKey="stdBand050"
@@ -191,7 +231,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
             stroke="none"
             legendType="none"
           />
-          {/* ±0.25 std dev — innermost, darkest */}
+          {/* +/-0.25 std dev -- innermost, darkest */}
           <Area
             type="monotone"
             dataKey="stdBand025"
@@ -201,7 +241,7 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
             legendType="none"
           />
 
-          {/* Ideal pace — population mean curve */}
+          {/* Ideal pace -- population mean curve */}
           <Line
             type="monotone"
             dataKey="ideal"
@@ -241,6 +281,6 @@ export const SplitScoreChart = ({ runId }: { runId: string }) => {
           />
         </ComposedChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   );
 };

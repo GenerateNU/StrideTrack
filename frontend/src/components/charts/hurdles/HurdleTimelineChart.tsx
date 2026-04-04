@@ -1,7 +1,9 @@
-import { QueryError } from "@/components/QueryError";
-import { QueryLoading } from "@/components/QueryLoading";
+import { ChartCard } from "@/components/charts/shared/ChartCard";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useHurdleTimeline } from "@/hooks/useHurdleTimeline.hooks";
 import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
 import type { HurdleTimelinePoint } from "@/types/hurdleTimeline.types";
 import {
   CartesianGrid,
@@ -75,24 +77,41 @@ const makeFootDot =
     return null;
   };
 
-export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
-  const { timelineData, timelineLoading, timelineError, refetchTimeline } =
-    useHurdleTimeline(runId);
+export const HurdleTimelineChart = ({ runId }: ChartProps) => {
+  const {
+    hurdleTimeline,
+    hurdleTimelineIsLoading,
+    hurdleTimelineError,
+    hurdleTimelineRefetch,
+  } = useHurdleTimeline(runId);
 
   const [showLeft, setShowLeft] = useState(true);
   const [showRight, setShowRight] = useState(true);
 
-  if (timelineLoading) return <QueryLoading />;
-  if (timelineError)
+  if (hurdleTimelineIsLoading)
     return (
-      <QueryError
-        error={timelineError as Error}
-        refetch={() => void refetchTimeline()}
-      />
+      <ChartCard
+        title="Hurdle Timeline"
+        description="Time-series visualization of stride events and hurdle clearances throughout the race."
+      >
+        <QueryLoading />
+      </ChartCard>
     );
-  if (!timelineData || timelineData.points.length === 0) return null;
+  if (hurdleTimelineError)
+    return (
+      <ChartCard
+        title="Hurdle Timeline"
+        description="Time-series visualization of stride events and hurdle clearances throughout the race."
+      >
+        <QueryError
+          error={hurdleTimelineError as Error}
+          refetch={() => void hurdleTimelineRefetch()}
+        />
+      </ChartCard>
+    );
+  if (!hurdleTimeline || hurdleTimeline.points.length === 0) return null;
 
-  const chartPoints = timelineData.points.map((p) => ({
+  const chartPoints = hurdleTimeline.points.map((p) => ({
     ...p,
     left: p.foot === "left" ? (p.phase === "air" ? p.ft_ms : 0) : null,
     right: p.foot === "right" ? (p.phase === "air" ? p.ft_ms : 0) : null,
@@ -115,7 +134,10 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
   );
 
   return (
-    <div>
+    <ChartCard
+      title="Hurdle Timeline"
+      description="Time-series visualization of stride events and hurdle clearances throughout the race."
+    >
       <div className="mb-3 flex flex-wrap gap-2">
         {toggleBtn(
           "Left Foot",
@@ -189,7 +211,7 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
                 labelFormatter={(label) => `${(label as number).toFixed(3)}s`}
               />
 
-              {timelineData.hurdle_markers.map((m) => (
+              {hurdleTimeline.hurdle_markers.map((m) => (
                 <ReferenceLine
                   key={m.hurdle_num}
                   x={m.time_s}
@@ -230,6 +252,6 @@ export const HurdleTimelineChart = ({ runId }: { runId: string }) => {
           </ResponsiveContainer>
         </div>
       </div>
-    </div>
+    </ChartCard>
   );
 };

@@ -39,10 +39,10 @@ export function useHurdleSplits(runId: string | null) {
   });
 
   return {
-    splitData: query.data ?? null,
-    splitLoading: query.isLoading,
-    splitError: query.error,
-    refetchSplitData: query.refetch,
+    hurdleSplits: query.data ?? null,
+    hurdleSplitsIsLoading: query.isLoading,
+    hurdleSplitsError: query.error,
+    hurdleSplitsRefetch: query.refetch,
   };
 }
 
@@ -67,10 +67,10 @@ export function useStepsBetweenHurdles(runId: string | null) {
   });
 
   return {
-    stepsData: query.data ?? null,
-    stepsLoading: query.isLoading,
-    stepsError: query.error,
-    refetchStepsData: query.refetch,
+    stepsBetween: query.data ?? null,
+    stepsBetweenIsLoading: query.isLoading,
+    stepsBetweenError: query.error,
+    stepsBetweenRefetch: query.refetch,
   };
 }
 
@@ -92,10 +92,10 @@ export function useTakeoffGct(runId: string | null) {
   });
 
   return {
-    takeoffGctData: query.data ?? null,
-    takeoffGctLoading: query.isLoading,
+    takeoffGct: query.data ?? null,
+    takeoffGctIsLoading: query.isLoading,
     takeoffGctError: query.error,
-    refetchTakeoffGctData: query.refetch,
+    takeoffGctRefetch: query.refetch,
   };
 }
 
@@ -117,10 +117,10 @@ export function useLandingGct(runId: string | null) {
   });
 
   return {
-    landingGctData: query.data ?? null,
-    landingGctLoading: query.isLoading,
+    landingGct: query.data ?? null,
+    landingGctIsLoading: query.isLoading,
     landingGctError: query.error,
-    refetchLandingGctData: query.refetch,
+    landingGctRefetch: query.refetch,
   };
 }
 
@@ -142,10 +142,10 @@ export function useTakeoffFt(runId: string | null) {
   });
 
   return {
-    takeoffFtData: query.data ?? null,
-    takeoffFtLoading: query.isLoading,
+    takeoffFt: query.data ?? null,
+    takeoffFtIsLoading: query.isLoading,
     takeoffFtError: query.error,
-    refetchTakeoffFtData: query.refetch,
+    takeoffFtRefetch: query.refetch,
   };
 }
 
@@ -167,10 +167,10 @@ export function useGctIncrease(runId: string | null) {
   });
 
   return {
-    gctIncreaseData: query.data ?? null,
-    gctIncreaseLoading: query.isLoading,
+    gctIncrease: query.data ?? null,
+    gctIncreaseIsLoading: query.isLoading,
     gctIncreaseError: query.error,
-    refetchGctIncreaseData: query.refetch,
+    gctIncreaseRefetch: query.refetch,
   };
 }
 
@@ -192,9 +192,9 @@ export function useHurdleProjection(runId: string | null) {
   });
 
   return {
-    projectionData: query.data ?? null,
-    projectionLoading: query.isLoading,
-    projectionError: query.error,
-    refetchProjectionData: query.refetch,
+    hurdleProjection: query.data ?? null,
+    hurdleProjectionIsLoading: query.isLoading,
+    hurdleProjectionError: query.error,
+    hurdleProjectionRefetch: query.refetch,
   };
 }

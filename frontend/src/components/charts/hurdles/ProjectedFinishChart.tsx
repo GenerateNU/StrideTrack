@@ -1,7 +1,8 @@
-import { QueryError } from "@/components/QueryError";
-import { QueryLoading } from "@/components/QueryLoading";
-import { GraphInfoCard } from "@/components/charts/GraphInfoCard";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { BaseKPI } from "@/components/charts/shared/BaseKPI";
 import { useHurdleProjection } from "@/hooks/useHurdleMetrics.hooks";
+import type { ChartProps } from "@/types/chart.types";
 
 const formatTime = (ms: number): string => {
   const seconds = ms / 1000;
@@ -32,28 +33,34 @@ const getConfidenceLabel = (confidence: number): string => {
   return "Low";
 };
 
-export const ProjectedFinishKPI = ({ runId }: { runId: string }) => {
+export const ProjectedFinishKPI = ({ runId }: ChartProps) => {
   const {
-    projectionData,
-    projectionLoading,
-    projectionError,
-    refetchProjectionData,
+    hurdleProjection,
+    hurdleProjectionIsLoading,
+    hurdleProjectionError,
+    hurdleProjectionRefetch,
   } = useHurdleProjection(runId);
 
-  if (projectionLoading) {
-    return <QueryLoading />;
-  }
-
-  if (projectionError) {
+  if (hurdleProjectionIsLoading) {
     return (
-      <QueryError
-        error={projectionError as Error}
-        refetch={() => void refetchProjectionData()}
-      />
+      <BaseKPI description="Confidence is based on how many hurdles were completed, data quality, and how many race phases (acceleration, peak speed, fatigue) the data covers. It increases as the athlete completes more hurdles across more phases.">
+        <QueryLoading />
+      </BaseKPI>
     );
   }
 
-  if (!projectionData || projectionData.projected_total_ms == null) {
+  if (hurdleProjectionError) {
+    return (
+      <BaseKPI description="Confidence is based on how many hurdles were completed, data quality, and how many race phases (acceleration, peak speed, fatigue) the data covers. It increases as the athlete completes more hurdles across more phases.">
+        <QueryError
+          error={hurdleProjectionError as Error}
+          refetch={() => void hurdleProjectionRefetch()}
+        />
+      </BaseKPI>
+    );
+  }
+
+  if (!hurdleProjection || hurdleProjection.projected_total_ms == null) {
     return null;
   }
 
@@ -64,36 +71,33 @@ export const ProjectedFinishKPI = ({ runId }: { runId: string }) => {
     completed_splits,
     projected_splits,
     projected_final_segment_ms,
-  } = projectionData;
+  } = hurdleProjection;
 
   const targetLabel = target_event.replace("hurdles_", "").replace("m", "m H");
 
   return (
-    <div className="space-y-3">
-      <div className="relative bg-card border border-border rounded-lg p-6 text-center">
-        <GraphInfoCard description="Confidence is based on how many hurdles were completed, data quality, and how many race phases (acceleration, peak speed, fatigue) the data covers. It increases as the athlete completes more hurdles across more phases." />
-        <p className="text-sm text-muted-foreground mb-1">
-          Projected Finish Time ({targetLabel})
+    <BaseKPI description="Confidence is based on how many hurdles were completed, data quality, and how many race phases (acceleration, peak speed, fatigue) the data covers. It increases as the athlete completes more hurdles across more phases.">
+      <p className="text-sm text-muted-foreground mb-1">
+        Projected Finish Time ({targetLabel})
+      </p>
+      <p className="text-4xl font-bold text-foreground">
+        {formatTime(projected_total_ms)}
+      </p>
+      <div className="flex items-center justify-center gap-2 mt-2">
+        <div
+          className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: getConfidenceColor(confidence) }}
+        />
+        <p
+          className="text-sm font-medium"
+          style={{ color: getConfidenceColor(confidence) }}
+        >
+          {getConfidenceLabel(confidence)} confidence (
+          {(confidence * 100).toFixed(0)}%)
         </p>
-        <p className="text-4xl font-bold text-foreground">
-          {formatTime(projected_total_ms)}
-        </p>
-        <div className="flex items-center justify-center gap-2 mt-2">
-          <div
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: getConfidenceColor(confidence) }}
-          />
-          <p
-            className="text-sm font-medium"
-            style={{ color: getConfidenceColor(confidence) }}
-          >
-            {getConfidenceLabel(confidence)} confidence (
-            {(confidence * 100).toFixed(0)}%)
-          </p>
-        </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 mt-3 w-full">
         <div className="bg-card border border-border rounded-lg p-4 text-center">
           <p className="text-xs text-muted-foreground mb-1">
             Completed Hurdles
@@ -120,6 +124,6 @@ export const ProjectedFinishKPI = ({ runId }: { runId: string }) => {
           <p className="text-xs text-muted-foreground">pace estimate</p>
         </div>
       </div>
-    </div>
+    </BaseKPI>
   );
 };

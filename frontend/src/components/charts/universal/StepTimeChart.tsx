@@ -13,13 +13,13 @@ import { useState } from "react";
 import { chartColors } from "@/lib/chartColors";
 import { useStackedBarData } from "@/hooks/useRunMetrics.hooks";
 import "@/index.css";
-import { CustomTooltip } from "@/components/charts/CustomToolTip";
+import { CustomTooltip } from "@/components/charts/shared/CustomToolTip";
 
 export const StepTimeChart = ({ runId }: { runId: string }) => {
-  const { stackedData } = useStackedBarData(runId);
+  const { stackedBar } = useStackedBarData(runId);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  if (!stackedData) return null;
+  if (!stackedBar) return null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const onMouseMove = (state: any) => {
@@ -33,7 +33,7 @@ export const StepTimeChart = ({ runId }: { runId: string }) => {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart
-        data={stackedData}
+        data={stackedBar}
         onMouseMove={onMouseMove}
         onMouseLeave={() => setActiveIndex(null)}
         margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
@@ -88,7 +88,7 @@ export const StepTimeChart = ({ runId }: { runId: string }) => {
           fill={chartColors.primary}
           radius={[0, 0, 0, 0]}
         >
-          {stackedData.map((_, i) => (
+          {stackedBar.map((_, i) => (
             <Cell
               key={`gct-${i}`}
               fill={
@@ -107,7 +107,7 @@ export const StepTimeChart = ({ runId }: { runId: string }) => {
           fill={chartColors.mutedForeground}
           radius={[8, 8, 0, 0]}
         >
-          {stackedData.map((_, i) => (
+          {stackedBar.map((_, i) => (
             <Cell
               key={`flight-${i}`}
               fill={
