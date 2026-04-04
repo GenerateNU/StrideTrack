@@ -30,9 +30,10 @@ export const LROverlayLineChart = ({
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((state: any) => {
-    if (state?.activeTooltipIndex != null) {
-      setActiveIndex(state.activeTooltipIndex);
+  const handleMouseMove = useCallback((state: Record<string, unknown>) => {
+    const index = state?.activeTooltipIndex;
+    if (typeof index === "number") {
+      setActiveIndex(index);
     }
   }, []);
 
