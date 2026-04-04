@@ -98,6 +98,7 @@ export function useDeleteAthlete() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["athletes"] });
+      queryClient.invalidateQueries({ queryKey: ["runs"] });
     },
   });
 
