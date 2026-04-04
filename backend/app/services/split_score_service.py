@@ -27,7 +27,7 @@ class SplitScoreService:
         logger.info(f"Service: Computing split score for run {run_id}")
 
         run_meta = await self.repository.get_run_meta(run_id)
-        event_type: str = run_meta.event_type
+        event_type = run_meta.event_type
         elapsed_ms: float = float(run_meta.elapsed_ms)
 
         if event_type not in SUPPORTED_EVENTS:
@@ -68,9 +68,11 @@ class SplitScoreService:
         elapsed_ms: float,
         event_type: str,
     ) -> list[float]:
-        if event_type == "hurdles_400m":
+        from app.schemas.event_type import EventType
+
+        if event_type == EventType.hurdles_400m:
             return self._compute_hurdle_segments(raw_metrics, elapsed_ms)
-        if event_type == "sprint_400m":
+        if event_type == EventType.sprint_400m:
             return self._compute_sprint_segments(raw_metrics, elapsed_ms)
         raise UnsupportedEventError(event_type)
 

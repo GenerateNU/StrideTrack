@@ -3,6 +3,8 @@ import logging
 import pandas as pd
 from supabase._async.client import AsyncClient
 
+from app.schemas.csv_schemas import CSVInsertResult
+
 logger = logging.getLogger(__name__)
 
 
@@ -60,7 +62,7 @@ class CSVRepository:
         event_type: str,
         name: str | None = None,
         elapsed_ms: int | None = None,
-    ) -> dict[str, str | int]:
+    ) -> CSVInsertResult:
         """Insert a complete run with all stride data and return the run_id and row count."""
         run_id = await self.create_record(
             athlete_id, event_type, name, elapsed_ms=elapsed_ms
@@ -68,4 +70,4 @@ class CSVRepository:
         df["run_id"] = run_id
         rows_inserted = await self.insert_transformed_stride_rows(df)
 
-        return {"run_id": run_id, "rows_inserted": rows_inserted}
+        return CSVInsertResult(run_id=run_id, rows_inserted=rows_inserted)

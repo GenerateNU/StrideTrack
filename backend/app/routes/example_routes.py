@@ -55,7 +55,7 @@ async def get_training_run(
 )
 async def create_training_run(
     data: ExampleRunCreate, service: ExampleService = Depends(get_example_service)
-) -> ExampleRunCreate:
+) -> ExampleRunResponse:
     """Create a new training run."""
     logger.info(f"Route: POST /training-runs for athlete {data.athlete_name}")
     run = await service.create_run(data)
@@ -68,7 +68,7 @@ async def update_training_run(
     run_id: UUID,
     data: ExampleRunUpdate,
     service: ExampleService = Depends(get_example_service),
-) -> ExampleRunUpdate:
+) -> ExampleRunResponse:
     """Update a training run."""
     logger.info(f"Route: PATCH /training-runs/{run_id}")
     run = await service.update_run(run_id, data)

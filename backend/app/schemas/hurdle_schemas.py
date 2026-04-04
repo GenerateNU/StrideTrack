@@ -2,6 +2,18 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from app.schemas.event_type import EventType
+
+
+class HurdleStepRow(BaseModel):
+    stride_num: int
+    ic_time: int
+    to_time: int
+    gct_ms: int
+    flight_ms: int
+    step_time_ms: int
+    foot: str
+
 
 class HurdleMetricRow(BaseModel):
     hurdle_num: int = Field(..., gt=0)
@@ -68,7 +80,7 @@ class HurdleProjectionResponse(BaseModel):
     projected_final_segment_ms: int
     projected_total_ms: int | None = None
     confidence: float = Field(..., ge=0.0, le=1.0)
-    target_event: str
+    target_event: EventType
     total_hurdles: int
 
 

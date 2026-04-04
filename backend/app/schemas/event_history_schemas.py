@@ -1,6 +1,6 @@
-from enum import StrEnum
-
 from pydantic import BaseModel
+
+from app.schemas.event_type import EventType
 
 
 class EventHistoryPoint(BaseModel):
@@ -12,7 +12,7 @@ class EventHistoryPoint(BaseModel):
 
 
 class EventHistoryResponse(BaseModel):
-    event_type: str
+    event_type: EventType
     athlete_id: str
     data_points: list[EventHistoryPoint]
     best_time_seconds: float | None = None
@@ -21,23 +21,15 @@ class EventHistoryResponse(BaseModel):
 
 class EventHistoryRun(BaseModel):
     run_id: str
-    name: str
-    event_type: str
+    name: str | None = None
+    event_type: EventType
     elapsed_ms: int
     created_at: str
 
 
-class EventType(StrEnum):
-    sprint_60m = "sprint_60m"
-    sprint_100m = "sprint_100m"
-    sprint_200m = "sprint_200m"
-    sprint_400m = "sprint_400m"
-    hurdles_60m = "hurdles_60m"
-    hurdles_110m = "hurdles_110m"
-    hurdles_100m = "hurdles_100m"
-    hurdles_400m = "hurdles_400m"
-    long_jump = "long_jump"
-    triple_jump = "triple_jump"
-    high_jump = "high_jump"
-    bosco_test = "bosco_test"
-    reaction_time_test = "reaction_time_test"
+__all__ = [
+    "EventHistoryPoint",
+    "EventHistoryResponse",
+    "EventHistoryRun",
+    "EventType",
+]

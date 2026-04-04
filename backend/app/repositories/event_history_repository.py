@@ -40,4 +40,4 @@ class EventHistoryRepository:
 
         response = await query.execute()
         logger.info(f"Repository: Found {len(response.data)} runs")
-        return response.data
+        return [EventHistoryRun(**run) for run in response.data]

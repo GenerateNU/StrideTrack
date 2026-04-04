@@ -45,7 +45,7 @@ class RunRepository:
             raise NotFoundException("Run metric", str(run_id))
 
         logger.info(f"Repository: Found run metric: {run_id}")
-        return response.data[0]
+        return RunMeta(**response.data[0])
 
     async def create(self, run_create: RunCreate) -> RunCreateResponse:
         """Create a new run."""
@@ -64,7 +64,7 @@ class RunRepository:
         logger.info(f"Repository: Created run {response.data[0]['run_id']}")
         return RunCreateResponse(**response.data[0])
 
-    async def get_all(self, coach_id: UUID) -> list[dict]:
+    async def get_all(self, coach_id: UUID) -> list[RunCreateResponse]:
         """Get all runs, ordered by most recent first."""
         logger.info("Repository: Fetching all runs")
         response = (
@@ -78,9 +78,9 @@ class RunRepository:
         )
 
         logger.info(f"Repository: Found {len(response.data)} runs")
-        return response.data
+        return [RunCreateResponse(**run) for run in response.data]
 
-    async def get_by_athlete_id(self, athlete_id: UUID) -> list[dict]:
+    async def get_by_athlete_id(self, athlete_id: UUID) -> list[RunCreateResponse]:
         """Get all runs for a specific athlete, ordered by most recent first."""
         logger.info(f"Repository: Fetching runs for athlete {athlete_id}")
         response = (
@@ -95,4 +95,4 @@ class RunRepository:
         logger.info(
             f"Repository: Found {len(response.data)} runs for athlete {athlete_id}"
         )
-        return response.data
+        return [RunCreateResponse(**run) for run in response.data]
