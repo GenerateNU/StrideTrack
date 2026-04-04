@@ -237,7 +237,6 @@ lerna-debug.log*
 # Mise
 mise.toml
 
-# Claude Code
-CLAUDE.md
+# Claude Code (personal/local only)
 .mcp.json
-.cgcignore
+.claude/settings.local.json

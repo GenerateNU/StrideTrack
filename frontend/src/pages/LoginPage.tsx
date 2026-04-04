@@ -3,7 +3,8 @@ import { useAuth } from "@/context/auth.context";
 import { config } from "@/lib/config";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
-import logo from "@/assets/full_logo.png";
+import FlyingFoot from "@/assets/flying_foot.svg?react";
+import StrideTrackText from "@/assets/stridetrack_text.svg?react";
 
 export default function LoginPage() {
   const { mode, loading, loginAsDev, loginWithGoogle } = useAuth();
@@ -53,7 +54,10 @@ export default function LoginPage() {
       <div className="relative z-10 flex w-full max-w-sm flex-col items-center">
         {/* Logo + Tagline */}
         <div className="mb-8 flex flex-col items-center gap-3">
-          <img src={logo} alt="StrideTrack" className="h-35 w-auto" />
+          <div className="flex flex-col items-center">
+            <StrideTrackText className="h-14 w-auto" />
+            <FlyingFoot className="h-28 w-auto text-black" />
+          </div>
           <p className="text-sm tracking-wide text-neutral-500">
             Track every stride.
           </p>
