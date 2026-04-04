@@ -8,7 +8,14 @@ import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EditAthleteModal } from "@/components/athletes/EditAthleteModal";
 import { EditRunModal } from "@/components/runs/EditRunModal";
 import type { EventTypeEnum } from "@/types/event.types";
-import { ArrowLeft, Activity, Calendar, Pencil, Trash2, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  Activity,
+  Calendar,
+  Pencil,
+  Trash2,
+  Search,
+} from "lucide-react";
 import EventHistoryFilterBar from "@/components/charts/history/EventHistoryFilterBar";
 import { EventHistoryChart } from "@/components/charts/history/EventHistoryChart";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
@@ -23,19 +30,24 @@ function nameToHue(name: string): number {
 }
 
 function formatEventType(eventType: string): string {
-  return EVENT_DISPLAY_NAMES[eventType as EventTypeEnum] ?? eventType.replace(/_/g, " ");
+  return (
+    EVENT_DISPLAY_NAMES[eventType as EventTypeEnum] ??
+    eventType.replace(/_/g, " ")
+  );
 }
 
 export default function AthleteProfilePage() {
   const { athleteId } = useParams<{ athleteId: string }>();
   const navigate = useNavigate();
-  const { athletes, athletesIsLoading, athletesError, athletesRefetch } = useGetAllAthletes();
+  const { athletes, athletesIsLoading, athletesError, athletesRefetch } =
+    useGetAllAthletes();
   const { runs, runsIsLoading, runsError, runsRefetch } = useGetAllRuns();
   const { deleteAthlete, deleteAthleteIsLoading } = useDeleteAthlete();
   const { deleteRun, deleteRunIsLoading } = useDeleteRun();
 
   const [tab, setTab] = useState<"summary" | "runs" | "trends">("summary");
-  const [eventHistoryFilters, setEventHistoryFilters] = useState<EventHistoryFilters | null>(null);
+  const [eventHistoryFilters, setEventHistoryFilters] =
+    useState<EventHistoryFilters | null>(null);
   const [editAthleteOpen, setEditAthleteOpen] = useState(false);
   const [deleteAthleteOpen, setDeleteAthleteOpen] = useState(false);
   const [deleteRunId, setDeleteRunId] = useState<string | null>(null);
@@ -48,7 +60,10 @@ export default function AthleteProfilePage() {
     () =>
       runs
         .filter((r) => r.athlete_id === athleteId)
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+        .sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        ),
     [runs, athleteId]
   );
 
@@ -57,8 +72,11 @@ export default function AthleteProfilePage() {
       const matchesSearch =
         search.trim() === "" ||
         (r.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
-        formatEventType(r.event_type).toLowerCase().includes(search.toLowerCase());
-      const matchesEvent = eventFilter === "all" || r.event_type === eventFilter;
+        formatEventType(r.event_type)
+          .toLowerCase()
+          .includes(search.toLowerCase());
+      const matchesEvent =
+        eventFilter === "all" || r.event_type === eventFilter;
       return matchesSearch && matchesEvent;
     });
   }, [athleteRuns, search, eventFilter]);
@@ -85,7 +103,8 @@ export default function AthleteProfilePage() {
   const latestRun = athleteRuns[0] ?? null;
 
   if (athletesIsLoading || runsIsLoading) return <QueryLoading />;
-  if (athletesError) return <QueryError error={athletesError} refetch={athletesRefetch} />;
+  if (athletesError)
+    return <QueryError error={athletesError} refetch={athletesRefetch} />;
   if (runsError) return <QueryError error={runsError} refetch={runsRefetch} />;
 
   if (!athlete) {
@@ -127,7 +146,11 @@ export default function AthleteProfilePage() {
             background: `linear-gradient(135deg, hsl(${hue} 45% 42%), hsl(${hue + 30} 40% 55%))`,
           }}
         >
-          {athlete.name.split(" ").map((n) => n[0]).join("").toUpperCase()}
+          {athlete.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .toUpperCase()}
         </div>
         <div className="flex-1">
           <h2 className="text-xl font-bold text-foreground">{athlete.name}</h2>
@@ -164,7 +187,9 @@ export default function AthleteProfilePage() {
             key={t}
             onClick={() => setTab(t)}
             className={`flex-1 rounded-lg py-2.5 text-xs font-semibold transition-colors ${
-              tab === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"
+              tab === t
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground"
             }`}
           >
             {t === "summary" ? "Summary" : t === "runs" ? "Runs" : "Trends"}
@@ -179,8 +204,12 @@ export default function AthleteProfilePage() {
               <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
                 <Activity className="h-4 w-4 text-foreground" />
               </div>
-              <div className="text-2xl font-bold text-foreground">{athleteRuns.length}</div>
-              <div className="text-xs text-muted-foreground">Total Recordings</div>
+              <div className="text-2xl font-bold text-foreground">
+                {athleteRuns.length}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Total Recordings
+              </div>
             </div>
             <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
               <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
@@ -199,7 +228,9 @@ export default function AthleteProfilePage() {
             </p>
             {latestRun ? (
               <button
-                onClick={() => navigate(`/athletes/${athleteId}/runs/${latestRun.run_id}`)}
+                onClick={() =>
+                  navigate(`/athletes/${athleteId}/runs/${latestRun.run_id}`)
+                }
                 className="w-full text-left"
               >
                 <div className="flex items-center justify-between">
@@ -215,12 +246,17 @@ export default function AthleteProfilePage() {
                     Duration: {(latestRun.elapsed_ms / 1000).toFixed(1)}s
                   </p>
                 )}
-                <p className="mt-2 text-xs font-medium" style={{ color: "hsl(var(--primary))" }}>
+                <p
+                  className="mt-2 text-xs font-medium"
+                  style={{ color: "hsl(var(--primary))" }}
+                >
                   View analysis →
                 </p>
               </button>
             ) : (
-              <p className="text-sm text-muted-foreground">No events recorded yet.</p>
+              <p className="text-sm text-muted-foreground">
+                No events recorded yet.
+              </p>
             )}
           </div>
         </div>
@@ -257,7 +293,19 @@ export default function AthleteProfilePage() {
                     </option>
                   ))}
                 </select>
-                <svg className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                <svg
+                  className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
               </div>
 
               {/* Desktop pills */}
@@ -301,7 +349,9 @@ export default function AthleteProfilePage() {
                     className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 shadow-sm shadow-foreground/[0.02]"
                   >
                     <button
-                      onClick={() => navigate(`/athletes/${athleteId}/runs/${run.run_id}`)}
+                      onClick={() =>
+                        navigate(`/athletes/${athleteId}/runs/${run.run_id}`)
+                      }
                       className="flex flex-1 items-center gap-3 text-left"
                     >
                       <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
@@ -312,10 +362,13 @@ export default function AthleteProfilePage() {
                           {run.name ?? formatEventType(run.event_type)}
                         </span>
                         <p className="text-[10px] text-muted-foreground">
-                          {run.event_type === "hurdles_partial" && run.target_event
+                          {run.event_type === "hurdles_partial" &&
+                          run.target_event
                             ? `Partial Hurdles (${formatEventType(run.target_event)})`
                             : formatEventType(run.event_type)}
-                          {run.elapsed_ms ? ` · ${(run.elapsed_ms / 1000).toFixed(1)}s` : ""}
+                          {run.elapsed_ms
+                            ? ` · ${(run.elapsed_ms / 1000).toFixed(1)}s`
+                            : ""}
                         </p>
                       </div>
                     </button>
@@ -348,7 +401,9 @@ export default function AthleteProfilePage() {
           {filteredRuns.length === 0 && (
             <div className="rounded-2xl border border-dashed border-border p-12 text-center">
               <p className="text-sm font-medium text-muted-foreground">
-                {athleteRuns.length === 0 ? "No events recorded yet." : "No runs match your search."}
+                {athleteRuns.length === 0
+                  ? "No events recorded yet."
+                  : "No runs match your search."}
               </p>
             </div>
           )}
