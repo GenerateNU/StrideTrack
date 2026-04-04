@@ -10,6 +10,7 @@ from app.schemas.hurdle_schemas import (
     GctIncreaseData,
     HurdleMarker,
     HurdleMetricRow,
+    HurdleProjectionResponse,
     HurdleSplitBarData,
     HurdleTimelinePoint,
     HurdleTimelineResponse,
@@ -27,6 +28,7 @@ from app.utils.hurdle_chart_transformations import (
     transform_takeoff_gct,
 )
 from app.utils.hurdle_metrics import transform_stride_cycles_to_hurdle_metrics
+from app.utils.hurdle_projection import project_hurdle_race
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +114,14 @@ class HurdleService:
         logger.info(f"Service: Getting GCT increase for run {run_id}")
         data = await self._get_hurdle_metric_rows(run_id)
         return transform_gct_increase(data)
+
+    async def get_hurdle_projection(self, run_id: UUID) -> HurdleProjectionResponse:
+        """Project total race time from a partial hurdle run."""
+        logger.info(f"Service: Getting hurdle projection for run {run_id}")
+        target_event = await self.repository.get_run_target_event(run_id)
+        completed_metrics = await self._get_hurdle_metric_rows(run_id)
+        result = project_hurdle_race(completed_metrics, target_event)
+        return HurdleProjectionResponse(**result)
 
     async def get_hurdle_timeline(self, run_id: UUID) -> HurdleTimelineResponse:
         """Build time-series points for the hurdle timeline chart."""

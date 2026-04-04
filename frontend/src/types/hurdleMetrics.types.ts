@@ -49,6 +49,21 @@ export const gctIncreaseSchema = z.object({
   gct_increase_hurdle_to_hurdle_pct: z.number().nullable(),
 });
 
+export const projectedSplitSchema = z.object({
+  hurdle_num: z.number(),
+  split_ms: z.number(),
+});
+
+export const hurdleProjectionResponseSchema = z.object({
+  completed_splits: z.array(projectedSplitSchema),
+  projected_splits: z.array(projectedSplitSchema),
+  projected_final_segment_ms: z.number(),
+  projected_total_ms: z.number().nullable(),
+  confidence: z.number(),
+  target_event: z.string(),
+  total_hurdles: z.number(),
+});
+
 export type HurdleMetricRow = z.infer<typeof hurdleMetricRowSchema>;
 export type HurdleSplitBarData = z.infer<typeof hurdleSplitBarSchema>;
 export type StepsBetweenHurdlesData = z.infer<typeof stepsBetweenHurdlesSchema>;
@@ -56,3 +71,7 @@ export type TakeoffGctBarData = z.infer<typeof takeoffGctBarSchema>;
 export type LandingGctBarData = z.infer<typeof landingGctBarSchema>;
 export type TakeoffFtBarData = z.infer<typeof takeoffFtBarSchema>;
 export type GctIncreaseData = z.infer<typeof gctIncreaseSchema>;
+export type ProjectedSplit = z.infer<typeof projectedSplitSchema>;
+export type HurdleProjectionResponse = z.infer<
+  typeof hurdleProjectionResponseSchema
+>;

@@ -1,18 +1,20 @@
+import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
+import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
+import { JumpHeightChart } from "@/components/charts/bosco/JumpHeightChart";
+import { RsiChart } from "@/components/charts/bosco/RsiChart";
 import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
 import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
 import { GctIncreaseChart } from "@/components/charts/hurdles/GctIncreaseChart";
 import { HurdleSplitChart } from "@/components/charts/hurdles/HurdleSplitChart";
 import { LandingGctChart } from "@/components/charts/hurdles/LandingGctChart";
+import { ProjectedFinishKPI } from "@/components/charts/hurdles/ProjectedFinishChart";
+import { ProjectedSplitChart } from "@/components/charts/hurdles/ProjectedSplitChart";
 import { StepsBetweenHurdlesChart } from "@/components/charts/hurdles/StepsBetweenHurdlesChart";
 import { TakeoffFtChart } from "@/components/charts/hurdles/TakeoffFtChart";
 import { TakeoffGctChart } from "@/components/charts/hurdles/TakeoffGctChart";
-import { StepTimeChart } from "@/components/charts/StepTimeChart";
-import { JumpHeightChart } from "@/components/charts/bosco/JumpHeightChart";
-import { RsiChart } from "@/components/charts/bosco/RsiChart";
-import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
-import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
+import { StepTimeChart } from "@/components/charts/StepTimeChart";
 import { SplitScoreChart } from "@/components/charts/hurdles/SplitScoreChart";
 import { ReactionTimeCard } from "@/components/charts/reaction_time/ReactionTimeCard";
 import { HurdleTimelineChart } from "@/components/charts/hurdles/HurdleTimelineChart";
@@ -34,6 +36,7 @@ import { useRunMetrics } from "@/hooks/useRunMetrics.hooks";
 const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
 const HARDCODED_BOSCO_RUN_ID = "b1a2c3d4-5678-9abc-def0-111111111111";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
+const HARDCODED_PARTIAL_RUN_ID = "22222222-2222-2222-2222-222222222222";
 const HARDCODED_RT_RUN_ID = "cccccccc-0001-4000-8000-000000000001";
 
 function SectionHeader({ title }: { title: string }) {
@@ -249,6 +252,27 @@ export default function VisualizationsPage() {
             </h2>
             <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
               <GctIncreaseChart runId={HARDCODED_HURDLE_RUN_ID} />
+            </div>
+          </div>
+
+          {/* Partial Run Projection */}
+          <h1 className="text-3xl font-bold mb-8 text-foreground">
+            Partial Run Projection
+          </h1>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Projected Finish Time
+            </h2>
+            <ProjectedFinishKPI runId={HARDCODED_PARTIAL_RUN_ID} />
+          </div>
+
+          <div>
+            <h2 className="text-xl font-bold mb-3 text-primary">
+              Projected Splits
+            </h2>
+            <div className="bg-card border border-border rounded-lg p-6 shadow-sm">
+              <ProjectedSplitChart runId={HARDCODED_PARTIAL_RUN_ID} />
             </div>
           </div>
         </div>
