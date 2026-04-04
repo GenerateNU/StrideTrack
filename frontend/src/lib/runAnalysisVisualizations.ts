@@ -47,6 +47,7 @@ const DEFAULT_CHARTS: VisualizationConfig[] = [
   RSIChart,
   StepTimeChart,
   TotalStepsKPI,
+  ReactionTimeCard,
 ];
 
 const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
@@ -55,7 +56,6 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     SprintDriftKPIs,
     StepFrequencyChart,
     SplitScoreChart,
-    ReactionTimeCard,
   ],
   hurdles: [
     ...DEFAULT_CHARTS,
