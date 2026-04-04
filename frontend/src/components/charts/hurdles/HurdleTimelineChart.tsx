@@ -133,6 +133,8 @@ export const HurdleTimelineChart = ({ runId }: ChartProps) => {
     </button>
   );
 
+  const minWidth = Math.max(800, chartPoints.length * 10);
+
   return (
     <ChartCard
       title="Hurdle Timeline"
@@ -154,11 +156,11 @@ export const HurdleTimelineChart = ({ runId }: ChartProps) => {
       </div>
 
       <div className="overflow-x-auto">
-        <div style={{ minWidth: 1200 }}>
+        <div style={{ minWidth }}>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart
               data={chartPoints}
-              margin={{ top: 30, right: 40, left: 20, bottom: 40 }}
+              margin={{ top: 30, right: 40, left: 20, bottom: 0 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -169,16 +171,6 @@ export const HurdleTimelineChart = ({ runId }: ChartProps) => {
                 type="number"
                 domain={["dataMin", "dataMax"]}
                 tickFormatter={(v: number) => `${v.toFixed(1)}`}
-                label={{
-                  value: "Time (s)",
-                  position: "insideBottom",
-                  offset: -25,
-                  style: {
-                    fill: chartColors.mutedForeground,
-                    fontSize: 10,
-                    textAnchor: "middle",
-                  },
-                }}
                 tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
               />
               <YAxis
@@ -251,6 +243,9 @@ export const HurdleTimelineChart = ({ runId }: ChartProps) => {
             </LineChart>
           </ResponsiveContainer>
         </div>
+      </div>
+      <div className="sticky bottom-0 text-center text-xs text-muted-foreground py-2">
+        Time (s)
       </div>
     </ChartCard>
   );
