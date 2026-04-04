@@ -15,9 +15,9 @@ export function useSplitScore(runId: string) {
   });
 
   return {
-    splitScoreData: query.data ?? null,
-    splitScoreLoading: query.isLoading,
+    splitScore: query.data ?? null,
+    splitScoreIsLoading: query.isLoading,
     splitScoreError: query.error,
-    refetchSplitScore: query.refetch,
+    splitScoreRefetch: query.refetch,
   };
 }

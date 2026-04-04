@@ -1,17 +1,25 @@
-export interface HurdleTimelinePoint {
-  time_s: number;
-  foot: "left" | "right";
-  phase: "ground" | "air";
-  gct_ms: number | null;
-  ft_ms: number | null;
-}
+import { z } from "zod";
 
-export interface HurdleMarker {
-  time_s: number;
-  hurdle_num: number;
-}
+export const hurdleTimelinePointSchema = z.object({
+  time_s: z.number(),
+  foot: z.enum(["left", "right"]),
+  phase: z.enum(["ground", "air"]),
+  gct_ms: z.number().nullable(),
+  ft_ms: z.number().nullable(),
+});
 
-export interface HurdleTimelineResponse {
-  points: HurdleTimelinePoint[];
-  hurdle_markers: HurdleMarker[];
-}
+export const hurdleMarkerSchema = z.object({
+  time_s: z.number(),
+  hurdle_num: z.number(),
+});
+
+export const hurdleTimelineResponseSchema = z.object({
+  points: z.array(hurdleTimelinePointSchema),
+  hurdle_markers: z.array(hurdleMarkerSchema),
+});
+
+export type HurdleTimelinePoint = z.infer<typeof hurdleTimelinePointSchema>;
+export type HurdleMarker = z.infer<typeof hurdleMarkerSchema>;
+export type HurdleTimelineResponse = z.infer<
+  typeof hurdleTimelineResponseSchema
+>;

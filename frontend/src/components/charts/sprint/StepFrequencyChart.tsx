@@ -12,32 +12,34 @@ import {
 import { chartColors } from "@/lib/chartColors";
 import { useStepFrequencyData } from "@/hooks/useRunMetrics.hooks";
 import "@/index.css";
-import { CustomTooltip } from "@/components/charts/CustomToolTip";
-import { QueryLoading } from "@/components/QueryLoading";
-import { QueryError } from "@/components/QueryError";
+import { CustomTooltip } from "@/components/charts/shared/CustomToolTip";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
+import type { ChartProps } from "@/types/chart.types";
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 
-export const StepFrequencyChart = ({ runId }: { runId: string }) => {
+export const StepFrequencyChart = ({ runId }: ChartProps) => {
   const {
-    stepFrequencyData,
-    stepFrequencyLoading,
+    stepFrequency,
+    stepFrequencyIsLoading,
     stepFrequencyError,
     stepFrequencyRefetch,
   } = useStepFrequencyData(runId);
 
-  if (stepFrequencyLoading) return <QueryLoading />;
+  if (stepFrequencyIsLoading) return <QueryLoading />;
   if (stepFrequencyError)
     return (
       <QueryError error={stepFrequencyError} refetch={stepFrequencyRefetch} />
     );
-  if (!stepFrequencyData) return null;
+  if (!stepFrequency) return null;
 
-  const strideNums = [...new Set(stepFrequencyData.map((d) => d.stride_num))];
+  const strideNums = [...new Set(stepFrequency.map((d) => d.stride_num))];
 
   const chartData = strideNums.map((strideNum) => {
-    const leftStep = stepFrequencyData.find(
+    const leftStep = stepFrequency.find(
       (d) => d.stride_num === strideNum && d.foot === "left"
     );
-    const rightStep = stepFrequencyData.find(
+    const rightStep = stepFrequency.find(
       (d) => d.stride_num === strideNum && d.foot === "right"
     );
     return {
@@ -50,8 +52,12 @@ export const StepFrequencyChart = ({ runId }: { runId: string }) => {
   const accelEndStride = strideNums[Math.floor(strideNums.length * 0.4)] ?? 0;
 
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart
+    <ChartCard
+      title="Step Frequency"
+      description="Steps per second (Hz) across the run. Optimal zone varies by event and athlete."
+    >
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart
         data={chartData}
         margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
       >
@@ -125,7 +131,8 @@ export const StepFrequencyChart = ({ runId }: { runId: string }) => {
           dot={false}
           strokeWidth={2}
         />
-      </LineChart>
-    </ResponsiveContainer>
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartCard>
   );
 };

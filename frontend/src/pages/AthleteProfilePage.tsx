@@ -2,11 +2,11 @@ import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useGetAllRuns } from "@/hooks/useRuns.hooks";
-import { QueryLoading } from "@/components/QueryLoading";
-import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
 import { ArrowLeft, Activity, Calendar } from "lucide-react";
-import EventHistoryFilterBar from "@/components/charts/EventHistoryFilterBar";
-import { EventHistoryChart } from "@/components/charts/EventHistoryChart";
+import EventHistoryFilterBar from "@/components/charts/history/EventHistoryFilterBar";
+import { EventHistoryChart } from "@/components/charts/history/EventHistoryChart";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
 
 function nameToHue(name: string): number {

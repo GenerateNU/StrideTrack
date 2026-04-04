@@ -1,6 +1,8 @@
 import { useSprintDrift } from "@/hooks/useRunMetrics.hooks";
-import { QueryLoading } from "@/components/QueryLoading";
-import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
+import type { ChartProps } from "@/types/chart.types";
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 
 interface DriftCardProps {
   label: string;
@@ -43,19 +45,28 @@ function DriftCard({
   );
 }
 
-export const SprintDriftKPIs = ({ runId }: { runId: string }) => {
-  const { driftData, driftLoading, driftError, driftRefetch } =
-    useSprintDrift(runId);
+export const SprintDriftKPIs = ({ runId }: ChartProps) => {
+  const {
+    sprintDrift,
+    sprintDriftIsLoading,
+    sprintDriftError,
+    sprintDriftRefetch,
+  } = useSprintDrift(runId);
 
-  if (driftLoading) return <QueryLoading />;
-  if (driftError)
-    return <QueryError error={driftError} refetch={driftRefetch} />;
-  if (!driftData) return null;
+  if (sprintDriftIsLoading) return <QueryLoading />;
+  if (sprintDriftError)
+    return <QueryError error={sprintDriftError} refetch={sprintDriftRefetch} />;
+  if (!sprintDrift) return null;
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <DriftCard label="GCT Drift" value={driftData.gct_drift_pct} />
-      <DriftCard label="FT Drift" value={driftData.ft_drift_pct} />
-    </div>
+    <ChartCard
+      title="Sprint Drift"
+      description="Percentage change in GCT and FT from first to second half of the run. High drift indicates fatigue."
+    >
+      <div className="grid grid-cols-2 gap-3">
+        <DriftCard label="GCT Drift" value={sprintDrift.gct_drift_pct} />
+        <DriftCard label="FT Drift" value={sprintDrift.ft_drift_pct} />
+      </div>
+    </ChartCard>
   );
 };

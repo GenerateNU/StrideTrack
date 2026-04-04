@@ -1,7 +1,9 @@
-import { QueryError } from "@/components/QueryError";
-import { QueryLoading } from "@/components/QueryLoading";
+import { ChartCard } from "@/components/charts/shared/ChartCard";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useHurdleSplits } from "@/hooks/useHurdleMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
 import {
   Bar,
   BarChart,
@@ -13,29 +15,39 @@ import {
   YAxis,
 } from "recharts";
 
-export const HurdleSplitChart = ({ runId }: { runId: string }) => {
-  const { splitData, splitLoading, splitError, refetchSplitData } =
-    useHurdleSplits(runId);
+export const HurdleSplitChart = ({ runId }: ChartProps) => {
+  const {
+    hurdleSplits,
+    hurdleSplitsIsLoading,
+    hurdleSplitsError,
+    hurdleSplitsRefetch,
+  } = useHurdleSplits(runId);
 
-  if (splitLoading) {
-    return <QueryLoading />;
-  }
-
-  if (splitError) {
+  if (hurdleSplitsIsLoading)
     return (
-      <QueryError
-        error={splitError as Error}
-        refetch={() => void refetchSplitData()}
-      />
+      <ChartCard
+        title="Hurdle Splits"
+        description="Time between consecutive hurdle clearances. Low CV% indicates consistent pacing."
+      >
+        <QueryLoading />
+      </ChartCard>
     );
-  }
-
-  if (!splitData) {
-    return null;
-  }
+  if (hurdleSplitsError)
+    return (
+      <ChartCard
+        title="Hurdle Splits"
+        description="Time between consecutive hurdle clearances. Low CV% indicates consistent pacing."
+      >
+        <QueryError
+          error={hurdleSplitsError}
+          refetch={() => void hurdleSplitsRefetch()}
+        />
+      </ChartCard>
+    );
+  if (!hurdleSplits) return null;
 
   // Filter out the last hurdle (null split) for display and stats
-  const validSplits = splitData.filter(
+  const validSplits = hurdleSplits.filter(
     (s) => s.hurdle_split_ms != null
   ) as Array<{ hurdle_num: number; hurdle_split_ms: number }>;
 
@@ -52,8 +64,19 @@ export const HurdleSplitChart = ({ runId }: { runId: string }) => {
   );
   const cv = (stdDev / mean) * 100;
 
+  const dataMin = Math.min(...splitValues);
+  const dataMax = Math.max(...splitValues);
+  const range = dataMax - dataMin || 1;
+  const yDomain: [number, number] = [
+    Math.max(0, dataMin - range * 0.2),
+    dataMax + range * 0.1,
+  ];
+
   return (
-    <div>
+    <ChartCard
+      title="Hurdle Splits"
+      description="Time between consecutive hurdle clearances. Low CV% indicates consistent pacing."
+    >
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={validSplits}
@@ -75,7 +98,7 @@ export const HurdleSplitChart = ({ runId }: { runId: string }) => {
             tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <YAxis
-            domain={["auto", "auto"]}
+            domain={yDomain}
             label={{
               value: "Split Time (ms)",
               angle: -90,
@@ -123,6 +146,6 @@ export const HurdleSplitChart = ({ runId }: { runId: string }) => {
         <p className="text-sm text-muted-foreground">Consistency (CV%)</p>
         <p className="text-2xl font-bold text-foreground">{cv.toFixed(1)}%</p>
       </div>
-    </div>
+    </ChartCard>
   );
 };

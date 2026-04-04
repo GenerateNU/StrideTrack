@@ -1,5 +1,3 @@
-import "@/index.css";
-
 interface CustomTooltipProps {
   active?: boolean;
   payload?: Array<{

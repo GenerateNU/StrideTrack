@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import type { HurdleTimelineResponse } from "@/types/hurdleTimeline.types";
+import { hurdleTimelineResponseSchema } from "@/types/hurdleTimeline.types";
+import { validateResponse } from "@/utils/validation";
 
 export function useHurdleTimeline(runId: string) {
   const query = useQuery({
@@ -9,15 +11,15 @@ export function useHurdleTimeline(runId: string) {
       const response = await api.get<HurdleTimelineResponse>(
         `/run/athletes/${runId}/metrics/hurdles/timeline`
       );
-      return response.data;
+      return validateResponse(response.data, hurdleTimelineResponseSchema);
     },
     enabled: !!runId,
   });
 
   return {
-    timelineData: query.data ?? null,
-    timelineLoading: query.isLoading,
-    timelineError: query.error,
-    refetchTimeline: query.refetch,
+    hurdleTimeline: query.data ?? null,
+    hurdleTimelineIsLoading: query.isLoading,
+    hurdleTimelineError: query.error,
+    hurdleTimelineRefetch: query.refetch,
   };
 }

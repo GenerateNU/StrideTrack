@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useGCTRangeData } from "@/hooks/useRunMetrics.hooks";
-import { QueryLoading } from "@/components/QueryLoading";
-import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
+import type { ChartProps } from "@/types/chart.types";
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 import {
   PieChart,
   Pie,
@@ -17,30 +19,38 @@ const COLORS = {
   above: "#ef4444",
 };
 
-export const GCTRangePieChart = ({ runId }: { runId: string }) => {
+export const GCTRangePieChart = ({ runId }: ChartProps) => {
   const [minMs, setMinMs] = useState(100);
   const [maxMs, setMaxMs] = useState(200);
 
-  const { gctRangeData, gctRangeLoading, gctRangeError, gctRangeRefetch } =
-    useGCTRangeData(runId, minMs, maxMs);
+  const {
+    gctRange,
+    gctRangeIsLoading,
+    gctRangeError,
+    gctRangeRefetch,
+  } = useGCTRangeData(runId, minMs, maxMs);
 
-  if (gctRangeLoading) return <QueryLoading />;
+  if (gctRangeIsLoading) return <QueryLoading />;
   if (gctRangeError)
     return <QueryError error={gctRangeError} refetch={gctRangeRefetch} />;
-  if (!gctRangeData) return null;
+  if (!gctRange) return null;
 
-  const data = [
-    { name: `Below ${minMs}ms`, value: gctRangeData.below, key: "below" },
+  const pieData = [
+    { name: `Below ${minMs}ms`, value: gctRange.below, key: "below" },
     {
       name: `${minMs}–${maxMs}ms`,
-      value: gctRangeData.in_range,
+      value: gctRange.in_range,
       key: "in_range",
     },
-    { name: `Above ${maxMs}ms`, value: gctRangeData.above, key: "above" },
+    { name: `Above ${maxMs}ms`, value: gctRange.above, key: "above" },
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="space-y-4">
+    <ChartCard
+      title="Steps in GCT Range"
+      description="Bucketing of steps by ground contact time range. Adjust thresholds to analyze GCT distribution."
+    >
+      <div className="space-y-4">
       {/* Threshold inputs */}
       <div className="flex items-center gap-4 justify-center">
         <div className="flex items-center gap-2">
@@ -73,7 +83,7 @@ export const GCTRangePieChart = ({ runId }: { runId: string }) => {
       <ResponsiveContainer width="100%" height={320}>
         <PieChart>
           <Pie
-            data={data}
+            data={pieData}
             cx="50%"
             cy="55%"
             innerRadius={70}
@@ -83,7 +93,7 @@ export const GCTRangePieChart = ({ runId }: { runId: string }) => {
             label={({ value }) => `${value}`}
             labelLine={false}
           >
-            {data.map((entry) => (
+            {pieData.map((entry) => (
               <Cell
                 key={entry.key}
                 fill={COLORS[entry.key as keyof typeof COLORS]}
@@ -106,6 +116,7 @@ export const GCTRangePieChart = ({ runId }: { runId: string }) => {
           />
         </PieChart>
       </ResponsiveContainer>
-    </div>
+      </div>
+    </ChartCard>
   );
 };

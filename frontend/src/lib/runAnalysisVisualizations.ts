@@ -1,8 +1,9 @@
 import type { ComponentType } from "react";
+import type { ChartProps } from "@/types/chart.types";
 
-// Shared charts
-import { GroundContactTimeChart } from "@/components/charts/GroundContactChart";
-import { FlightTimeChart } from "@/components/charts/FlightTimeChart";
+// Universal charts
+import { GroundContactTimeChart } from "@/components/charts/universal/GroundContactChart";
+import { FlightTimeChart } from "@/components/charts/universal/FlightTimeChart";
 
 // Hurdle charts
 import { GctIncreaseChart } from "@/components/charts/hurdles/GctIncreaseChart";
@@ -15,8 +16,6 @@ import { SplitScoreChart } from "@/components/charts/hurdles/SplitScoreChart";
 
 // Sprint charts
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
-import { FTDriftCard } from "@/components/charts/sprint/FTDriftCard";
-import { GCTDriftCard } from "@/components/charts/sprint/GCTDriftCard";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
 
 // Bosco charts
@@ -25,42 +24,36 @@ import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
 import { JumpHeightChart } from "@/components/charts/bosco/JumpHeightChart";
 import { RsiChart } from "@/components/charts/bosco/RsiChart";
 
-export type VisualizationConfig = {
-  title: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  component: ComponentType<any>;
-};
+export type VisualizationConfig = ComponentType<ChartProps>;
 
 const DEFAULT_CHARTS: VisualizationConfig[] = [
-  { title: "Ground Contact Time — L vs R", component: GroundContactTimeChart },
-  { title: "Flight Time — L vs R", component: FlightTimeChart },
+  GroundContactTimeChart,
+  FlightTimeChart,
 ];
 
 const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
   sprint: [
     ...DEFAULT_CHARTS,
-    { title: "Drift KPI", component: SprintDriftKPIs },
-    { title: "FT Drift", component: FTDriftCard },
-    { title: "GCT Drift", component: GCTDriftCard },
-    { title: "Step Frequency", component: StepFrequencyChart },
-    { title: "Split Score Analysis", component: SplitScoreChart },
+    SprintDriftKPIs,
+    StepFrequencyChart,
+    SplitScoreChart,
   ],
   hurdles: [
     ...DEFAULT_CHARTS,
-    { title: "GCT Increase", component: GctIncreaseChart },
-    { title: "Hurdle Splits", component: HurdleSplitChart },
-    { title: "Landing GCT", component: LandingGctChart },
-    { title: "Steps Between Hurdles", component: StepsBetweenHurdlesChart },
-    { title: "Takeoff Flight Time", component: TakeoffFtChart },
-    { title: "Takeoff GCT", component: TakeoffGctChart },
-    { title: "Split Score Analysis", component: SplitScoreChart },
+    GctIncreaseChart,
+    HurdleSplitChart,
+    LandingGctChart,
+    StepsBetweenHurdlesChart,
+    TakeoffFtChart,
+    TakeoffGctChart,
+    SplitScoreChart,
   ],
   bosco: [
     ...DEFAULT_CHARTS,
-    { title: "GCT Flight", component: GctFlightChart },
-    { title: "Jump Height", component: JumpHeightChart },
-    { title: "RSI", component: RsiChart },
-    { title: "Fatigue Index", component: FatigueIndexKPI },
+    GctFlightChart,
+    JumpHeightChart,
+    RsiChart,
+    FatigueIndexKPI,
   ],
 };
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { useEvents } from "../../hooks/useEvents";
+import { useEvents } from "../../hooks/useEvents.hooks";
 import { ChevronDown } from "lucide-react";
 import type { EventTypeEnum } from "../../types/event.types";
 

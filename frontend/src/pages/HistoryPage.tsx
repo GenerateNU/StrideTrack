@@ -2,9 +2,9 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetAllRuns } from "@/hooks/useRuns.hooks";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
-import { useEvents } from "@/hooks/useEvents";
-import { QueryLoading } from "@/components/QueryLoading";
-import { QueryError } from "@/components/QueryError";
+import { useEvents } from "@/hooks/useEvents.hooks";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
 import { ChevronDown } from "lucide-react";
 
 type DateRange = "all" | "today" | "week" | "month";

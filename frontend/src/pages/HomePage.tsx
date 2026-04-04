@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useGetAllRuns } from "@/hooks/useRuns.hooks";
-import { QueryLoading } from "@/components/QueryLoading";
-import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
 import { Search, ChevronDown, ChevronUp } from "lucide-react";
 
 // Generate a consistent hue from a string for avatar variety

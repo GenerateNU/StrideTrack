@@ -1,4 +1,4 @@
-import { QueryLoading } from "@/components/QueryLoading";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import { TrainingRunsList } from "../components/example/TrainingRunsList";
 
 export function ExamplePage() {

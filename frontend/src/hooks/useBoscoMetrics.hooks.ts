@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { boscoMetricsSchema } from "@/types/bosco.types.ts";
 import type { BoscoMetricsResponse } from "@/types/bosco.types.ts";
-import apiClient from "@/lib/api.ts";
+import apiClient from "@/lib/api";
 import { validateResponse } from "@/utils/validation";
 
 export function useBoscoMetrics(runId: string | null) {
@@ -20,7 +20,8 @@ export function useBoscoMetrics(runId: string | null) {
 
   return {
     boscoMetrics: query.data ?? null,
-    boscoIsLoading: query.isLoading,
-    boscoError: query.error,
+    boscoMetricsIsLoading: query.isLoading,
+    boscoMetricsError: query.error,
+    boscoMetricsRefetch: query.refetch,
   };
 }

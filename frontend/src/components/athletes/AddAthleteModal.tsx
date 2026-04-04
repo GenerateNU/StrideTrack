@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-import { useCreateAthlete } from "@/hooks/useCreateAthlete.hooks";
+import { useCreateAthlete } from "@/hooks/useAthletes.hooks";
 
 interface AddAthleteModalProps {
   open: boolean;

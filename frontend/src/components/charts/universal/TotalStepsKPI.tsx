@@ -1,24 +1,35 @@
+import type { ChartProps } from "@/types/chart.types";
+import { BaseKPI } from "@/components/charts/shared/BaseKPI";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
 import { useRunMetrics } from "@/hooks/useRunMetrics.hooks";
-import { QueryLoading } from "@/components/QueryLoading";
-import { QueryError } from "@/components/QueryError";
 
-export const TotalStepsKPI = ({ runId }: { runId: string }) => {
-  const { metrics, metricsIsLoading, metricsError, metricsRefetch } =
-    useRunMetrics(runId);
+export const TotalStepsKPI = ({ runId }: ChartProps) => {
+  const {
+    runMetrics,
+    runMetricsIsLoading,
+    runMetricsError,
+    runMetricsRefetch,
+  } = useRunMetrics(runId);
 
-  if (metricsIsLoading) return <QueryLoading />;
-  if (metricsError)
-    return <QueryError error={metricsError} refetch={metricsRefetch} />;
-  if (!metrics) return null;
+  if (runMetricsIsLoading) return <QueryLoading />;
+  if (runMetricsError)
+    return (
+      <QueryError
+        error={runMetricsError}
+        refetch={() => void runMetricsRefetch()}
+      />
+    );
+  if (!runMetrics) return null;
 
-  const totalSteps = metrics.length;
+  const totalSteps = runMetrics.length;
 
   return (
-    <div className="flex flex-col items-center justify-center rounded-lg bg-card border border-border p-5 gap-1 shadow-sm">
+    <BaseKPI description="Total number of strides recorded in this run.">
       <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
         Total Steps
       </span>
       <span className="text-4xl font-bold text-foreground">{totalSteps}</span>
-    </div>
+    </BaseKPI>
   );
 };

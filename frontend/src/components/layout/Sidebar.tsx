@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Home, Circle, Clock, UserCircle } from "lucide-react";
 import { useAuth } from "@/context/auth.context";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/hooks/useTheme.hooks";
 import { ProfileMenu } from "./ProfileMenu";
 import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
 import logo from "@/assets/stridetrack_text.png";

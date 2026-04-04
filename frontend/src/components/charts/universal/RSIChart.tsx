@@ -1,7 +1,10 @@
 import { useRunMetrics } from "@/hooks/useRunMetrics.hooks";
-import { QueryLoading } from "@/components/QueryLoading";
-import { QueryError } from "@/components/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
 import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
+import { ChartCard } from "@/components/charts/shared/ChartCard";
+import { MeanRSIKPI } from "@/components/charts/universal/MeanRSIKPI";
 import {
   LineChart,
   Line,
@@ -13,23 +16,40 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export const RSIChart = ({ runId }: { runId: string }) => {
-  const { metrics, metricsIsLoading, metricsError, metricsRefetch } =
-    useRunMetrics(runId);
+export const RSIChart = ({ runId }: ChartProps) => {
+  const {
+    runMetrics,
+    runMetricsIsLoading,
+    runMetricsError,
+    runMetricsRefetch,
+  } = useRunMetrics(runId);
 
-  if (metricsIsLoading) return <QueryLoading />;
-  if (metricsError)
-    return <QueryError error={metricsError} refetch={metricsRefetch} />;
-  if (!metrics) return null;
+  if (runMetricsIsLoading) return <QueryLoading />;
+  if (runMetricsError)
+    return <QueryError error={runMetricsError} refetch={runMetricsRefetch} />;
+  if (!runMetrics) return null;
 
-  const rsiData = metrics.map((m) => ({
+  const rsiData = runMetrics.map((m) => ({
     label: m.stride_num,
     rsi: m.gct_ms > 0 ? parseFloat((m.flight_ms / m.gct_ms).toFixed(3)) : 0,
   }));
 
+  const meanRSI =
+    runMetrics.length > 0
+      ? runMetrics.reduce(
+          (s, m) => s + (m.gct_ms > 0 ? m.flight_ms / m.gct_ms : 0),
+          0
+        ) / runMetrics.length
+      : null;
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart
+    <ChartCard
+      title="Reactive Strength Index (RSI)"
+      description="Flight time divided by ground contact time per stride. Elite sprinters target RSI > 1.0 at max velocity."
+      headerRight={meanRSI != null ? <MeanRSIKPI mean={meanRSI} /> : undefined}
+    >
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart
         data={rsiData}
         margin={{ top: 16, right: 24, left: 0, bottom: 24 }}
       >
@@ -94,7 +114,8 @@ export const RSIChart = ({ runId }: { runId: string }) => {
           dot={{ fill: chartColors.foreground, r: 3 }}
           activeDot={{ r: 5 }}
         />
-      </LineChart>
-    </ResponsiveContainer>
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartCard>
   );
 };
