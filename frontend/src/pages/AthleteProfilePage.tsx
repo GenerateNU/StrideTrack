@@ -8,7 +8,7 @@ import { ArrowLeft, Activity, Calendar } from "lucide-react";
 import EventHistoryFilterBar from "@/components/charts/history/EventHistoryFilterBar";
 import { EventHistoryChart } from "@/components/charts/history/EventHistoryChart";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
-import { AverageReactionTimeCard } from "@/components/charts/reaction_time/AverageReactionTimeCard";
+import { AverageReactionTimeCard } from "@/components/charts/reaction-time/AverageReactionTimeCard";
 
 function nameToHue(name: string): number {
   let hash = 0;
