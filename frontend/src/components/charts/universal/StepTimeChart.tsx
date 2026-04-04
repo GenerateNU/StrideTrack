@@ -30,14 +30,18 @@ export const StepTimeChart = ({ runId }: { runId: string }) => {
     }
   };
 
+  const minWidth = Math.max(stackedBar.length * 20, 0);
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart
-        data={stackedBar}
-        onMouseMove={onMouseMove}
-        onMouseLeave={() => setActiveIndex(null)}
-        margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-      >
+    <div className="overflow-x-auto">
+      <div style={{ minWidth }}>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart
+            data={stackedBar}
+            onMouseMove={onMouseMove}
+            onMouseLeave={() => setActiveIndex(null)}
+            margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+          >
         <CartesianGrid
           vertical={false}
           strokeDasharray="0"
@@ -118,7 +122,9 @@ export const StepTimeChart = ({ runId }: { runId: string }) => {
             />
           ))}
         </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 };

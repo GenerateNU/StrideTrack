@@ -31,7 +31,7 @@ export function AppLayout() {
       <Sidebar />
 
       {/* Mobile header only */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card/95 px-5 py-4 backdrop-blur-sm md:hidden">
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card/95 px-5 pt-14 pb-3 backdrop-blur-sm md:hidden">
         <img src={logo} alt="StrideTrack" className="h-9 w-auto" />
         <div className="relative" ref={menuRef}>
           <button

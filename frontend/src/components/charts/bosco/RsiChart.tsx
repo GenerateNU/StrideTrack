@@ -44,8 +44,10 @@ export const RsiChart = ({ runId }: ChartProps) => {
       title="RSI"
       description="Reactive Strength Index (flight time / ground contact time) per jump. RSI > 1.0 indicates good reactive strength."
     >
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: Math.max(chartData.length * 30, 0) }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="jump_num"
@@ -102,8 +104,10 @@ export const RsiChart = ({ runId }: ChartProps) => {
             name="RSI"
             dot={{ fill: chartColors.primary }}
           />
-        </LineChart>
-      </ResponsiveContainer>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </ChartCard>
   );
 };

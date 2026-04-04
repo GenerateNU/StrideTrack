@@ -44,8 +44,10 @@ export const JumpHeightChart = ({ runId }: ChartProps) => {
       title="Jump Height"
       description="Estimated jump height per repetition. Derived from flight time using ballistic equations."
     >
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: Math.max(chartData.length * 30, 0) }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="jump_num"
@@ -100,8 +102,10 @@ export const JumpHeightChart = ({ runId }: ChartProps) => {
             radius={[4, 4, 0, 0]}
             name="Jump Height"
           />
-        </BarChart>
-      </ResponsiveContainer>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </ChartCard>
   );
 };

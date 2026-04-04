@@ -48,11 +48,13 @@ export const RSIChart = ({ runId }: ChartProps) => {
       description="Flight time divided by ground contact time per stride. Elite sprinters target RSI > 1.0 at max velocity."
       headerRight={meanRSI != null ? <MeanRSIKPI mean={meanRSI} /> : undefined}
     >
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart
-          data={rsiData}
-          margin={{ top: 16, right: 24, left: 0, bottom: 24 }}
-        >
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: Math.max(rsiData.length * 20, 0) }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={rsiData}
+              margin={{ top: 16, right: 24, left: 0, bottom: 24 }}
+            >
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="label"
@@ -114,8 +116,10 @@ export const RSIChart = ({ runId }: ChartProps) => {
             dot={{ fill: chartColors.foreground, r: 3 }}
             activeDot={{ r: 5 }}
           />
-        </LineChart>
-      </ResponsiveContainer>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </ChartCard>
   );
 };

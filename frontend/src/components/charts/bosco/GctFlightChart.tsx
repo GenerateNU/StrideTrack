@@ -49,8 +49,10 @@ export const GctFlightChart = ({ runId }: ChartProps) => {
       title="GCT & Flight Time"
       description="Ground contact time vs flight time for each jump. Helps assess reactive strength characteristics."
     >
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData}>
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: Math.max(chartData.length * 30, 0) }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="jump_num"
@@ -112,8 +114,10 @@ export const GctFlightChart = ({ runId }: ChartProps) => {
             name="Jump Height (cm)"
             dot={{ fill: chartColors.foreground }}
           />
-        </LineChart>
-      </ResponsiveContainer>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </ChartCard>
   );
 };

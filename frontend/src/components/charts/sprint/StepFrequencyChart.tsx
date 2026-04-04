@@ -56,11 +56,13 @@ export const StepFrequencyChart = ({ runId }: ChartProps) => {
       title="Step Frequency"
       description="Steps per second (Hz) across the run. Optimal zone varies by event and athlete."
     >
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart
-          data={chartData}
-          margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-        >
+      <div className="overflow-x-auto">
+        <div style={{ minWidth: Math.max(chartData.length * 20, 0) }}>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+            >
           <ReferenceArea
             x1={strideNums[0]}
             x2={accelEndStride}
@@ -131,8 +133,10 @@ export const StepFrequencyChart = ({ runId }: ChartProps) => {
             dot={false}
             strokeWidth={2}
           />
-        </LineChart>
-      </ResponsiveContainer>
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </ChartCard>
   );
 };

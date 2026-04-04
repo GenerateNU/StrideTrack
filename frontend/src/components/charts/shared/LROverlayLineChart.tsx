@@ -49,79 +49,90 @@ export const LROverlayLineChart = ({
       ? allValues.reduce((s, v) => s + v, 0) / allValues.length
       : null;
 
+  const minWidth = Math.max(lrOverlay.length * 20, 0);
+
   return (
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={lrOverlay}>
-        <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
-        <XAxis
-          dataKey="stride_num"
-          label={{
-            value: "Stride Number",
-            position: "insideBottom",
-            offset: -5,
-            style: {
-              fill: chartColors.mutedForeground,
-              fontSize: 10,
-              textAnchor: "middle",
-            },
-          }}
-        />
-        <YAxis
-          label={{
-            value: "Time (milliseconds)",
-            angle: -90,
-            position: "insideLeft",
-            offset: 0,
-            style: {
-              fill: chartColors.mutedForeground,
-              fontSize: 10,
-              textAnchor: "middle",
-            },
-          }}
-        />
-        <Tooltip
-          contentStyle={{
-            borderRadius: 12,
-            border: "none",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-            fontSize: 13,
-            backgroundColor: chartColors.card,
-            color: chartColors.foreground,
-          }}
-          formatter={(value) => [`${value} ms`]}
-        />
-        <Legend
-          verticalAlign="bottom"
-          align="center"
-          wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 60 }}
-          iconType="circle"
-          iconSize={8}
-        />
-        {showMeanReferenceLine && mean != null && (
-          <ReferenceLine
-            y={mean}
-            stroke={chartColors.primary}
-            strokeDasharray="6 3"
-            strokeWidth={1.5}
-          />
-        )}
-        <Line
-          type="monotone"
-          dataKey="left"
-          stroke={chartColors.primary}
-          strokeWidth={2}
-          name="Left Foot"
-          dot={{ fill: chartColors.primary }}
-        />
-        <Line
-          type="monotone"
-          dataKey="right"
-          stroke={chartColors.foreground}
-          strokeWidth={2}
-          name="Right Foot"
-          dot={{ fill: chartColors.foreground }}
-        />
-      </LineChart>
-    </ResponsiveContainer>
+    <div className="overflow-x-auto">
+      <div style={{ minWidth }}>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart
+            data={lrOverlay}
+            margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
+            <XAxis
+              dataKey="stride_num"
+              label={{
+                value: "Stride Number",
+                position: "insideBottom",
+                offset: -5,
+                style: {
+                  fill: chartColors.mutedForeground,
+                  fontSize: 10,
+                  textAnchor: "middle",
+                },
+              }}
+              tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
+            />
+            <YAxis
+              label={{
+                value: "Time (milliseconds)",
+                angle: -90,
+                position: "insideLeft",
+                offset: 0,
+                style: {
+                  fill: chartColors.mutedForeground,
+                  fontSize: 10,
+                  textAnchor: "middle",
+                },
+              }}
+              tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
+            />
+            <Tooltip
+              contentStyle={{
+                borderRadius: 12,
+                border: "none",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                fontSize: 13,
+                backgroundColor: chartColors.card,
+                color: chartColors.foreground,
+              }}
+              formatter={(value) => [`${value} ms`]}
+            />
+            <Legend
+              verticalAlign="bottom"
+              align="center"
+              wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 60 }}
+              iconType="circle"
+              iconSize={8}
+            />
+            {showMeanReferenceLine && mean != null && (
+              <ReferenceLine
+                y={mean}
+                stroke={chartColors.primary}
+                strokeDasharray="6 3"
+                strokeWidth={1.5}
+              />
+            )}
+            <Line
+              type="monotone"
+              dataKey="left"
+              stroke={chartColors.primary}
+              strokeWidth={2}
+              name="Left Foot"
+              dot={{ fill: chartColors.primary }}
+            />
+            <Line
+              type="monotone"
+              dataKey="right"
+              stroke={chartColors.foreground}
+              strokeWidth={2}
+              name="Right Foot"
+              dot={{ fill: chartColors.foreground }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 };
