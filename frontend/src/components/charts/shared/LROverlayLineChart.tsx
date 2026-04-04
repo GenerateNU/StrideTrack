@@ -25,12 +25,8 @@ export const LROverlayLineChart = ({
   metric,
   showMeanReferenceLine = false,
 }: LROverlayLineChartProps) => {
-  const {
-    lrOverlay,
-    lrOverlayIsLoading,
-    lrOverlayError,
-    lrOverlayRefetch,
-  } = useLROverlayData(runId, metric);
+  const { lrOverlay, lrOverlayIsLoading, lrOverlayError, lrOverlayRefetch } =
+    useLROverlayData(runId, metric);
 
   if (lrOverlayIsLoading) return <QueryLoading />;
   if (lrOverlayError)

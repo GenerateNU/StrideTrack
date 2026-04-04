@@ -58,79 +58,79 @@ export const StepFrequencyChart = ({ runId }: ChartProps) => {
     >
       <ResponsiveContainer width="100%" height={300}>
         <LineChart
-        data={chartData}
-        margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-      >
-        <ReferenceArea
-          x1={strideNums[0]}
-          x2={accelEndStride}
-          fill={chartColors.primary}
-          fillOpacity={0.08}
-          label={{
-            value: "Acceleration Phase",
-            position: "insideTopLeft",
-            fontSize: 10,
-            fill: chartColors.mutedForeground,
-          }}
-        />
-        <CartesianGrid
-          vertical={false}
-          strokeDasharray="0"
-          stroke={chartColors.border}
-        />
-        <XAxis
-          dataKey="stride_num"
-          axisLine={false}
-          tickLine={false}
-          tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
-          dy={10}
-          label={{
-            value: "Stride Number",
-            position: "insideBottom",
-            offset: -30,
-            style: { fill: chartColors.mutedForeground, fontSize: 10 },
-          }}
-        />
-        <YAxis
-          axisLine={false}
-          tickLine={false}
-          tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
-          label={{
-            value: "Frequency (Hz)",
-            angle: -90,
-            position: "insideLeft",
-            offset: 0,
-            style: {
-              fill: chartColors.mutedForeground,
+          data={chartData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+        >
+          <ReferenceArea
+            x1={strideNums[0]}
+            x2={accelEndStride}
+            fill={chartColors.primary}
+            fillOpacity={0.08}
+            label={{
+              value: "Acceleration Phase",
+              position: "insideTopLeft",
               fontSize: 10,
-              textAnchor: "middle",
-            },
-          }}
-        />
-        <Tooltip content={<CustomTooltip />} />
-        <Legend
-          verticalAlign="bottom"
-          align="center"
-          wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 40 }}
-          iconType="circle"
-          iconSize={8}
-        />
-        <Line
-          type="monotone"
-          dataKey="left"
-          name="Left Foot"
-          stroke={chartColors.primary}
-          dot={false}
-          strokeWidth={2}
-        />
-        <Line
-          type="monotone"
-          dataKey="right"
-          name="Right Foot"
-          stroke={chartColors.mutedForeground}
-          dot={false}
-          strokeWidth={2}
-        />
+              fill: chartColors.mutedForeground,
+            }}
+          />
+          <CartesianGrid
+            vertical={false}
+            strokeDasharray="0"
+            stroke={chartColors.border}
+          />
+          <XAxis
+            dataKey="stride_num"
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
+            dy={10}
+            label={{
+              value: "Stride Number",
+              position: "insideBottom",
+              offset: -30,
+              style: { fill: chartColors.mutedForeground, fontSize: 10 },
+            }}
+          />
+          <YAxis
+            axisLine={false}
+            tickLine={false}
+            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
+            label={{
+              value: "Frequency (Hz)",
+              angle: -90,
+              position: "insideLeft",
+              offset: 0,
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
+            }}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Legend
+            verticalAlign="bottom"
+            align="center"
+            wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 40 }}
+            iconType="circle"
+            iconSize={8}
+          />
+          <Line
+            type="monotone"
+            dataKey="left"
+            name="Left Foot"
+            stroke={chartColors.primary}
+            dot={false}
+            strokeWidth={2}
+          />
+          <Line
+            type="monotone"
+            dataKey="right"
+            name="Right Foot"
+            stroke={chartColors.mutedForeground}
+            dot={false}
+            strokeWidth={2}
+          />
         </LineChart>
       </ResponsiveContainer>
     </ChartCard>

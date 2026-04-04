@@ -27,11 +27,7 @@ export const GroundContactTimeChart = ({ runId }: ChartProps) => {
       description="Lower is better at max velocity. Compares left and right foot ground contact times per stride."
       headerRight={mean != null ? <MeanGCTKPI mean={mean} /> : undefined}
     >
-      <LROverlayLineChart
-        runId={runId}
-        metric="gct_ms"
-        showMeanReferenceLine
-      />
+      <LROverlayLineChart runId={runId} metric="gct_ms" showMeanReferenceLine />
     </ChartCard>
   );
 };

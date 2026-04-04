@@ -17,12 +17,21 @@ function getLabel(pct: number): string {
 }
 
 export const FatigueIndexKPI = ({ runId }: ChartProps) => {
-  const { boscoMetrics, boscoMetricsIsLoading, boscoMetricsError, boscoMetricsRefetch } =
-    useBoscoMetrics(runId);
+  const {
+    boscoMetrics,
+    boscoMetricsIsLoading,
+    boscoMetricsError,
+    boscoMetricsRefetch,
+  } = useBoscoMetrics(runId);
 
   if (boscoMetricsIsLoading) return <QueryLoading />;
   if (boscoMetricsError)
-    return <QueryError error={boscoMetricsError} refetch={() => void boscoMetricsRefetch()} />;
+    return (
+      <QueryError
+        error={boscoMetricsError}
+        refetch={() => void boscoMetricsRefetch()}
+      />
+    );
   if (!boscoMetrics) return null;
 
   const pct = boscoMetrics.fatigue_index_pct;
@@ -35,9 +44,7 @@ export const FatigueIndexKPI = ({ runId }: ChartProps) => {
         <span className="text-sm text-muted-foreground uppercase tracking-widest">
           Fatigue Index
         </span>
-        <span className={`text-6xl font-bold ${color}`}>
-          {pct.toFixed(1)}%
-        </span>
+        <span className={`text-6xl font-bold ${color}`}>{pct.toFixed(1)}%</span>
         <span className={`text-sm font-medium ${color}`}>{label}</span>
         <span className="text-xs text-muted-foreground mt-2 text-center max-w-[200px]">
           Increase in ground contact time from first to last jump

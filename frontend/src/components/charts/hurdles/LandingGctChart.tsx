@@ -15,8 +15,12 @@ import {
 } from "recharts";
 
 export const LandingGctChart = ({ runId }: ChartProps) => {
-  const { landingGct, landingGctIsLoading, landingGctError, landingGctRefetch } =
-    useLandingGct(runId);
+  const {
+    landingGct,
+    landingGctIsLoading,
+    landingGctError,
+    landingGctRefetch,
+  } = useLandingGct(runId);
 
   if (landingGctIsLoading)
     return (

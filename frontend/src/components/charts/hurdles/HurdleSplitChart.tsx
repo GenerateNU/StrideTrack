@@ -83,7 +83,9 @@ export const HurdleSplitChart = ({ runId }: ChartProps) => {
           </span>
           <span className="text-2xl font-bold text-foreground">
             {cv.toFixed(1)}
-            <span className="text-sm font-medium text-muted-foreground ml-1">%</span>
+            <span className="text-sm font-medium text-muted-foreground ml-1">
+              %
+            </span>
           </span>
         </div>
       }

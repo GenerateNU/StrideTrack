@@ -15,8 +15,12 @@ import {
 } from "recharts";
 
 export const TakeoffGctChart = ({ runId }: ChartProps) => {
-  const { takeoffGct, takeoffGctIsLoading, takeoffGctError, takeoffGctRefetch } =
-    useTakeoffGct(runId);
+  const {
+    takeoffGct,
+    takeoffGctIsLoading,
+    takeoffGctError,
+    takeoffGctRefetch,
+  } = useTakeoffGct(runId);
 
   if (takeoffGctIsLoading)
     return (

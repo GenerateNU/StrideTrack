@@ -16,12 +16,21 @@ import {
 } from "recharts";
 
 export const RsiChart = ({ runId }: ChartProps) => {
-  const { boscoMetrics, boscoMetricsIsLoading, boscoMetricsError, boscoMetricsRefetch } =
-    useBoscoMetrics(runId);
+  const {
+    boscoMetrics,
+    boscoMetricsIsLoading,
+    boscoMetricsError,
+    boscoMetricsRefetch,
+  } = useBoscoMetrics(runId);
 
   if (boscoMetricsIsLoading) return <QueryLoading />;
   if (boscoMetricsError)
-    return <QueryError error={boscoMetricsError} refetch={() => void boscoMetricsRefetch()} />;
+    return (
+      <QueryError
+        error={boscoMetricsError}
+        refetch={() => void boscoMetricsRefetch()}
+      />
+    );
   if (!boscoMetrics) return null;
 
   const chartData =

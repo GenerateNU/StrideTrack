@@ -30,12 +30,21 @@ function getZoneStyles(zone: string | undefined): {
 }
 
 export const ReactionTimeCard = ({ runId }: ChartProps) => {
-  const { reactionTime, reactionTimeIsLoading, reactionTimeError, reactionTimeRefetch } =
-    useReactionTimeMetrics(runId);
+  const {
+    reactionTime,
+    reactionTimeIsLoading,
+    reactionTimeError,
+    reactionTimeRefetch,
+  } = useReactionTimeMetrics(runId);
 
   if (reactionTimeIsLoading) return <QueryLoading />;
   if (reactionTimeError)
-    return <QueryError error={reactionTimeError} refetch={() => void reactionTimeRefetch()} />;
+    return (
+      <QueryError
+        error={reactionTimeError}
+        refetch={() => void reactionTimeRefetch()}
+      />
+    );
   if (!reactionTime) return null;
 
   const value = reactionTime.reaction_time_ms;

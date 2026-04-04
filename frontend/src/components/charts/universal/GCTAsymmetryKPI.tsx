@@ -11,12 +11,8 @@ function getAsymmetryColor(value: number): string {
 }
 
 export const GCTAsymmetryKPI = ({ runId }: ChartProps) => {
-  const {
-    asymmetry,
-    asymmetryIsLoading,
-    asymmetryError,
-    asymmetryRefetch,
-  } = useAsymmetryData(runId);
+  const { asymmetry, asymmetryIsLoading, asymmetryError, asymmetryRefetch } =
+    useAsymmetryData(runId);
 
   if (asymmetryIsLoading) return <QueryLoading />;
   if (asymmetryError)

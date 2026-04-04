@@ -64,9 +64,7 @@ export default function VisualizationsPage() {
           <SprintDriftKPIs runId={HARDCODED_RUN_ID} />
 
           {/* Hurdle Metrics */}
-          <h2 className="text-2xl font-bold text-foreground">
-            Hurdle Metrics
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground">Hurdle Metrics</h2>
           <HurdleTimelineChart runId={HARDCODED_HURDLE_RUN_ID} />
           <HurdleSplitChart runId={HARDCODED_HURDLE_RUN_ID} />
           <TakeoffGctChart runId={HARDCODED_HURDLE_RUN_ID} />

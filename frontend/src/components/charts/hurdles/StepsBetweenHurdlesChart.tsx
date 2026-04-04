@@ -36,7 +36,9 @@ export const StepsBetweenHurdlesChart = ({ runId }: ChartProps) => {
     );
   if (!stepsBetween) return null;
 
-  const validSteps = stepsBetween.filter((s) => s.steps_between_hurdles != null);
+  const validSteps = stepsBetween.filter(
+    (s) => s.steps_between_hurdles != null
+  );
 
   if (validSteps.length === 0) {
     return null;
