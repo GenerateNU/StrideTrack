@@ -12,6 +12,8 @@ import { LandingGctChart } from "@/components/charts/hurdles/LandingGctChart";
 import { StepsBetweenHurdlesChart } from "@/components/charts/hurdles/StepsBetweenHurdlesChart";
 import { TakeoffFtChart } from "@/components/charts/hurdles/TakeoffFtChart";
 import { TakeoffGctChart } from "@/components/charts/hurdles/TakeoffGctChart";
+import { ProjectedFinishKPI } from "@/components/charts/hurdles/ProjectedFinishChart";
+import { ProjectedSplitChart } from "@/components/charts/hurdles/ProjectedSplitChart";
 import { SplitScoreChart } from "@/components/charts/hurdles/SplitScoreChart";
 
 // Sprint charts
@@ -47,6 +49,8 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     TakeoffFtChart,
     TakeoffGctChart,
     SplitScoreChart,
+    ProjectedFinishKPI,
+    ProjectedSplitChart,
   ],
   bosco: [
     ...DEFAULT_CHARTS,

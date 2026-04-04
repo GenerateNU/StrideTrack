@@ -192,9 +192,9 @@ export function useHurdleProjection(runId: string | null) {
   });
 
   return {
-    projectionData: query.data ?? null,
-    projectionLoading: query.isLoading,
-    projectionError: query.error,
-    refetchProjectionData: query.refetch,
+    hurdleProjection: query.data ?? null,
+    hurdleProjectionIsLoading: query.isLoading,
+    hurdleProjectionError: query.error,
+    hurdleProjectionRefetch: query.refetch,
   };
 }
