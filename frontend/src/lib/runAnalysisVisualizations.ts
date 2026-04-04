@@ -51,8 +51,6 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     TakeoffFtChart,
     TakeoffGctChart,
     SplitScoreChart,
-    ProjectedFinishKPI,
-    ProjectedSplitChart,
     ReactionTimeCard,
   ],
   bosco: [GctFlightChart, JumpHeightChart, RsiChart, FatigueIndexKPI],
