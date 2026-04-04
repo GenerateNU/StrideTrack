@@ -12,6 +12,8 @@ from app.routes.hurdle_routes import router as hurdle_router
 from app.routes.reaction_time_routes import router as reaction_time_router
 from app.routes.run_routes import router as run_router
 from app.routes.split_score_routes import router as split_score_router
+from app.routes.sprint_metric_routes import router as sprint_metric_router
+from app.routes.universal_metric_routes import router as universal_metric_router
 from app.schemas.health_schemas import HealthResponse
 
 api_router = APIRouter(prefix="/api")
@@ -28,13 +30,18 @@ async def health_check(
         return HealthResponse(status="unhealthy", database="disconnected", error=str(e))
 
 
-api_router.include_router(example_router)
-api_router.include_router(csv_router)
-api_router.include_router(auth_router)
-api_router.include_router(athlete_router)
+# Run CRUD + all per-run metrics (shared /runs prefix, distinct tags)
 api_router.include_router(run_router)
-api_router.include_router(bosco_router)
+api_router.include_router(universal_metric_router)
+api_router.include_router(sprint_metric_router)
 api_router.include_router(hurdle_router)
+api_router.include_router(bosco_router)
 api_router.include_router(split_score_router)
 api_router.include_router(reaction_time_router)
+
+# Standalone
 api_router.include_router(event_history_router)
+api_router.include_router(athlete_router)
+api_router.include_router(auth_router)
+api_router.include_router(csv_router)
+api_router.include_router(example_router)

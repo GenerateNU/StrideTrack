@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from app.schemas.coach_schemas import Coach
 from tests.factories.athlete_factory import AthleteFactory
 
-BASE = "/api/run"
+BASE = "/api/runs"
 ATHLETE_BASE = "/api/athletes"
 
 # Seeded sprint runs
@@ -53,16 +53,13 @@ class TestListRunsByAthlete:
         assert isinstance(data, list)
         assert len(data) >= 1
 
-    def test_list_by_unknown_athlete_returns_empty(
-        self, test_client: TestClient
-    ) -> None:
-        """Listing runs for a non-existent athlete should return 200 with an empty array."""
+    def test_list_by_unknown_athlete_returns_404(self, test_client: TestClient) -> None:
+        """Listing runs for a non-existent athlete should return 404."""
         fake_id = str(uuid4())
 
         response = test_client.get(f"{BASE}/athlete/{fake_id}")
 
-        assert response.status_code == 200
-        assert response.json() == []
+        assert response.status_code == 404
 
 
 # Runs — Create
@@ -140,7 +137,7 @@ class TestGetRunMetrics:
     def test_get_metrics_returns_200_with_data(self, test_client: TestClient) -> None:
         """Fetching metrics for the seeded sprint run should return 200 with a
         non-empty list of stride metric rows."""
-        response = test_client.get(f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics")
+        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics")
 
         assert response.status_code == 200
         data = response.json()
@@ -149,7 +146,7 @@ class TestGetRunMetrics:
 
     def test_metrics_row_has_expected_fields(self, test_client: TestClient) -> None:
         """Each metrics row should contain the fields defined in RunResponse."""
-        response = test_client.get(f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics")
+        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics")
 
         assert response.status_code == 200
         row = response.json()[0]
@@ -166,7 +163,7 @@ class TestGetRunMetrics:
         with an empty list."""
         fake_id = str(uuid4())
 
-        response = test_client.get(f"{BASE}/athletes/{fake_id}/metrics")
+        response = test_client.get(f"{BASE}/{fake_id}/metrics")
 
         assert response.status_code in (200, 404)
 
@@ -181,7 +178,7 @@ class TestGetLrOverlay:
     def test_lr_overlay_gct_returns_200(self, test_client: TestClient) -> None:
         """Requesting LR overlay with metric=gct_ms should return 200 with data."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/lr-overlay",
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/lr-overlay",
             params={"metric": "gct_ms"},
         )
 
@@ -193,7 +190,7 @@ class TestGetLrOverlay:
     def test_lr_overlay_flight_returns_200(self, test_client: TestClient) -> None:
         """Requesting LR overlay with metric=flight_ms should return 200 with data."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/lr-overlay",
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/lr-overlay",
             params={"metric": "flight_ms"},
         )
 
@@ -203,7 +200,7 @@ class TestGetLrOverlay:
     def test_lr_overlay_row_has_stride_num(self, test_client: TestClient) -> None:
         """Each LR overlay row should contain a stride_num field."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/lr-overlay",
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/lr-overlay",
             params={"metric": "gct_ms"},
         )
 
@@ -221,9 +218,7 @@ class TestGetStackedBar:
 
     def test_stacked_bar_returns_200(self, test_client: TestClient) -> None:
         """Requesting stacked bar data should return 200 with a non-empty list."""
-        response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar"
-        )
+        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar")
 
         assert response.status_code == 200
         data = response.json()
@@ -232,9 +227,7 @@ class TestGetStackedBar:
 
     def test_stacked_bar_row_has_expected_fields(self, test_client: TestClient) -> None:
         """Each stacked bar row should contain stride_num, foot, label, gct_ms, flight_ms."""
-        response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar"
-        )
+        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar")
 
         assert response.status_code == 200
         row = response.json()[0]
@@ -255,7 +248,7 @@ class TestGetSprintDrift:
     def test_sprint_drift_returns_200(self, test_client: TestClient) -> None:
         """Requesting sprint drift should return 200 with gct and ft drift percentages."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/sprint-drift"
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/sprint/drift"
         )
 
         assert response.status_code == 200
@@ -266,7 +259,7 @@ class TestGetSprintDrift:
     def test_sprint_drift_values_are_floats(self, test_client: TestClient) -> None:
         """Both drift values should be numeric floats."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/sprint-drift"
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/sprint/drift"
         )
 
         assert response.status_code == 200
@@ -285,7 +278,7 @@ class TestGetStepFrequency:
     def test_step_frequency_returns_200(self, test_client: TestClient) -> None:
         """Requesting step frequency should return 200 with a non-empty list."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/step-frequency"
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/sprint/step-frequency"
         )
 
         assert response.status_code == 200
@@ -298,7 +291,7 @@ class TestGetStepFrequency:
     ) -> None:
         """Each step frequency row should contain stride_num, foot, label, step_frequency_hz."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/step-frequency"
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/sprint/step-frequency"
         )
 
         assert response.status_code == 200

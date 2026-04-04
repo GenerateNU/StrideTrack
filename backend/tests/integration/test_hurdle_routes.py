@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-BASE = "/api/run"
+BASE = "/api/runs"
 
 # Seeded hurdle run
 SEEDED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111"
@@ -23,9 +23,7 @@ class TestGetHurdleMetrics:
     def test_hurdle_metrics_returns_200(self, test_client: TestClient) -> None:
         """Requesting hurdle metrics for the seeded hurdle run should return 200
         with a non-empty list of hurdle rows."""
-        response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles"
-        )
+        response = test_client.get(f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles")
 
         assert response.status_code == 200
         data = response.json()
@@ -36,9 +34,7 @@ class TestGetHurdleMetrics:
         self, test_client: TestClient
     ) -> None:
         """Each hurdle metrics row should contain the core HurdleMetricRow fields."""
-        response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles"
-        )
+        response = test_client.get(f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles")
 
         assert response.status_code == 200
         row = response.json()[0]
@@ -60,7 +56,7 @@ class TestGetHurdleSplits:
     def test_hurdle_splits_returns_200(self, test_client: TestClient) -> None:
         """Requesting hurdle splits should return 200 with data."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/splits"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/splits"
         )
 
         assert response.status_code == 200
@@ -73,7 +69,7 @@ class TestGetHurdleSplits:
     ) -> None:
         """Each row should contain hurdle_num and hurdle_split_ms."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/splits"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/splits"
         )
 
         assert response.status_code == 200
@@ -92,7 +88,7 @@ class TestGetStepsBetweenHurdles:
     def test_steps_between_returns_200(self, test_client: TestClient) -> None:
         """Requesting steps between hurdles should return 200 with data."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/steps-between"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/steps-between"
         )
 
         assert response.status_code == 200
@@ -105,7 +101,7 @@ class TestGetStepsBetweenHurdles:
     ) -> None:
         """Each row should contain hurdle_num and steps_between_hurdles."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/steps-between"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/steps-between"
         )
 
         assert response.status_code == 200
@@ -124,7 +120,7 @@ class TestGetTakeoffGct:
     def test_takeoff_gct_returns_200(self, test_client: TestClient) -> None:
         """Requesting takeoff GCT should return 200 with data."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/takeoff-gct"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/takeoff-gct"
         )
 
         assert response.status_code == 200
@@ -135,7 +131,7 @@ class TestGetTakeoffGct:
     def test_takeoff_gct_row_has_expected_fields(self, test_client: TestClient) -> None:
         """Each row should contain hurdle_num, takeoff_foot, and takeoff_gct_ms."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/takeoff-gct"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/takeoff-gct"
         )
 
         assert response.status_code == 200
@@ -155,7 +151,7 @@ class TestGetLandingGct:
     def test_landing_gct_returns_200(self, test_client: TestClient) -> None:
         """Requesting landing GCT should return 200 with data."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/landing-gct"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/landing-gct"
         )
 
         assert response.status_code == 200
@@ -166,7 +162,7 @@ class TestGetLandingGct:
     def test_landing_gct_row_has_expected_fields(self, test_client: TestClient) -> None:
         """Each row should contain hurdle_num, landing_foot, and landing_gct_ms."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/landing-gct"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/landing-gct"
         )
 
         assert response.status_code == 200
@@ -186,7 +182,7 @@ class TestGetTakeoffFt:
     def test_takeoff_ft_returns_200(self, test_client: TestClient) -> None:
         """Requesting takeoff flight time should return 200 with data."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/takeoff-ft"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/takeoff-ft"
         )
 
         assert response.status_code == 200
@@ -197,7 +193,7 @@ class TestGetTakeoffFt:
     def test_takeoff_ft_row_has_expected_fields(self, test_client: TestClient) -> None:
         """Each row should contain hurdle_num and takeoff_ft_ms."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/takeoff-ft"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/takeoff-ft"
         )
 
         assert response.status_code == 200
@@ -216,7 +212,7 @@ class TestGetGctIncrease:
     def test_gct_increase_returns_200(self, test_client: TestClient) -> None:
         """Requesting GCT increase data should return 200 with data."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/gct-increase"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/gct-increase"
         )
 
         assert response.status_code == 200
@@ -230,7 +226,7 @@ class TestGetGctIncrease:
         """Each row should contain hurdle_num, takeoff_gct_ms, and
         gct_increase_hurdle_to_hurdle_pct."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/gct-increase"
+            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles/gct-increase"
         )
 
         assert response.status_code == 200
@@ -250,7 +246,7 @@ class TestGetHurdleProjection:
     def test_projection_returns_200(self, test_client: TestClient) -> None:
         """Requesting projection for the seeded partial run should return 200."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -258,7 +254,7 @@ class TestGetHurdleProjection:
     def test_projection_has_expected_fields(self, test_client: TestClient) -> None:
         """The projection response should contain all HurdleProjectionResponse fields."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -276,7 +272,7 @@ class TestGetHurdleProjection:
     ) -> None:
         """completed_splits should be a non-empty list."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -289,7 +285,7 @@ class TestGetHurdleProjection:
     ) -> None:
         """projected_splits should be a non-empty list."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -302,7 +298,7 @@ class TestGetHurdleProjection:
     ) -> None:
         """Each split (completed or projected) should have hurdle_num and split_ms."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -319,7 +315,7 @@ class TestGetHurdleProjection:
     def test_projection_target_event_matches(self, test_client: TestClient) -> None:
         """The target_event in the response should match the seeded run's target."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -329,7 +325,7 @@ class TestGetHurdleProjection:
     def test_projection_total_hurdles_is_ten(self, test_client: TestClient) -> None:
         """For a 110mH target, total_hurdles should be 10."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -341,7 +337,7 @@ class TestGetHurdleProjection:
     ) -> None:
         """Confidence should be in [0, 1]."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -351,7 +347,7 @@ class TestGetHurdleProjection:
     def test_projection_total_ms_is_positive(self, test_client: TestClient) -> None:
         """The projected total time should be a positive number."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -364,7 +360,7 @@ class TestGetHurdleProjection:
     ) -> None:
         """The final segment should be a positive pace-based estimate."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_PARTIAL_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code == 200
@@ -377,7 +373,7 @@ class TestGetHurdleProjection:
     ) -> None:
         """Requesting projection for a non-partial run should return an error."""
         response = test_client.get(
-            f"{BASE}/athletes/{SEEDED_SPRINT_RUN_ID}/metrics/hurdles/projection"
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/hurdles/projection"
         )
 
         assert response.status_code in (400, 422, 500)

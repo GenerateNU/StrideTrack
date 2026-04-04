@@ -16,6 +16,18 @@ class HurdleRepository:
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
 
+    async def verify_run_belongs_to_coach(self, run_id: UUID, coach_id: UUID) -> None:
+        """Verify a run belongs to one of the coach's athletes."""
+        result = (
+            await self.supabase.table("run")
+            .select("run_id, athletes!inner(coach_id)")
+            .eq("run_id", str(run_id))
+            .eq("athletes.coach_id", str(coach_id))
+            .execute()
+        )
+        if not result.data:
+            raise NotFoundException("Run", str(run_id))
+
     async def get_hurdle_metrics(self, run_id: UUID) -> list[HurdleStepRow]:
         """Get a hurdle metric from RUN_METRICS table."""
         logger.info(f"Repository: Fetching hurdle metric: {run_id}")

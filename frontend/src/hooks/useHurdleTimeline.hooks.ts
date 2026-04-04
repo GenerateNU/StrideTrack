@@ -9,7 +9,7 @@ export function useHurdleTimeline(runId: string) {
     queryKey: ["hurdle-timeline", runId],
     queryFn: async () => {
       const response = await api.get<HurdleTimelineResponse>(
-        `/run/athletes/${runId}/metrics/hurdles/timeline`
+        `/runs/${runId}/metrics/hurdles/timeline`
       );
       return validateResponse(response.data, hurdleTimelineResponseSchema);
     },

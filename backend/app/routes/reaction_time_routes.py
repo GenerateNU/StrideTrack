@@ -11,7 +11,7 @@ from app.services.reaction_time_service import ReactionTimeService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/reaction-time", tags=["Reaction Time"])
+router = APIRouter(prefix="/runs", tags=["Reaction Time"])
 
 
 async def get_reaction_time_service(
@@ -21,7 +21,7 @@ async def get_reaction_time_service(
 
 
 @router.get(
-    "/{run_id}",
+    "/{run_id}/metrics/reaction-time",
     response_model=ReactionTimeResponse,
     summary="Get reaction time for a run",
 )
@@ -29,5 +29,5 @@ async def get_reaction_time(
     run_id: UUID,
     service: ReactionTimeService = Depends(get_reaction_time_service),
 ) -> ReactionTimeResponse:
-    logger.info(f"Route: GET /reaction-time/{run_id}")
+    logger.info(f"Route: GET /runs/{run_id}/metrics/reaction-time")
     return await service.get_reaction_time(run_id)

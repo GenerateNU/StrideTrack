@@ -15,6 +15,32 @@ class RunRepository:
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
 
+    async def verify_run_belongs_to_coach(self, run_id: UUID, coach_id: UUID) -> None:
+        """Verify a run belongs to one of the coach's athletes. Raises NotFoundException if not."""
+        result = (
+            await self.supabase.table("run")
+            .select("run_id, athletes!inner(coach_id)")
+            .eq("run_id", str(run_id))
+            .eq("athletes.coach_id", str(coach_id))
+            .execute()
+        )
+        if not result.data:
+            raise NotFoundException("Run", str(run_id))
+
+    async def verify_athlete_belongs_to_coach(
+        self, athlete_id: UUID, coach_id: UUID
+    ) -> None:
+        """Verify an athlete belongs to the coach. Raises NotFoundException if not."""
+        result = (
+            await self.supabase.table("athletes")
+            .select("athlete_id")
+            .eq("athlete_id", str(athlete_id))
+            .eq("coach_id", str(coach_id))
+            .execute()
+        )
+        if not result.data:
+            raise NotFoundException("Athlete", str(athlete_id))
+
     async def get_run_metrics(self, run_id: UUID) -> list[RunResponse]:
         """Get a run metric from RUN_METRICS table."""
         logger.info(f"Repository: Fetching run metric: {run_id}")

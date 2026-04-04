@@ -4,7 +4,6 @@ from uuid import UUID
 import numpy as np
 import pandas as pd
 
-from app.core.exceptions import NotFoundException
 from app.repositories.hurdle_repository import HurdleRepository
 from app.schemas.hurdle_schemas import (
     GctIncreaseData,
@@ -42,16 +41,7 @@ class HurdleService:
 
     async def _get_hurdle_metric_rows(self, run_id: UUID) -> list[HurdleMetricRow]:
         """Fetch raw steps, run the hurdle transform, and return validated HurdleMetricRow objects."""
-        run_check = (
-            await self.repository.supabase.table("run")
-            .select("run_id, athletes!inner(coach_id)")
-            .eq("run_id", str(run_id))
-            .eq("athletes.coach_id", str(self.coach_id))
-            .execute()
-        )
-
-        if not run_check.data:
-            raise NotFoundException("Run", str(run_id))
+        await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
 
         steps = await self.repository.get_hurdle_metrics(run_id)
 

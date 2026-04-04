@@ -10,7 +10,7 @@ export function useReactionTimeMetrics(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<ReactionTimeMetrics>(
-        `/reaction-time/${runId}`
+        `/runs/${runId}/metrics/reaction-time`
       );
       return validateResponse(response.data, reactionTimeMetricsSchema);
     },
