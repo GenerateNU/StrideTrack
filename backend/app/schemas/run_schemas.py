@@ -57,12 +57,14 @@ class RunCreate(BaseModel):
     athlete_id: UUID
     event_type: str
     elapsed_ms: int = Field(..., gt=0)
+    target_event: str | None = None
 
 
 class RunCreateResponse(BaseModel):
     run_id: UUID
     athlete_id: UUID
     event_type: str
+    target_event: str | None = None
     elapsed_ms: int
     created_at: str
 

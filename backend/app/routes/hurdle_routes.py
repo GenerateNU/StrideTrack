@@ -11,6 +11,7 @@ from app.schemas.coach_schemas import Coach
 from app.schemas.hurdle_schemas import (
     GctIncreaseData,
     HurdleMetricRow,
+    HurdleProjectionResponse,
     HurdleSplitBarData,
     HurdleTimelineResponse,
     LandingGctBarData,
@@ -123,6 +124,19 @@ async def get_gct_increase(
     """Get GCT increase hurdle-to-hurdle data for a specific run."""
     logger.info(f"Route: GET /run/athletes/{run_id}/metrics/hurdles/gct-increase")
     return await service.get_gct_increase(run_id)
+
+
+@router.get(
+    "/athletes/{run_id}/metrics/hurdles/projection",
+    response_model=HurdleProjectionResponse,
+)
+async def get_hurdle_projection(
+    run_id: UUID,
+    service: HurdleService = Depends(get_hurdle_service),
+) -> HurdleProjectionResponse:
+    """Get projected race time for a partial hurdle run."""
+    logger.info(f"Route: GET /run/athletes/{run_id}/metrics/hurdles/projection")
+    return await service.get_hurdle_projection(run_id)
 
 
 @router.get(

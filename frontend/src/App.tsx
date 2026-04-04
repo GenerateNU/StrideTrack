@@ -1,13 +1,13 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
-import LoginPage from "@/pages/LoginPage";
-import HomePage from "@/pages/HomePage";
-import RecordRunPage from "@/pages/RecordRunPage";
-import HistoryPage from "@/pages/HistoryPage";
 import AthleteProfilePage from "@/pages/AthleteProfilePage";
+import HistoryPage from "@/pages/HistoryPage";
+import HomePage from "@/pages/HomePage";
+import LoginPage from "@/pages/LoginPage";
+import RecordRunPage from "@/pages/RecordRunPage";
 import RunAnalysisPage from "@/pages/RunAnalysisPage";
 import VisualizationsPage from "@/pages/VisualizationsPage";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 function App() {
   return (

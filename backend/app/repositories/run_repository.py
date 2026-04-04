@@ -55,6 +55,9 @@ class RunRepository:
             "event_type": run_create.event_type,
             "elapsed_ms": run_create.elapsed_ms,
         }
+        if run_create.target_event is not None:
+            data["target_event"] = run_create.target_event
+
         response = await self.supabase.table("run").insert(data).execute()
         if not response.data:
             raise Exception("Failed to create run")
@@ -67,7 +70,7 @@ class RunRepository:
         response = (
             await self.supabase.table("run")
             .select(
-                "run_id, athlete_id, event_type, elapsed_ms, created_at, athletes!inner(coach_id)"
+                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at, athletes!inner(coach_id)"
             )
             .eq("athletes.coach_id", str(coach_id))
             .order("created_at", desc=True)
@@ -82,7 +85,9 @@ class RunRepository:
         logger.info(f"Repository: Fetching runs for athlete {athlete_id}")
         response = (
             await self.supabase.table("run")
-            .select("run_id, athlete_id, event_type, elapsed_ms, created_at")
+            .select(
+                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at"
+            )
             .eq("athlete_id", str(athlete_id))
             .order("created_at", desc=True)
             .execute()
