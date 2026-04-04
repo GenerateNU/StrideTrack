@@ -53,16 +53,15 @@ class TestListRunsByAthlete:
         assert isinstance(data, list)
         assert len(data) >= 1
 
-    def test_list_by_unknown_athlete_returns_empty(
+    def test_list_by_unknown_athlete_returns_404(
         self, test_client: TestClient
     ) -> None:
-        """Listing runs for a non-existent athlete should return 200 with an empty array."""
+        """Listing runs for a non-existent athlete should return 404."""
         fake_id = str(uuid4())
 
         response = test_client.get(f"{BASE}/athlete/{fake_id}")
 
-        assert response.status_code == 200
-        assert response.json() == []
+        assert response.status_code == 404
 
 
 # Runs — Create
