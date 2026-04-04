@@ -1,5 +1,7 @@
 from pydantic import BaseModel, Field
 
+from app.schemas.event_type import EventType
+
 
 class RunMetrics(BaseModel):
     stride_num: int = Field(..., gt=0)
@@ -15,8 +17,8 @@ class RunMetrics(BaseModel):
 class Run(BaseModel):
     run_id: str = Field(..., min_length=1, max_length=255)
     athlete_id: str = Field(..., min_length=1, max_length=255)
-    event_type: str = Field(..., min_length=1, max_length=255)
-    name: str = Field(..., min_length=1, max_length=255)
+    event_type: EventType
+    name: str | None = None
 
 
 class BoscoMetricsResponse(BaseModel):

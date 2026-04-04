@@ -55,7 +55,7 @@ class HurdleService:
 
         steps = await self.repository.get_hurdle_metrics(run_id)
 
-        df = pd.DataFrame(steps)
+        df = pd.DataFrame([s.model_dump() for s in steps])
         hurdle_df = transform_stride_cycles_to_hurdle_metrics(df)
         rows = hurdle_df.to_dict(orient="records")
 
@@ -130,11 +130,11 @@ class HurdleService:
         points: list[HurdleTimelinePoint] = []
 
         for step in steps:
-            foot = step["foot"]
-            ic_ms = step["ic_time"]
-            to_ms = step["to_time"]
-            gct_ms = step["gct_ms"]
-            ft_ms = step["flight_ms"]
+            foot = step.foot
+            ic_ms = step.ic_time
+            to_ms = step.to_time
+            gct_ms = step.gct_ms
+            ft_ms = step.flight_ms
 
             if ic_ms is None or to_ms is None:
                 continue

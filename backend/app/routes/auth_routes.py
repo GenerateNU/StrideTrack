@@ -4,7 +4,7 @@ from app.core.auth import get_current_coach, get_current_profile
 from app.schemas.coach_schemas import Coach
 from app.schemas.profile_schemas import Profile
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.get("/me", response_model=Profile)

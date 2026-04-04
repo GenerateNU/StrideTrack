@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Depends
-from supabase import Client
+from supabase._async.client import AsyncClient
 
 from app.core.supabase import get_async_supabase
 from app.repositories.bosco_repository import BoscoRepository
-from app.schemas.bosco_schemas import BoscoMetricsResponse
+from app.schemas.bosco_schemas import BoscoMetricsResponse, Run
 from app.services.bosco_service import BoscoService
 
-router = APIRouter(prefix="/bosco", tags=["bosco"])
+router = APIRouter(prefix="/bosco", tags=["Bosco"])
 
 
-def get_bosco_service(
-    supabase: Client = Depends(get_async_supabase),
+async def get_bosco_service(
+    supabase: AsyncClient = Depends(get_async_supabase),
 ) -> BoscoService:
     repository = BoscoRepository(supabase)
     return BoscoService(repository)
@@ -25,10 +25,10 @@ async def get_bosco_metrics(
     return await service.get_bosco_metrics(run_id)
 
 
-@router.get("/runs/{athlete_id}")
+@router.get("/runs/{athlete_id}", response_model=list[Run])
 async def get_bosco_runs(
     athlete_id: str,
     service: BoscoService = Depends(get_bosco_service),
-) -> list[dict]:
+) -> list[Run]:
     """Returns all Bosco test runs for a given athlete."""
     return await service.get_bosco_runs_for_athlete(athlete_id)

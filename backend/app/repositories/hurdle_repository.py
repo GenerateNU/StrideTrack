@@ -4,6 +4,8 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
+from app.schemas.event_type import EventType
+from app.schemas.hurdle_schemas import HurdleStepRow
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +16,7 @@ class HurdleRepository:
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
 
-    async def get_hurdle_metrics(self, run_id: UUID) -> list[dict]:
+    async def get_hurdle_metrics(self, run_id: UUID) -> list[HurdleStepRow]:
         """Get a hurdle metric from RUN_METRICS table."""
         logger.info(f"Repository: Fetching hurdle metric: {run_id}")
         response = (
@@ -32,7 +34,7 @@ class HurdleRepository:
             raise NotFoundException("Hurdle metric", str(run_id))
 
         logger.info(f"Repository: Found hurdle metric: {run_id}")
-        return response.data
+        return [HurdleStepRow(**row) for row in response.data]
 
     async def get_run_target_event(self, run_id: UUID) -> str:
         """Get the target_event for a partial hurdle run from the RUN table."""
@@ -49,7 +51,7 @@ class HurdleRepository:
             raise NotFoundException("Run", str(run_id))
 
         row = response.data
-        if row["event_type"] != "hurdles_partial":
+        if row["event_type"] != EventType.hurdles_partial:
             raise ValueError(
                 f"Run {run_id} is not a hurdles_partial run "
                 f"(event_type={row['event_type']})"

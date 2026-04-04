@@ -43,10 +43,10 @@ class EventHistoryService:
         data_points = [
             EventHistoryPoint(
                 run_number=index + 1,
-                run_id=run["run_id"],
-                run_name=run["name"] or f"Run {index + 1}",
-                date=run["created_at"][:10],
-                total_time_seconds=round(run["elapsed_ms"] / 1000, 3),
+                run_id=run.run_id,
+                run_name=run.name or f"Run {index + 1}",
+                date=run.created_at[:10],
+                total_time_seconds=round(run.elapsed_ms / 1000, 3),
             )
             for index, run in enumerate(runs)
         ]

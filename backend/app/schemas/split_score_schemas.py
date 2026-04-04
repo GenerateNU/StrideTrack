@@ -2,10 +2,12 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from app.schemas.event_type import EventType
 
-class RunMeta(BaseModel):
+
+class SplitScoreRunMeta(BaseModel):
     run_id: UUID
-    event_type: str
+    event_type: EventType
     elapsed_ms: float
 
 

@@ -74,8 +74,8 @@ class CSVService:
                     name=name,
                     elapsed_ms=elapsed_ms,
                 )
-                span.set_attribute("csv.run_id", result["run_id"])
-                span.set_attribute("csv.rows_inserted", result["rows_inserted"])
+                span.set_attribute("csv.run_id", result.run_id)
+                span.set_attribute("csv.rows_inserted", result.rows_inserted)
             except Exception as e:
                 logger.exception("Service: Transformed run data insert failed")
                 span.set_attribute("error", True)
@@ -85,11 +85,11 @@ class CSVService:
                 ) from e
 
             logger.info(
-                f"Service: ingest_stride_csv rows_in={len(raw_df)} rows_out={len(transformed_df)} run_id={result['run_id']}"
+                f"Service: ingest_stride_csv rows_in={len(raw_df)} rows_out={len(transformed_df)} run_id={result.run_id}"
             )
 
             return CSVUploadResponse(
-                message=f"CSV uploaded successfully. Run ID: {result['run_id']}, Rows inserted: {result['rows_inserted']}",
-                run_id=str(result["run_id"]),
-                rows_inserted=result["rows_inserted"],
+                message=f"CSV uploaded successfully. Run ID: {result.run_id}, Rows inserted: {result.rows_inserted}",
+                run_id=str(result.run_id),
+                rows_inserted=result.rows_inserted,
             )

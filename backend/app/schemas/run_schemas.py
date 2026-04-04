@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.schemas.event_type import EventType
+
 
 class RunResponse(BaseModel):
     stride_num: int = Field(..., gt=0)
@@ -55,7 +57,7 @@ class GCTRangeData(BaseModel):
 
 class RunCreate(BaseModel):
     athlete_id: UUID
-    event_type: str
+    event_type: EventType
     elapsed_ms: int = Field(..., gt=0)
     target_event: str | None = None
 
@@ -63,7 +65,7 @@ class RunCreate(BaseModel):
 class RunCreateResponse(BaseModel):
     run_id: UUID
     athlete_id: UUID
-    event_type: str
+    event_type: EventType
     target_event: str | None = None
     elapsed_ms: int
     created_at: str
@@ -72,7 +74,7 @@ class RunCreateResponse(BaseModel):
 class RunMeta(BaseModel):
     run_id: UUID
     athlete_id: UUID
-    event_type: str
+    event_type: EventType
     created_at: datetime
     name: str | None = None
     elapsed_ms: int

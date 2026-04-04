@@ -1,3 +1,5 @@
+import pandas as pd
+
 from app.repositories.bosco_repository import BoscoRepository
 from app.schemas.bosco_schemas import BoscoMetricsResponse, Run
 from app.utils.bosco_transformations import (
@@ -11,7 +13,8 @@ class BoscoService:
 
     async def get_bosco_metrics(self, run_id: str) -> BoscoMetricsResponse:
         """Fetches run metrics and applies bosco transformations"""
-        df = await self.repository.get_run_metrics_by_run_id(run_id)
+        raw_metrics = await self.repository.get_run_metrics_by_run_id(run_id)
+        df = pd.DataFrame([m.model_dump() for m in raw_metrics])
         metrics = transform_stride_cycles_to_bosco_tests(df)
 
         return BoscoMetricsResponse(

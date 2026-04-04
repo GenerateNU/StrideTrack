@@ -4,7 +4,7 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.split_score_schemas import RunMeta, RunMetric
+from app.schemas.split_score_schemas import RunMetric, SplitScoreRunMeta
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ class SplitScoreRepository:
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
 
-    async def get_run_meta(self, run_id: UUID) -> RunMeta:
+    async def get_run_meta(self, run_id: UUID) -> SplitScoreRunMeta:
         logger.info(f"Repository: Fetching run meta for {run_id}")
         response = (
             await self.supabase.table("run")
@@ -25,7 +25,7 @@ class SplitScoreRepository:
             logger.warning(f"Repository: Run not found for id {run_id}")
             raise NotFoundException("Run", str(run_id))
         logger.info(f"Repository: Found run meta for {run_id}")
-        return RunMeta(**response.data[0])
+        return SplitScoreRunMeta(**response.data[0])
 
     async def get_run_metrics(self, run_id: UUID) -> list[RunMetric]:
         logger.info(f"Repository: Fetching stride metrics for {run_id}")

@@ -2,21 +2,22 @@ from __future__ import annotations
 
 import numpy as np
 
+from app.schemas.event_type import EventType
 from app.schemas.hurdle_schemas import HurdleMetricRow
 
 # The athlete covers ground faster per metre than during hurdled segments.
 SPRINT_SCALAR: float = 0.98
 
 # Per-event race parameters and normalised three-phase split templates
-EVENT_CONFIG: dict[str, dict] = {
-    "hurdles_60m": {
+EVENT_CONFIG: dict[EventType, dict] = {
+    EventType.hurdles_60m: {
         "hurdle_count": 5,
         "inter_hurdle_m": 9.14,
         "final_segment_m": 8.72,  # 9.72m, ~1m landing offset
         "phase_boundaries": (3, 4),
         "template_ratios": [0.0, 1.03, 1.00, 0.98, 0.99],
     },
-    "hurdles_100m": {
+    EventType.hurdles_100m: {
         "hurdle_count": 10,
         "inter_hurdle_m": 8.50,
         "final_segment_m": 9.50,  # 10.50m, ~1m landing offset
@@ -34,7 +35,7 @@ EVENT_CONFIG: dict[str, dict] = {
             1.03,  # fatigue       (H7-H9)
         ],
     },
-    "hurdles_110m": {
+    EventType.hurdles_110m: {
         "hurdle_count": 10,
         "inter_hurdle_m": 9.14,
         "final_segment_m": 13.02,  # 14.02m, ~1m landing offset
@@ -52,7 +53,7 @@ EVENT_CONFIG: dict[str, dict] = {
             1.03,
         ],
     },
-    "hurdles_400m": {
+    EventType.hurdles_400m: {
         "hurdle_count": 10,
         "inter_hurdle_m": 35.0,
         "final_segment_m": 39.0,  # 40m, ~1m landing offset
