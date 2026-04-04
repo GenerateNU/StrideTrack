@@ -53,9 +53,7 @@ class TestListRunsByAthlete:
         assert isinstance(data, list)
         assert len(data) >= 1
 
-    def test_list_by_unknown_athlete_returns_404(
-        self, test_client: TestClient
-    ) -> None:
+    def test_list_by_unknown_athlete_returns_404(self, test_client: TestClient) -> None:
         """Listing runs for a non-existent athlete should return 404."""
         fake_id = str(uuid4())
 
