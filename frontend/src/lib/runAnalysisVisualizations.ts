@@ -32,7 +32,6 @@ export type VisualizationConfig = ComponentType<ChartProps>;
 const DEFAULT_CHARTS: VisualizationConfig[] = [
   GroundContactTimeChart,
   FlightTimeChart,
-  ReactionTimeCard,
 ];
 
 const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
@@ -41,6 +40,7 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     SprintDriftKPIs,
     StepFrequencyChart,
     SplitScoreChart,
+    ReactionTimeCard,
   ],
   hurdles: [
     ...DEFAULT_CHARTS,
@@ -53,14 +53,9 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     SplitScoreChart,
     ProjectedFinishKPI,
     ProjectedSplitChart,
+    ReactionTimeCard,
   ],
-  bosco: [
-    ...DEFAULT_CHARTS,
-    GctFlightChart,
-    JumpHeightChart,
-    RsiChart,
-    FatigueIndexKPI,
-  ],
+  bosco: [GctFlightChart, JumpHeightChart, RsiChart, FatigueIndexKPI],
 };
 
 export function getChartsForEventType(

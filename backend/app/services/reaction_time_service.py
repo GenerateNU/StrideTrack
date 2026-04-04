@@ -9,8 +9,6 @@ from app.schemas.reaction_time_schemas import (
 
 logger = logging.getLogger(__name__)
 
-FORCE_THRESHOLD_GCT_MS = 20
-
 
 def _classify_zone(reaction_time_ms: float) -> tuple[str, str]:
     if reaction_time_ms < 200:

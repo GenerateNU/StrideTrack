@@ -41,7 +41,7 @@ class ReactionTimeRepository:
         # Get all non-bosco runs for this athlete
         runs_response = (
             await self.supabase.table("run")
-            .select("run_id, event_type")
+            .select("run_id")
             .eq("athlete_id", str(athlete_id))
             .not_.in_("event_type", list(EXCLUDED_EVENT_TYPES))
             .execute()

@@ -125,9 +125,8 @@ class TestGetAverageReactionTime:
             f"{BASE}/athletes/{SEEDED_ATHLETE_ID}/metrics/reaction-time/average"
         )
         data = response.json()
-        # Ben has: 1 sprint + 1 hurdles + 1 hurdles_partial + 1 reaction_time_test
-        # Bosco should be excluded
-        assert data["run_count"] >= 1
+        # Ben has sprint x1, hurdles x1, hurdles_partial x1, reaction_time_test x1 = 4 non-bosco runs
+        assert data["run_count"] == 4
 
     def test_athlete_id_matches_request(self, test_client: TestClient) -> None:
         """The athlete_id in the response should match the requested athlete_id."""
