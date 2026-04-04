@@ -24,4 +24,3 @@ export const EVENT_OPTIONS: EventOption[] = (
 export const useEvents = (): EventOption[] => {
   return EVENT_OPTIONS;
 };
-

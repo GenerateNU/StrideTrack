@@ -15,11 +15,18 @@ interface EditAthleteModalProps {
   athlete: Athlete;
 }
 
-export function EditAthleteModal({ open, onClose, athlete }: EditAthleteModalProps) {
-  const { updateAthlete, updateAthleteIsLoading, updateAthleteError } = useUpdateAthlete();
+export function EditAthleteModal({
+  open,
+  onClose,
+  athlete,
+}: EditAthleteModalProps) {
+  const { updateAthlete, updateAthleteIsLoading, updateAthleteError } =
+    useUpdateAthlete();
   const [name, setName] = useState(athlete.name);
   const [heightIn, setHeightIn] = useState(athlete.height_in?.toString() ?? "");
-  const [weightLbs, setWeightLbs] = useState(athlete.weight_lbs?.toString() ?? "");
+  const [weightLbs, setWeightLbs] = useState(
+    athlete.weight_lbs?.toString() ?? ""
+  );
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
@@ -42,11 +49,17 @@ export function EditAthleteModal({ open, onClose, athlete }: EditAthleteModalPro
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-foreground/20 backdrop-blur-sm"
+        onClick={onClose}
+      />
       <div className="relative z-10 mx-4 w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-lg font-bold text-foreground">Edit Athlete</h2>
-          <button onClick={onClose} className="rounded-lg p-1 text-muted-foreground transition-colors hover:text-foreground">
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1 text-muted-foreground transition-colors hover:text-foreground"
+          >
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -96,13 +109,18 @@ export function EditAthleteModal({ open, onClose, athlete }: EditAthleteModalPro
           onClick={handleSubmit}
           disabled={!name.trim() || updateAthleteIsLoading}
           className="mt-6 w-full rounded-xl py-3.5 text-sm font-semibold transition-all disabled:opacity-40"
-          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+          style={{
+            backgroundColor: "hsl(var(--primary))",
+            color: "hsl(var(--primary-foreground))",
+          }}
         >
           {updateAthleteIsLoading ? "Saving..." : "Save Changes"}
         </button>
 
         {updateAthleteError && (
-          <p className="mt-2 text-center text-xs text-destructive">Failed to update athlete. Please try again.</p>
+          <p className="mt-2 text-center text-xs text-destructive">
+            Failed to update athlete. Please try again.
+          </p>
         )}
       </div>
     </div>

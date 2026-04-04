@@ -63,12 +63,17 @@ export function useCreateAthlete() {
   };
 }
 
-
 export function useUpdateAthlete() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: async ({ athleteId, payload }: { athleteId: string; payload: Partial<Athlete> }) => {
+    mutationFn: async ({
+      athleteId,
+      payload,
+    }: {
+      athleteId: string;
+      payload: Partial<Athlete>;
+    }) => {
       const response = await api.patch(`/athletes/${athleteId}`, payload);
       return response.data;
     },

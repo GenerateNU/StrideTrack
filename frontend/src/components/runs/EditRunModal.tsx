@@ -30,7 +30,9 @@ export function EditRunModal({ open, onClose, run }: EditRunModalProps) {
         payload: {
           event_type: eventType,
           name: name.trim() || null,
-          ...(eventType === "hurdles_partial" && { target_event: targetEvent || null }),
+          ...(eventType === "hurdles_partial" && {
+            target_event: targetEvent || null,
+          }),
           ...(eventType !== "hurdles_partial" && { target_event: null }),
         },
       });
@@ -72,8 +74,7 @@ export function EditRunModal({ open, onClose, run }: EditRunModalProps) {
 
           {eventType === "hurdles_partial" && (
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-foreground">
-              </label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-foreground"></label>
               <select
                 value={targetEvent}
                 onChange={(e) => setTargetEvent(e.target.value)}
@@ -104,7 +105,11 @@ export function EditRunModal({ open, onClose, run }: EditRunModalProps) {
 
         <button
           onClick={handleSubmit}
-          disabled={!eventType || (eventType === "hurdles_partial" && !targetEvent) || updateRunIsLoading}
+          disabled={
+            !eventType ||
+            (eventType === "hurdles_partial" && !targetEvent) ||
+            updateRunIsLoading
+          }
           className="mt-6 w-full rounded-xl py-3.5 text-sm font-semibold transition-all disabled:opacity-40"
           style={{
             backgroundColor: "hsl(var(--primary))",
