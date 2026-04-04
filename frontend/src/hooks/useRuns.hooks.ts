@@ -10,7 +10,7 @@ export function useGetAllRuns() {
   const query = useQuery({
     queryKey: ["runs"],
     queryFn: async () => {
-      const response = await api.get<Run[]>("/run");
+      const response = await api.get<Run[]>("/runs");
       const parsed = z.array(runResponseSchema).safeParse(response.data);
       if (!parsed.success) {
         throw new Error("Invalid response format");
@@ -32,7 +32,7 @@ export function useGetRunMeta(runId: string | undefined) {
     queryKey: ["runMeta", runId],
     queryFn: async () => {
       const response = await api.get<RunMeta>(
-        `/run/athletes/${runId}/metadata`
+        `/runs/${runId}/metadata`
       );
       const parsed = runMetaSchema.safeParse(response.data);
       if (!parsed.success) {

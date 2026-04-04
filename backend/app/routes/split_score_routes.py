@@ -11,7 +11,7 @@ from app.services.split_score_service import SplitScoreService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/split-score", tags=["Split Score"])
+router = APIRouter(prefix="/runs", tags=["Split Score"])
 
 
 async def get_split_score_service(
@@ -21,7 +21,7 @@ async def get_split_score_service(
 
 
 @router.get(
-    "/{run_id}",
+    "/{run_id}/metrics/split-score",
     response_model=SplitScoreResponse,
     summary="Get split score percentiles for a run",
 )
@@ -29,5 +29,5 @@ async def get_split_score(
     run_id: UUID,
     service: SplitScoreService = Depends(get_split_score_service),
 ) -> SplitScoreResponse:
-    logger.info(f"Route: GET /split-score/{run_id}")
+    logger.info(f"Route: GET /runs/{run_id}/metrics/split-score")
     return await service.get_split_score(run_id)

@@ -13,7 +13,7 @@ export function useCreateRun() {
   const mutation = useMutation({
     mutationFn: async (data: CreateRunPayload) => {
       const validated = createRunPayloadSchema.parse(data);
-      const response = await api.post<CreateRunResponse>("/run", validated);
+      const response = await api.post<CreateRunResponse>("/runs", validated);
       return validateResponse(response.data, createRunResponseSchema);
     },
     onSuccess: () => {

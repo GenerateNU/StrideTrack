@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 
 def _url(run_id: str) -> str:
-    return f"/api/split-score/{run_id}"
+    return f"/api/runs/{run_id}/metrics/split-score"
 
 
 @pytest.mark.integration
@@ -39,7 +39,7 @@ class TestSplitScoreUnsupportedEvent:
         created_ids: dict,
     ) -> None:
         create_resp = test_client.post(
-            "/api/run",
+            "/api/runs",
             json={
                 "athlete_id": SEEDED_ATHLETE_ID,
                 "event_type": "long_jump",
@@ -58,7 +58,7 @@ class TestSplitScoreUnsupportedEvent:
         created_ids: dict,
     ) -> None:
         create_resp = test_client.post(
-            "/api/run",
+            "/api/runs",
             json={
                 "athlete_id": SEEDED_ATHLETE_ID,
                 "event_type": "long_jump",

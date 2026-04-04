@@ -27,7 +27,7 @@ export function useRunMetrics(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<RunMetric[]>(
-        `/run/athletes/${runId}/metrics`
+        `/runs/${runId}/metrics`
       );
       return validateResponse(response.data, z.array(runMetricSchema));
     },
@@ -51,7 +51,7 @@ export function useLROverlayData(
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<LROverlayData[]>(
-        `/run/athletes/${runId}/metrics/lr-overlay`,
+        `/runs/${runId}/metrics/lr-overlay`,
         { params: { metric } }
       );
       return validateResponse(response.data, z.array(lrOverlaySchema));
@@ -73,7 +73,7 @@ export function useStackedBarData(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<StackedBarData[]>(
-        `/run/athletes/${runId}/metrics/stacked-bar`
+        `/runs/${runId}/metrics/stacked-bar`
       );
       return validateResponse(response.data, z.array(stackedBarSchema));
     },
@@ -94,7 +94,7 @@ export function useSprintDrift(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<SprintDriftData>(
-        `/run/athletes/${runId}/metrics/sprint-drift`
+        `/runs/${runId}/metrics/sprint/drift`
       );
       return validateResponse(response.data, sprintDriftSchema);
     },
@@ -115,7 +115,7 @@ export function useStepFrequencyData(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<StepFrequencyData[]>(
-        `/run/athletes/${runId}/metrics/step-frequency`
+        `/runs/${runId}/metrics/sprint/step-frequency`
       );
       return validateResponse(response.data, z.array(stepFrequencySchema));
     },
@@ -136,7 +136,7 @@ export function useAsymmetryData(runId: string | null) {
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<AsymmetryData>(
-        `/run/athletes/${runId}/metrics/asymmetry`
+        `/runs/${runId}/metrics/asymmetry`
       );
       return validateResponse(response.data, asymmetrySchema);
     },
@@ -161,7 +161,7 @@ export function useGCTRangeData(
     queryFn: async () => {
       if (!runId) return null;
       const response = await api.get<GCTRangeData>(
-        `/run/athletes/${runId}/metrics/gct-range`,
+        `/runs/${runId}/metrics/gct-range`,
         { params: { min_ms: minMs, max_ms: maxMs } }
       );
       return validateResponse(response.data, gctRangeSchema);

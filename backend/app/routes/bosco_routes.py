@@ -6,7 +6,7 @@ from app.repositories.bosco_repository import BoscoRepository
 from app.schemas.bosco_schemas import BoscoMetricsResponse, Run
 from app.services.bosco_service import BoscoService
 
-router = APIRouter(prefix="/bosco", tags=["Bosco"])
+router = APIRouter(prefix="/runs", tags=["Bosco Metrics"])
 
 
 async def get_bosco_service(
@@ -16,7 +16,7 @@ async def get_bosco_service(
     return BoscoService(repository)
 
 
-@router.get("/metrics/{run_id}", response_model=BoscoMetricsResponse)
+@router.get("/{run_id}/metrics/bosco", response_model=BoscoMetricsResponse)
 async def get_bosco_metrics(
     run_id: str,
     service: BoscoService = Depends(get_bosco_service),
@@ -25,7 +25,7 @@ async def get_bosco_metrics(
     return await service.get_bosco_metrics(run_id)
 
 
-@router.get("/runs/{athlete_id}", response_model=list[Run])
+@router.get("/athlete/{athlete_id}/bosco", response_model=list[Run])
 async def get_bosco_runs(
     athlete_id: str,
     service: BoscoService = Depends(get_bosco_service),

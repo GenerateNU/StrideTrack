@@ -11,7 +11,7 @@ export function useBoscoMetrics(runId: string | null) {
       if (!runId) return null;
 
       const response = await apiClient.get<BoscoMetricsResponse>(
-        `bosco/metrics/${runId}`
+        `/runs/${runId}/metrics/bosco`
       );
       return validateResponse(response.data, boscoMetricsSchema);
     },

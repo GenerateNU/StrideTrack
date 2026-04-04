@@ -30,7 +30,7 @@ export function useHurdleSplits(runId: string | null) {
       }
 
       const response = await api.get<HurdleSplitBarData[]>(
-        `/run/athletes/${runId}/metrics/hurdles/splits`
+        `/runs/${runId}/metrics/hurdles/splits`
       );
 
       return validateResponse(response.data, z.array(hurdleSplitBarSchema));
@@ -55,7 +55,7 @@ export function useStepsBetweenHurdles(runId: string | null) {
       }
 
       const response = await api.get<StepsBetweenHurdlesData[]>(
-        `/run/athletes/${runId}/metrics/hurdles/steps-between`
+        `/runs/${runId}/metrics/hurdles/steps-between`
       );
 
       return validateResponse(
@@ -83,7 +83,7 @@ export function useTakeoffGct(runId: string | null) {
       }
 
       const response = await api.get<TakeoffGctBarData[]>(
-        `/run/athletes/${runId}/metrics/hurdles/takeoff-gct`
+        `/runs/${runId}/metrics/hurdles/takeoff-gct`
       );
 
       return validateResponse(response.data, z.array(takeoffGctBarSchema));
@@ -108,7 +108,7 @@ export function useLandingGct(runId: string | null) {
       }
 
       const response = await api.get<LandingGctBarData[]>(
-        `/run/athletes/${runId}/metrics/hurdles/landing-gct`
+        `/runs/${runId}/metrics/hurdles/landing-gct`
       );
 
       return validateResponse(response.data, z.array(landingGctBarSchema));
@@ -133,7 +133,7 @@ export function useTakeoffFt(runId: string | null) {
       }
 
       const response = await api.get<TakeoffFtBarData[]>(
-        `/run/athletes/${runId}/metrics/hurdles/takeoff-ft`
+        `/runs/${runId}/metrics/hurdles/takeoff-ft`
       );
 
       return validateResponse(response.data, z.array(takeoffFtBarSchema));
@@ -158,7 +158,7 @@ export function useGctIncrease(runId: string | null) {
       }
 
       const response = await api.get<GctIncreaseData[]>(
-        `/run/athletes/${runId}/metrics/hurdles/gct-increase`
+        `/runs/${runId}/metrics/hurdles/gct-increase`
       );
 
       return validateResponse(response.data, z.array(gctIncreaseSchema));
@@ -183,7 +183,7 @@ export function useHurdleProjection(runId: string | null) {
       }
 
       const response = await api.get<HurdleProjectionResponse>(
-        `/run/athletes/${runId}/metrics/hurdles/projection`
+        `/runs/${runId}/metrics/hurdles/projection`
       );
 
       return validateResponse(response.data, hurdleProjectionResponseSchema);

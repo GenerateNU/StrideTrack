@@ -8,7 +8,7 @@ export function useSplitScore(runId: string) {
   const query = useQuery({
     queryKey: ["split-score", runId],
     queryFn: async () => {
-      const response = await api.get<SplitScoreData>(`/split-score/${runId}`);
+      const response = await api.get<SplitScoreData>(`/runs/${runId}/metrics/split-score`);
       return validateResponse(response.data, splitScoreResponseSchema);
     },
     enabled: !!runId,
