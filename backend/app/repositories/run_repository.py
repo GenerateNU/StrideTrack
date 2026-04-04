@@ -106,11 +106,9 @@ class RunRepository:
             )
             .eq("athletes.coach_id", str(coach_id))
             .order("created_at", desc=True)
+            .order("run_id", desc=False)
             .execute()
         )
-
-        logger.info(f"Repository: Found {len(response.data)} runs")
-        return [RunCreateResponse(**run) for run in response.data]
 
         logger.info(f"Repository: Found {len(response.data)} runs")
         return [RunCreateResponse(**run) for run in response.data]
@@ -125,6 +123,7 @@ class RunRepository:
             )
             .eq("athlete_id", str(athlete_id))
             .order("created_at", desc=True)
+            .order("run_id", desc=False)
             .execute()
         )
         logger.info(

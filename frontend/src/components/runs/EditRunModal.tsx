@@ -23,6 +23,7 @@ export function EditRunModal({ open, onClose, run }: EditRunModalProps) {
 
   const handleSubmit = async () => {
     try {
+      console.log("payload", { event_type: eventType, name: name.trim() || null });
       await updateRun({
         runId: run.run_id,
         payload: {

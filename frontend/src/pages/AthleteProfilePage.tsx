@@ -8,10 +8,11 @@ import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EditAthleteModal } from "@/components/athletes/EditAthleteModal";
 import { EditRunModal } from "@/components/runs/EditRunModal";
 import type { EventTypeEnum } from "@/types/event.types";
-import { ArrowLeft, Activity, Calendar, Pencil, Trash2 } from "lucide-react";
+import { ArrowLeft, Activity, Calendar, Pencil, Trash2, Search } from "lucide-react";
 import EventHistoryFilterBar from "@/components/charts/history/EventHistoryFilterBar";
 import { EventHistoryChart } from "@/components/charts/history/EventHistoryChart";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
+import { EVENT_DISPLAY_NAMES } from "@/hooks/useEvents.hooks";
 
 function nameToHue(name: string): number {
   let hash = 0;
@@ -19,6 +20,10 @@ function nameToHue(name: string): number {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
   return Math.abs(hash) % 360;
+}
+
+function formatEventType(eventType: string): string {
+  return EVENT_DISPLAY_NAMES[eventType as EventTypeEnum] ?? eventType.replace(/_/g, " ");
 }
 
 export default function AthleteProfilePage() {
@@ -35,6 +40,8 @@ export default function AthleteProfilePage() {
   const [deleteAthleteOpen, setDeleteAthleteOpen] = useState(false);
   const [deleteRunId, setDeleteRunId] = useState<string | null>(null);
   const [editRun, setEditRun] = useState<(typeof athleteRuns)[0] | null>(null);
+  const [search, setSearch] = useState("");
+  const [eventFilter, setEventFilter] = useState<string>("all");
 
   const athlete = athletes.find((a) => a.athlete_id === athleteId);
   const athleteRuns = useMemo(
@@ -45,9 +52,25 @@ export default function AthleteProfilePage() {
     [runs, athleteId]
   );
 
+  const filteredRuns = useMemo(() => {
+    return athleteRuns.filter((r) => {
+      const matchesSearch =
+        search.trim() === "" ||
+        (r.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        formatEventType(r.event_type).toLowerCase().includes(search.toLowerCase());
+      const matchesEvent = eventFilter === "all" || r.event_type === eventFilter;
+      return matchesSearch && matchesEvent;
+    });
+  }, [athleteRuns, search, eventFilter]);
+
+  const eventTypes = useMemo(
+    () => Array.from(new Set(athleteRuns.map((r) => r.event_type))),
+    [athleteRuns]
+  );
+
   const groupedRuns = useMemo(() => {
-    const groups = new Map<string, typeof athleteRuns>();
-    athleteRuns.forEach((run) => {
+    const groups = new Map<string, typeof filteredRuns>();
+    filteredRuns.forEach((run) => {
       const dateKey = new Date(run.created_at).toLocaleDateString("en-US", {
         weekday: "short",
         month: "short",
@@ -57,7 +80,7 @@ export default function AthleteProfilePage() {
       groups.get(dateKey)!.push(run);
     });
     return groups;
-  }, [athleteRuns]);
+  }, [filteredRuns]);
 
   const latestRun = athleteRuns[0] ?? null;
 
@@ -181,7 +204,7 @@ export default function AthleteProfilePage() {
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-foreground">
-                    {latestRun.event_type.replace("_", " ")}
+                    {formatEventType(latestRun.event_type)}
                   </span>
                   <span className="text-xs text-muted-foreground">
                     {new Date(latestRun.created_at).toLocaleDateString()}
@@ -205,6 +228,47 @@ export default function AthleteProfilePage() {
 
       {tab === "runs" && (
         <div className="space-y-4">
+          {/* Search bar */}
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search runs..."
+              className="w-full rounded-xl border border-input bg-card py-2.5 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
+          </div>
+
+          {/* Event type filter */}
+          {eventTypes.length > 1 && (
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => setEventFilter("all")}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  eventFilter === "all"
+                    ? "bg-foreground text-background"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                All
+              </button>
+              {eventTypes.map((et) => (
+                <button
+                  key={et}
+                  onClick={() => setEventFilter(et)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    eventFilter === et
+                      ? "bg-foreground text-background"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {formatEventType(et)}
+                </button>
+              ))}
+            </div>
+          )}
+
           {Array.from(groupedRuns.entries()).map(([dateLabel, dateRuns]) => (
             <div key={dateLabel}>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -225,10 +289,10 @@ export default function AthleteProfilePage() {
                       </div>
                       <div>
                         <span className="text-sm font-medium text-foreground">
-                          {run.name ?? run.event_type.replace(/_/g, " ")}
+                          {run.name ?? formatEventType(run.event_type)}
                         </span>
                         <p className="text-[10px] text-muted-foreground">
-                          {run.event_type.replace(/_/g, " ")}
+                          {formatEventType(run.event_type)}
                           {run.elapsed_ms ? ` · ${(run.elapsed_ms / 1000).toFixed(1)}s` : ""}
                         </p>
                       </div>
@@ -258,9 +322,12 @@ export default function AthleteProfilePage() {
               </div>
             </div>
           ))}
-          {athleteRuns.length === 0 && (
+
+          {filteredRuns.length === 0 && (
             <div className="rounded-2xl border border-dashed border-border p-12 text-center">
-              <p className="text-sm font-medium text-muted-foreground">No events recorded yet.</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                {athleteRuns.length === 0 ? "No events recorded yet." : "No runs match your search."}
+              </p>
             </div>
           )}
         </div>
