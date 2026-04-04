@@ -1,10 +1,9 @@
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from supabase._async.client import AsyncClient
 
-from app.core.exceptions import NotFoundException
 from app.core.supabase import get_async_supabase
 from app.repositories.reaction_time_repository import ReactionTimeRepository
 from app.schemas.reaction_time_schemas import (
@@ -34,16 +33,7 @@ async def get_reaction_time(
     service: ReactionTimeService = Depends(get_reaction_time_service),
 ) -> ReactionTimeResponse:
     logger.info(f"Route: GET /runs/{run_id}/metrics/reaction-time")
-    try:
-        return await service.get_reaction_time(run_id)
-    except NotFoundException as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        ) from exc
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
-        ) from exc
+    return await service.get_reaction_time(run_id)
 
 
 @router.get(
@@ -56,13 +46,4 @@ async def get_average_reaction_time(
     service: ReactionTimeService = Depends(get_reaction_time_service),
 ) -> AverageReactionTimeResponse:
     logger.info(f"Route: GET /runs/athletes/{athlete_id}/metrics/reaction-time/average")
-    try:
-        return await service.get_average_reaction_time(athlete_id)
-    except NotFoundException as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
-        ) from exc
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
-        ) from exc
+    return await service.get_average_reaction_time(athlete_id)

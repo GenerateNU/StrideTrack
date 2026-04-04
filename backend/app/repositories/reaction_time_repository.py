@@ -4,11 +4,12 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
+from app.schemas.event_type import EventType
 from app.schemas.reaction_time_schemas import ReactionTimeRunMetric
 
 logger = logging.getLogger(__name__)
 
-EXCLUDED_EVENT_TYPES = ("bosco_test",)
+EXCLUDED_EVENT_TYPES = (EventType.bosco_test,)
 
 
 class ReactionTimeRepository:
