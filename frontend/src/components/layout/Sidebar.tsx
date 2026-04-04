@@ -4,7 +4,6 @@ import { Home, Circle, Clock, UserCircle } from "lucide-react";
 import { useAuth } from "@/context/auth.context";
 import { useTheme } from "@/hooks/useTheme.hooks";
 import { ProfileMenu } from "./ProfileMenu";
-import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
 import FlyingFoot from "@/assets/flying_foot.svg?react";
 import StrideTrackText from "@/assets/stridetrack_text.svg?react";
 
@@ -18,7 +17,6 @@ export function Sidebar() {
   const { logout, profile } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [addAthleteOpen, setAddAthleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -92,10 +90,6 @@ export function Sidebar() {
               theme={theme}
               toggleTheme={toggleTheme}
               className="absolute bottom-full left-2 right-2 mb-2"
-              onAddAthlete={() => {
-                setMenuOpen(false);
-                setAddAthleteOpen(true);
-              }}
               onLogout={() => {
                 setMenuOpen(false);
                 logout();
@@ -105,10 +99,6 @@ export function Sidebar() {
         </div>
       </aside>
 
-      <AddAthleteModal
-        open={addAthleteOpen}
-        onClose={() => setAddAthleteOpen(false)}
-      />
     </>
   );
 }

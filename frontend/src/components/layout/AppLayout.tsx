@@ -6,7 +6,6 @@ import { UserCircle } from "lucide-react";
 import { useAuth } from "@/context/auth.context";
 import { useTheme } from "@/hooks/useTheme.hooks";
 import { ProfileMenu } from "./ProfileMenu";
-import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
 import FlyingFoot from "@/assets/flying_foot.svg?react";
 import StrideTrackText from "@/assets/stridetrack_text.svg?react";
 
@@ -14,7 +13,6 @@ export function AppLayout() {
   const { logout, profile } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [addAthleteOpen, setAddAthleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -48,10 +46,6 @@ export function AppLayout() {
               profile={profile}
               theme={theme}
               toggleTheme={toggleTheme}
-              onAddAthlete={() => {
-                setMenuOpen(false);
-                setAddAthleteOpen(true);
-              }}
               onLogout={() => {
                 setMenuOpen(false);
                 logout();
@@ -66,10 +60,6 @@ export function AppLayout() {
       </main>
 
       <BottomNav />
-      <AddAthleteModal
-        open={addAthleteOpen}
-        onClose={() => setAddAthleteOpen(false)}
-      />
     </div>
   );
 }
