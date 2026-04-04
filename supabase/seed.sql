@@ -363,18 +363,18 @@ VALUES (
 );
  
 -- Insert long jump and triple jump RUN records
-INSERT INTO RUN (run_id, athlete_id, event_type, name) VALUES
-    ('aaaaaaaa-0001-4000-8000-000000000001', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 1'),
-    ('aaaaaaaa-0002-4000-8000-000000000002', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 2'),
-    ('aaaaaaaa-0003-4000-8000-000000000003', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 3'),
-    ('aaaaaaaa-0004-4000-8000-000000000004', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 4'),
-    ('aaaaaaaa-0005-4000-8000-000000000005', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 5'),
-    ('aaaaaaaa-0006-4000-8000-000000000006', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 6'),
-    ('bbbbbbbb-0001-4000-8000-000000000001', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 1'),
-    ('bbbbbbbb-0002-4000-8000-000000000002', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 2'),
-    ('bbbbbbbb-0003-4000-8000-000000000003', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 3'),
-    ('bbbbbbbb-0004-4000-8000-000000000004', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 4'),
-    ('bbbbbbbb-0005-4000-8000-000000000005', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 5');
+INSERT INTO RUN (run_id, athlete_id, event_type, name, elapsed_ms) VALUES
+    ('aaaaaaaa-0001-4000-8000-000000000001', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 1', 6100),
+    ('aaaaaaaa-0002-4000-8000-000000000002', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 2', 6100),
+    ('aaaaaaaa-0003-4000-8000-000000000003', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 3', 6080),
+    ('aaaaaaaa-0004-4000-8000-000000000004', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 4', 6150),
+    ('aaaaaaaa-0005-4000-8000-000000000005', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 5', 6090),
+    ('aaaaaaaa-0006-4000-8000-000000000006', '00000000-0000-0000-0000-000000000004', 'long_jump', 'Alyssa Long Jump Attempt 6', 6100),
+    ('bbbbbbbb-0001-4000-8000-000000000001', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 1', 4410),
+    ('bbbbbbbb-0002-4000-8000-000000000002', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 2', 4420),
+    ('bbbbbbbb-0003-4000-8000-000000000003', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 3', 4460),
+    ('bbbbbbbb-0004-4000-8000-000000000004', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 4', 4440),
+    ('bbbbbbbb-0005-4000-8000-000000000005', '00000000-0000-0000-0000-000000000004', 'triple_jump', 'Alyssa Triple Jump Attempt 5', 4510);
  
 -- Insert long jump RUN_METRICS
 INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_time, gct_ms, flight_ms, step_time_ms) VALUES
