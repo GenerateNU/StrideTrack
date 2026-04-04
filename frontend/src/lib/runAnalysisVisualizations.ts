@@ -45,7 +45,7 @@ const DEFAULT_CHARTS: VisualizationConfig[] = [
   GCTRangePieChart,
   RSIChart,
   StepTimeChart,
-  TotalStepsKPI
+  TotalStepsKPI,
 ];
 
 const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
@@ -64,7 +64,7 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     TakeoffFtChart,
     TakeoffGctChart,
     SplitScoreChart,
-    HurdleTimelineChart
+    HurdleTimelineChart,
   ],
   hurdles_partial: [
     ...DEFAULT_CHARTS,
@@ -77,14 +77,9 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     SplitScoreChart,
     ProjectedFinishKPI,
     ProjectedSplitChart,
-    HurdleTimelineChart
+    HurdleTimelineChart,
   ],
-  bosco: [
-    GctFlightChart, 
-    JumpHeightChart, 
-    RsiChart, 
-    FatigueIndexKPI
-  ]
+  bosco: [GctFlightChart, JumpHeightChart, RsiChart, FatigueIndexKPI],
 };
 
 export function getEventCategory(
@@ -99,7 +94,7 @@ export function getEventCategory(
 export function getChartsForEventType(
   eventType: EventTypeEnum
 ): VisualizationConfig[] {
-    if (eventType in visualizationsByEventType) {
+  if (eventType in visualizationsByEventType) {
     return visualizationsByEventType[eventType];
   }
   const category = getEventCategory(eventType);

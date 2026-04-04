@@ -8,4 +8,3 @@ export const MeanRSIKPI = ({ mean }: { mean: number }) => (
     </span>
   </div>
 );
-

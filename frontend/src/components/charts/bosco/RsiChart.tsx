@@ -45,7 +45,10 @@ export const RsiChart = ({ runId }: ChartProps) => {
       description="Reactive Strength Index (flight time / ground contact time) per jump. RSI > 1.0 indicates good reactive strength."
     >
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={chartData} margin={{ top: 16, right: 70, left: 20, bottom: 30 }}>
+        <LineChart
+          data={chartData}
+          margin={{ top: 16, right: 70, left: 20, bottom: 30 }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="jump_num"
