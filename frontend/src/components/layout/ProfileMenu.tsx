@@ -1,10 +1,9 @@
-import { Plus, Moon, Sun, LogOut } from "lucide-react";
+import { Moon, Sun, LogOut } from "lucide-react";
 
 interface ProfileMenuProps {
   profile: { name?: string; email?: string } | null;
   theme: string;
   toggleTheme: () => void;
-  onAddAthlete: () => void;
   onLogout: () => void;
   className?: string;
 }
@@ -13,7 +12,6 @@ export function ProfileMenu({
   profile,
   theme,
   toggleTheme,
-  onAddAthlete,
   onLogout,
   className = "absolute right-0 top-full mt-2 w-60",
 }: ProfileMenuProps) {
@@ -29,14 +27,6 @@ export function ProfileMenu({
       </div>
 
       <div className="mx-2 h-px bg-border" />
-
-      <button
-        onClick={onAddAthlete}
-        className="mt-1 flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-secondary"
-      >
-        <Plus className="h-4 w-4" />
-        Add Athlete
-      </button>
 
       <button
         onClick={toggleTheme}
