@@ -1,0 +1,45 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make check-format*)",
+      "Bash(make format*)",
+      "Bash(make unit-test*)",
+      "Bash(bun install*)",
+      "Bash(cd backend && uv run*)",
+      "Bash(cd frontend && bun run*)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(make db-migrate*)",
+      "Bash(make clean*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/format-edited.mjs"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "make check-format 2>&1 | tail -30"
+          },
+          {
+            "type": "command",
+            "command": "make unit-test 2>&1 | tail -40"
+          }
+        ]
+      }
+    ]
+  }
+}
