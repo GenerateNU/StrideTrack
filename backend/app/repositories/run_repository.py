@@ -4,7 +4,13 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta, RunResponse
+from app.schemas.run_schemas import (
+    RunCreate,
+    RunCreateResponse,
+    RunMeta,
+    RunResponse,
+    RunUpdate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -96,10 +102,11 @@ class RunRepository:
         response = (
             await self.supabase.table("run")
             .select(
-                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at, athletes!inner(coach_id)"
+                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at, name, athletes!inner(coach_id)"
             )
             .eq("athletes.coach_id", str(coach_id))
             .order("created_at", desc=True)
+            .order("run_id", desc=False)
             .execute()
         )
 
@@ -112,13 +119,44 @@ class RunRepository:
         response = (
             await self.supabase.table("run")
             .select(
-                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at"
+                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at, name"
             )
             .eq("athlete_id", str(athlete_id))
             .order("created_at", desc=True)
+            .order("run_id", desc=False)
             .execute()
         )
         logger.info(
             f"Repository: Found {len(response.data)} runs for athlete {athlete_id}"
         )
         return [RunCreateResponse(**run) for run in response.data]
+
+    async def update(self, run_id: UUID, run_update: RunUpdate) -> RunCreateResponse:
+        """Update a run."""
+        logger.info(f"Repository: Updating run {run_id}")
+        data = run_update.model_dump(exclude_unset=True)
+        response = (
+            await self.supabase.table("run")
+            .update(data)
+            .eq("run_id", str(run_id))
+            .execute()
+        )
+        if not response.data:
+            logger.warning(f"Repository: Run not found for update {run_id}")
+            raise NotFoundException("Run", str(run_id))
+        logger.info(f"Repository: Updated run {run_id}")
+        return RunCreateResponse(**response.data[0])
+
+    async def delete(self, run_id: UUID) -> None:
+        """Delete a run."""
+        logger.info(f"Repository: Deleting run {run_id}")
+        response = (
+            await self.supabase.table("run")
+            .delete()
+            .eq("run_id", str(run_id))
+            .execute()
+        )
+        if not response.data:
+            logger.warning(f"Repository: Run not found for deletion {run_id}")
+            raise NotFoundException("Run", str(run_id))
+        logger.info(f"Repository: Deleted run {run_id}")

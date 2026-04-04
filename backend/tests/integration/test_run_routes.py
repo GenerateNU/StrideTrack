@@ -300,3 +300,136 @@ class TestGetStepFrequency:
         assert "foot" in row
         assert "label" in row
         assert "step_frequency_hz" in row
+
+
+# Update Run
+
+
+@pytest.mark.integration
+class TestUpdateRun:
+    """PATCH /api/runs/{run_id}"""
+
+    def test_update_event_type_returns_200(
+        self,
+        test_client: TestClient,
+        test_coach: Coach,
+        created_ids: dict,
+    ) -> None:
+        """Patching a run's event_type should return 200 with the updated value."""
+        athlete_data = AthleteFactory.create(
+            coach_id=str(test_coach.coach_id), name="Update Run Athlete"
+        )
+        athlete_resp = test_client.post(ATHLETE_BASE, json=athlete_data)
+        assert athlete_resp.status_code == 201
+        athlete_id = athlete_resp.json()["athlete_id"]
+        created_ids["athlete_ids"].append(athlete_id)
+
+        run_data = {
+            "athlete_id": athlete_id,
+            "event_type": "sprint_100m",
+            "elapsed_ms": 12500,
+        }
+        run_resp = test_client.post(BASE, json=run_data)
+        assert run_resp.status_code == 201
+        run_id = run_resp.json()["run_id"]
+        created_ids["run_ids"].append(run_id)
+
+        response = test_client.patch(
+            f"{BASE}/{run_id}", json={"event_type": "sprint_200m"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["event_type"] == "sprint_200m"
+
+    def test_update_name_returns_200(
+        self,
+        test_client: TestClient,
+        test_coach: Coach,
+        created_ids: dict,
+    ) -> None:
+        """Patching a run's name should return 200 with the updated name."""
+        athlete_data = AthleteFactory.create(
+            coach_id=str(test_coach.coach_id), name="Name Update Athlete"
+        )
+        athlete_resp = test_client.post(ATHLETE_BASE, json=athlete_data)
+        assert athlete_resp.status_code == 201
+        athlete_id = athlete_resp.json()["athlete_id"]
+        created_ids["athlete_ids"].append(athlete_id)
+
+        run_data = {
+            "athlete_id": athlete_id,
+            "event_type": "sprint_100m",
+            "elapsed_ms": 12500,
+        }
+        run_resp = test_client.post(BASE, json=run_data)
+        assert run_resp.status_code == 201
+        run_id = run_resp.json()["run_id"]
+        created_ids["run_ids"].append(run_id)
+
+        response = test_client.patch(
+            f"{BASE}/{run_id}", json={"name": "Morning Sprint"}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["name"] == "Morning Sprint"
+
+    def test_update_nonexistent_run_returns_404(self, test_client: TestClient) -> None:
+        """Patching a non-existent run ID should return 404."""
+        fake_id = str(uuid4())
+
+        response = test_client.patch(
+            f"{BASE}/{fake_id}", json={"event_type": "sprint_200m"}
+        )
+
+        assert response.status_code == 404
+
+
+# Delete Run
+
+
+@pytest.mark.integration
+class TestDeleteRun:
+    """DELETE /api/runs/{run_id}"""
+
+    def test_delete_returns_204(
+        self,
+        test_client: TestClient,
+        test_coach: Coach,
+        created_ids: dict,
+    ) -> None:
+        """Deleting an existing run should return 204, and a subsequent metadata
+        GET should return 404."""
+        athlete_data = AthleteFactory.create(
+            coach_id=str(test_coach.coach_id), name="Delete Run Athlete"
+        )
+        athlete_resp = test_client.post(ATHLETE_BASE, json=athlete_data)
+        assert athlete_resp.status_code == 201
+        athlete_id = athlete_resp.json()["athlete_id"]
+        created_ids["athlete_ids"].append(athlete_id)
+
+        run_data = {
+            "athlete_id": athlete_id,
+            "event_type": "sprint_100m",
+            "elapsed_ms": 12500,
+        }
+        run_resp = test_client.post(BASE, json=run_data)
+        assert run_resp.status_code == 201
+        run_id = run_resp.json()["run_id"]
+        # Don't add to created_ids — this test deletes it itself
+
+        response = test_client.delete(f"{BASE}/{run_id}")
+
+        assert response.status_code == 204
+
+        get_resp = test_client.get(f"{BASE}/{run_id}/metadata")
+        assert get_resp.status_code == 404
+
+    def test_delete_nonexistent_run_returns_404(self, test_client: TestClient) -> None:
+        """Deleting a non-existent run ID should return 404."""
+        fake_id = str(uuid4())
+
+        response = test_client.delete(f"{BASE}/{fake_id}")
+
+        assert response.status_code == 404
