@@ -109,7 +109,7 @@ export const GctFlightChart = ({ runId }: ChartProps) => {
             dataKey="jump_height_cm"
             stroke={chartColors.foreground}
             strokeWidth={2}
-            name="Jump Height (cm)"
+            name="Ground Contact Time"
             dot={{ fill: chartColors.foreground }}
           />
         </LineChart>
