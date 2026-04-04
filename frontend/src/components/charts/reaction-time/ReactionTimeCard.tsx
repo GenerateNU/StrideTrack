@@ -51,7 +51,7 @@ export const ReactionTimeCard = ({ runId }: ChartProps) => {
   const styles = getZoneStyles(reactionTime.zone);
 
   return (
-    <BaseKPI description="Time from start stimulus to first ground contact onset. Green < 200ms, Yellow 200-300ms, Red > 300ms.">
+    <BaseKPI description="Time from start signal to first foot lift-off. Green < 200ms, Yellow 200-300ms, Red > 300ms.">
       <div className="flex flex-col items-center justify-center h-[300px] gap-2">
         <span className="text-sm text-muted-foreground uppercase tracking-widest">
           Reaction Time
