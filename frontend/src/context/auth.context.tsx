@@ -8,6 +8,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
+import { App as CapApp } from "@capacitor/app";
 import { supabase } from "@/lib/supabase";
 import { getDevToken, setDevToken, clearDevToken } from "@/lib/dev";
 import api from "@/lib/api";
@@ -110,16 +113,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => data.subscription.unsubscribe();
+    // Listen for deep link callback on native platforms (OAuth redirect)
+    let appUrlListener: { remove: () => void } | undefined;
+    if (Capacitor.isNativePlatform()) {
+      CapApp.addListener("appUrlOpen", async ({ url }) => {
+        if (url.startsWith("com.stridetrack.app://auth/callback")) {
+          // Extract tokens from the URL fragment
+          const hashPart = url.split("#")[1];
+          if (hashPart) {
+            const params = new URLSearchParams(hashPart);
+            const accessToken = params.get("access_token");
+            const refreshToken = params.get("refresh_token");
+            if (accessToken && refreshToken) {
+              await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+            }
+          }
+          await Browser.close();
+        }
+      }).then((listener) => {
+        appUrlListener = listener;
+      });
+    }
+
+    return () => {
+      data.subscription.unsubscribe();
+      appUrlListener?.remove();
+    };
   }, [checkAuth, fetchProfile]);
 
   const loginWithGoogle = async () => {
     clearDevToken();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
-    });
-    if (error) throw error;
+
+    if (Capacitor.isNativePlatform()) {
+      // On native (iOS/Android), open OAuth in system browser and handle deep link back
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: "com.stridetrack.app://auth/callback",
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        await Browser.open({ url: data.url });
+      }
+    } else {
+      // On web, use normal redirect flow
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin },
+      });
+      if (error) throw error;
+    }
   };
 
   const loginAsDev = useCallback(async () => {
