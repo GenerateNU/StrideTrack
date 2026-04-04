@@ -30,12 +30,26 @@ export const LROverlayLineChart = ({
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((state: Record<string, unknown>) => {
-    const index = state?.activeTooltipIndex;
-    if (typeof index === "number") {
-      setActiveIndex(index);
-    }
-  }, []);
+  const handleMouseMove = useCallback(
+    (_state: unknown, event: React.MouseEvent | undefined) => {
+      if (!event || !chartRef.current || !lrOverlay) return;
+
+      const plotArea = chartRef.current.querySelector(
+        ".recharts-cartesian-grid"
+      );
+      if (!plotArea) return;
+
+      const rect = plotArea.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const ratio = x / rect.width;
+
+      if (ratio < 0 || ratio > 1) return;
+
+      const index = Math.round(ratio * (lrOverlay.length - 1));
+      setActiveIndex(Math.max(0, Math.min(lrOverlay.length - 1, index)));
+    },
+    [lrOverlay]
+  );
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
@@ -89,7 +103,10 @@ export const LROverlayLineChart = ({
       style={{ touchAction: "none" }}
     >
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={lrOverlay} onMouseMove={handleMouseMove}>
+        <LineChart
+          data={lrOverlay}
+          onMouseMove={handleMouseMove as (state: unknown) => void}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="stride_num"
