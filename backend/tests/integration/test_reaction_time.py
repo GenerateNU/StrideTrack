@@ -21,15 +21,19 @@ class TestGetReactionTime:
     """GET /api/runs/{run_id}/metrics/reaction-time"""
 
     def test_reaction_time_test_run_returns_200(self, test_client: TestClient) -> None:
-        """A seeded reaction_time_test run should return 200."""
-        response = test_client.get(f"{BASE}/{SEEDED_RT_RUN_ID}/metrics/reaction-time")
+        """A seeded sprint run should return 200."""
+        response = test_client.get(
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/reaction-time"
+        )
         assert response.status_code == 200
 
     def test_reaction_time_test_run_has_correct_shape(
         self, test_client: TestClient
     ) -> None:
         """Response should contain all expected fields."""
-        response = test_client.get(f"{BASE}/{SEEDED_RT_RUN_ID}/metrics/reaction-time")
+        response = test_client.get(
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/reaction-time"
+        )
         data = response.json()
         assert "run_id" in data
         assert "reaction_time_ms" in data
@@ -41,7 +45,9 @@ class TestGetReactionTime:
         self, test_client: TestClient
     ) -> None:
         """Zone should be one of green, yellow, red."""
-        response = test_client.get(f"{BASE}/{SEEDED_RT_RUN_ID}/metrics/reaction-time")
+        response = test_client.get(
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/reaction-time"
+        )
         data = response.json()
         assert data["zone"] in ("green", "yellow", "red")
 
@@ -49,7 +55,9 @@ class TestGetReactionTime:
         self, test_client: TestClient
     ) -> None:
         """Reaction time should be a positive number."""
-        response = test_client.get(f"{BASE}/{SEEDED_RT_RUN_ID}/metrics/reaction-time")
+        response = test_client.get(
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/reaction-time"
+        )
         data = response.json()
         assert data["reaction_time_ms"] > 0
 
@@ -70,9 +78,11 @@ class TestGetReactionTime:
         self, test_client: TestClient
     ) -> None:
         """The run_id in the response should match the requested run_id."""
-        response = test_client.get(f"{BASE}/{SEEDED_RT_RUN_ID}/metrics/reaction-time")
+        response = test_client.get(
+            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/reaction-time"
+        )
         data = response.json()
-        assert data["run_id"] == SEEDED_RT_RUN_ID
+        assert data["run_id"] == SEEDED_SPRINT_RUN_ID
 
 
 # ── GET /athletes/{athlete_id}/metrics/reaction-time/average ──
