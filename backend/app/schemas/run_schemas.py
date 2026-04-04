@@ -19,6 +19,7 @@ class RunResponse(BaseModel):
 class RunUpdate(BaseModel):
     event_type: EventType | None = None
     name: str | None = Field(None, min_length=1, max_length=100)
+    target_event: str | None = None
 
 
 class LROverlayData(BaseModel):
@@ -75,7 +76,6 @@ class RunCreateResponse(BaseModel):
     elapsed_ms: int
     created_at: str
     name: str | None = None
-
 
 
 class RunMeta(BaseModel):

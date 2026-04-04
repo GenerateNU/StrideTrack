@@ -292,7 +292,9 @@ export default function AthleteProfilePage() {
                           {run.name ?? formatEventType(run.event_type)}
                         </span>
                         <p className="text-[10px] text-muted-foreground">
-                          {formatEventType(run.event_type)}
+                          {run.event_type === "hurdles_partial" && run.target_event
+                            ? `Partial Hurdles (${formatEventType(run.target_event)})`
+                            : formatEventType(run.event_type)}
                           {run.elapsed_ms ? ` · ${(run.elapsed_ms / 1000).toFixed(1)}s` : ""}
                         </p>
                       </div>

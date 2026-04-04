@@ -8,6 +8,7 @@ interface Run {
   run_id: string;
   event_type: EventTypeEnum;
   name?: string | null;
+  target_event?: string | null;
 }
 
 interface EditRunModalProps {
@@ -20,15 +21,17 @@ export function EditRunModal({ open, onClose, run }: EditRunModalProps) {
   const { updateRun, updateRunIsLoading, updateRunError } = useUpdateRun();
   const [eventType, setEventType] = useState<EventTypeEnum>(run.event_type);
   const [name, setName] = useState(run.name ?? "");
+  const [targetEvent, setTargetEvent] = useState(run.target_event ?? "");
 
   const handleSubmit = async () => {
     try {
-      console.log("payload", { event_type: eventType, name: name.trim() || null });
       await updateRun({
         runId: run.run_id,
         payload: {
           event_type: eventType,
           name: name.trim() || null,
+          ...(eventType === "hurdles_partial" && { target_event: targetEvent || null }),
+          ...(eventType !== "hurdles_partial" && { target_event: null }),
         },
       });
       onClose();
@@ -59,11 +62,34 @@ export function EditRunModal({ open, onClose, run }: EditRunModalProps) {
         <div className="space-y-4">
           <EventSelector
             value={eventType}
-            onChange={(v) => v && setEventType(v)}
+            onChange={(v) => {
+              if (v) {
+                setEventType(v);
+                if (v !== "hurdles_partial") setTargetEvent("");
+              }
+            }}
           />
 
+          {eventType === "hurdles_partial" && (
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-foreground">
+              </label>
+              <select
+                value={targetEvent}
+                onChange={(e) => setTargetEvent(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none"
+              >
+                <option value="">Select target event</option>
+                <option value="hurdles_60m">60m Hurdles</option>
+                <option value="hurdles_100m">100m Hurdles</option>
+                <option value="hurdles_110m">110m Hurdles</option>
+                <option value="hurdles_400m">400m Hurdles</option>
+              </select>
+            </div>
+          )}
+
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-foreground">
               Name
             </label>
             <input
@@ -78,7 +104,7 @@ export function EditRunModal({ open, onClose, run }: EditRunModalProps) {
 
         <button
           onClick={handleSubmit}
-          disabled={!eventType || updateRunIsLoading}
+          disabled={!eventType || (eventType === "hurdles_partial" && !targetEvent) || updateRunIsLoading}
           className="mt-6 w-full rounded-xl py-3.5 text-sm font-semibold transition-all disabled:opacity-40"
           style={{
             backgroundColor: "hsl(var(--primary))",
