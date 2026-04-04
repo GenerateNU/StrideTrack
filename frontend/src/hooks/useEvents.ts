@@ -5,6 +5,7 @@ const EVENT_DISPLAY_NAMES: Record<EventTypeEnum, string> = {
   sprint_100m: "100 Meter Sprint",
   sprint_200m: "200 Meter Sprint",
   sprint_400m: "400 Meter Sprint",
+  hurdles_partial: "Partial Hurdles",
   hurdles_60m: "60 Meter Hurdles",
   hurdles_110m: "110 Meter Hurdles",
   hurdles_100m: "100 Meter Hurdles",
