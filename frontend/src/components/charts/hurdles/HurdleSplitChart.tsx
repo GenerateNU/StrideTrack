@@ -76,6 +76,17 @@ export const HurdleSplitChart = ({ runId }: ChartProps) => {
     <ChartCard
       title="Hurdle Splits"
       description="Time between consecutive hurdle clearances. Low CV% indicates consistent pacing."
+      headerRight={
+        <div className="flex flex-col items-end">
+          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+            CV%
+          </span>
+          <span className="text-2xl font-bold text-foreground">
+            {cv.toFixed(1)}
+            <span className="text-sm font-medium text-muted-foreground ml-1">%</span>
+          </span>
+        </div>
+      }
     >
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
@@ -142,10 +153,6 @@ export const HurdleSplitChart = ({ runId }: ChartProps) => {
           />
         </BarChart>
       </ResponsiveContainer>
-      <div className="mt-4 bg-card border border-border rounded-lg p-4 text-center">
-        <p className="text-sm text-muted-foreground">Consistency (CV%)</p>
-        <p className="text-2xl font-bold text-foreground">{cv.toFixed(1)}%</p>
-      </div>
     </ChartCard>
   );
 };
