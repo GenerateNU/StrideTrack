@@ -221,9 +221,7 @@ class TestGetStackedBar:
 
     def test_stacked_bar_returns_200(self, test_client: TestClient) -> None:
         """Requesting stacked bar data should return 200 with a non-empty list."""
-        response = test_client.get(
-            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar"
-        )
+        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar")
 
         assert response.status_code == 200
         data = response.json()
@@ -232,9 +230,7 @@ class TestGetStackedBar:
 
     def test_stacked_bar_row_has_expected_fields(self, test_client: TestClient) -> None:
         """Each stacked bar row should contain stride_num, foot, label, gct_ms, flight_ms."""
-        response = test_client.get(
-            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar"
-        )
+        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar")
 
         assert response.status_code == 200
         row = response.json()[0]

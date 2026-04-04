@@ -127,9 +127,7 @@ async def get_hurdle_projection(
     return await service.get_hurdle_projection(run_id)
 
 
-@router.get(
-    "/{run_id}/metrics/hurdles/timeline", response_model=HurdleTimelineResponse
-)
+@router.get("/{run_id}/metrics/hurdles/timeline", response_model=HurdleTimelineResponse)
 async def get_hurdle_timeline(
     run_id: UUID,
     service: HurdleService = Depends(get_hurdle_service),

@@ -23,9 +23,7 @@ class TestGetHurdleMetrics:
     def test_hurdle_metrics_returns_200(self, test_client: TestClient) -> None:
         """Requesting hurdle metrics for the seeded hurdle run should return 200
         with a non-empty list of hurdle rows."""
-        response = test_client.get(
-            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles"
-        )
+        response = test_client.get(f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles")
 
         assert response.status_code == 200
         data = response.json()
@@ -36,9 +34,7 @@ class TestGetHurdleMetrics:
         self, test_client: TestClient
     ) -> None:
         """Each hurdle metrics row should contain the core HurdleMetricRow fields."""
-        response = test_client.get(
-            f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles"
-        )
+        response = test_client.get(f"{BASE}/{SEEDED_HURDLE_RUN_ID}/metrics/hurdles")
 
         assert response.status_code == 200
         row = response.json()[0]

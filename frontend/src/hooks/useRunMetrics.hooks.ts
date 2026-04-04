@@ -26,9 +26,7 @@ export function useRunMetrics(runId: string | null) {
     queryKey: ["run-metrics", runId],
     queryFn: async () => {
       if (!runId) return null;
-      const response = await api.get<RunMetric[]>(
-        `/runs/${runId}/metrics`
-      );
+      const response = await api.get<RunMetric[]>(`/runs/${runId}/metrics`);
       return validateResponse(response.data, z.array(runMetricSchema));
     },
     enabled: !!runId,

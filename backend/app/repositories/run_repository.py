@@ -27,7 +27,9 @@ class RunRepository:
         if not result.data:
             raise NotFoundException("Run", str(run_id))
 
-    async def verify_athlete_belongs_to_coach(self, athlete_id: UUID, coach_id: UUID) -> None:
+    async def verify_athlete_belongs_to_coach(
+        self, athlete_id: UUID, coach_id: UUID
+    ) -> None:
         """Verify an athlete belongs to the coach. Raises NotFoundException if not."""
         result = (
             await self.supabase.table("athletes")

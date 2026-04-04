@@ -16,7 +16,9 @@ class RunService:
 
     async def create_run(self, data: RunCreate) -> RunCreateResponse:
         """Create a new run."""
-        await self.repository.verify_athlete_belongs_to_coach(data.athlete_id, self.coach_id)
+        await self.repository.verify_athlete_belongs_to_coach(
+            data.athlete_id, self.coach_id
+        )
         logger.info(f"Service: Creating run for athlete {data.athlete_id}")
         run = await self.repository.create(data)
         logger.info(f"Service: Created run {run.run_id}")
