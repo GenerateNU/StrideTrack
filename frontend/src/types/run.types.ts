@@ -8,6 +8,7 @@ export const runResponseSchema = z.object({
   target_event: z.string().nullable().optional(),
   elapsed_ms: z.number(),
   created_at: z.string(),
+  name: z.string().nullable().optional(),
 });
 
 export type Run = z.infer<typeof runResponseSchema>;
@@ -26,6 +27,7 @@ export const createRunResponseSchema = z.object({
   target_event: z.string().nullable().optional(),
   elapsed_ms: z.number(),
   created_at: z.string(),
+  name: z.string().nullable().optional(),
 });
 
 export interface CreateRunPayload {

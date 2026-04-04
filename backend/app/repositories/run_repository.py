@@ -4,7 +4,13 @@ from uuid import UUID
 from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
-from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta, RunResponse, RunUpdate
+from app.schemas.run_schemas import (
+    RunCreate,
+    RunCreateResponse,
+    RunMeta,
+    RunResponse,
+    RunUpdate,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -96,12 +102,15 @@ class RunRepository:
         response = (
             await self.supabase.table("run")
             .select(
-                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at, athletes!inner(coach_id)"
+                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at, name, athletes!inner(coach_id)"
             )
             .eq("athletes.coach_id", str(coach_id))
             .order("created_at", desc=True)
             .execute()
         )
+
+        logger.info(f"Repository: Found {len(response.data)} runs")
+        return [RunCreateResponse(**run) for run in response.data]
 
         logger.info(f"Repository: Found {len(response.data)} runs")
         return [RunCreateResponse(**run) for run in response.data]
@@ -112,7 +121,7 @@ class RunRepository:
         response = (
             await self.supabase.table("run")
             .select(
-                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at"
+                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at, name"
             )
             .eq("athlete_id", str(athlete_id))
             .order("created_at", desc=True)
@@ -139,12 +148,14 @@ class RunRepository:
         logger.info(f"Repository: Updated run {run_id}")
         return RunCreateResponse(**response.data[0])
 
-
     async def delete(self, run_id: UUID) -> None:
         """Delete a run."""
         logger.info(f"Repository: Deleting run {run_id}")
         response = (
-            await self.supabase.table("run").delete().eq("run_id", str(run_id)).execute()
+            await self.supabase.table("run")
+            .delete()
+            .eq("run_id", str(run_id))
+            .execute()
         )
         if not response.data:
             logger.warning(f"Repository: Run not found for deletion {run_id}")

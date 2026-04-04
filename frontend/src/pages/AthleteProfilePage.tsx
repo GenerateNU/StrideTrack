@@ -6,6 +6,8 @@ import { QueryLoading } from "@/components/ui/QueryLoading";
 import { QueryError } from "@/components/ui/QueryError";
 import { DeleteConfirmModal } from "@/components/ui/DeleteConfirmModal";
 import { EditAthleteModal } from "@/components/athletes/EditAthleteModal";
+import { EditRunModal } from "@/components/runs/EditRunModal";
+import type { EventTypeEnum } from "@/types/event.types";
 import { ArrowLeft, Activity, Calendar, Pencil, Trash2 } from "lucide-react";
 import EventHistoryFilterBar from "@/components/charts/history/EventHistoryFilterBar";
 import { EventHistoryChart } from "@/components/charts/history/EventHistoryChart";
@@ -32,6 +34,7 @@ export default function AthleteProfilePage() {
   const [editAthleteOpen, setEditAthleteOpen] = useState(false);
   const [deleteAthleteOpen, setDeleteAthleteOpen] = useState(false);
   const [deleteRunId, setDeleteRunId] = useState<string | null>(null);
+  const [editRun, setEditRun] = useState<(typeof athleteRuns)[0] | null>(null);
 
   const athlete = athletes.find((a) => a.athlete_id === athleteId);
   const athleteRuns = useMemo(
@@ -222,13 +225,12 @@ export default function AthleteProfilePage() {
                       </div>
                       <div>
                         <span className="text-sm font-medium text-foreground">
-                          {run.event_type.replace("_", " ")}
+                          {run.name ?? run.event_type.replace(/_/g, " ")}
                         </span>
-                        {run.elapsed_ms && (
-                          <p className="text-[10px] text-muted-foreground">
-                            {(run.elapsed_ms / 1000).toFixed(1)}s
-                          </p>
-                        )}
+                        <p className="text-[10px] text-muted-foreground">
+                          {run.event_type.replace(/_/g, " ")}
+                          {run.elapsed_ms ? ` · ${(run.elapsed_ms / 1000).toFixed(1)}s` : ""}
+                        </p>
                       </div>
                     </button>
                     <div className="flex items-center gap-2">
@@ -238,6 +240,12 @@ export default function AthleteProfilePage() {
                           minute: "2-digit",
                         })}
                       </span>
+                      <button
+                        onClick={() => setEditRun(run)}
+                        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
                       <button
                         onClick={() => setDeleteRunId(run.run_id)}
                         className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:text-destructive hover:bg-secondary"
@@ -276,6 +284,14 @@ export default function AthleteProfilePage() {
         onClose={() => setEditAthleteOpen(false)}
         athlete={athlete}
       />
+
+      {editRun && (
+        <EditRunModal
+          open={!!editRun}
+          onClose={() => setEditRun(null)}
+          run={{ ...editRun, event_type: editRun.event_type as EventTypeEnum }}
+        />
+      )}
 
       <DeleteConfirmModal
         open={deleteAthleteOpen}

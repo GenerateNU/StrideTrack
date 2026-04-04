@@ -58,7 +58,7 @@ export function useUpdateRun() {
       payload,
     }: {
       runId: string;
-      payload: Partial<Run>;
+      payload: Record<string, unknown>;
     }) => {
       const response = await api.patch(`/runs/${runId}`, payload);
       return response.data;
