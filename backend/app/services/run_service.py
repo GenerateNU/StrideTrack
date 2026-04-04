@@ -2,7 +2,7 @@ import logging
 from uuid import UUID
 
 from app.repositories.run_repository import RunRepository
-from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta
+from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta, RunUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -46,3 +46,18 @@ class RunService:
         meta = await self.repository.get_run_meta(run_id)
         logger.info(f"Service: Retrieved metadata for run {run_id}")
         return meta
+
+    async def update_run(self, run_id: UUID, data: RunUpdate) -> RunCreateResponse:
+        """Update a run."""
+        await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
+        logger.info(f"Service: Updating run {run_id}")
+        run = await self.repository.update(run_id, data)
+        logger.info(f"Service: Updated run {run_id}")
+        return run
+
+    async def delete_run(self, run_id: UUID) -> None:
+        """Delete a run."""
+        await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
+        logger.info(f"Service: Deleting run {run_id}")
+        await self.repository.delete(run_id)
+        logger.info(f"Service: Deleted run {run_id}")

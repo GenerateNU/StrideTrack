@@ -11,7 +11,9 @@ export default function RunAnalysisPage() {
   const navigate = useNavigate();
 
   const { runMeta } = useGetRunMeta(runId);
-  const charts = getChartsForEventType(runMeta?.event_type ?? "default");
+  const charts = runMeta?.event_type
+    ? getChartsForEventType(runMeta.event_type)
+    : [];
 
   return (
     <div className="flex h-full flex-col pt-4">

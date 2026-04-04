@@ -1,6 +1,6 @@
 import type { EventTypeEnum, EventOption } from "../types/event.types";
 
-const EVENT_DISPLAY_NAMES: Record<EventTypeEnum, string> = {
+export const EVENT_DISPLAY_NAMES: Record<EventTypeEnum, string> = {
   sprint_60m: "60 Meter Sprint",
   sprint_100m: "100 Meter Sprint",
   sprint_200m: "200 Meter Sprint",
