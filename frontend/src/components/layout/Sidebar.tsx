@@ -4,8 +4,8 @@ import { Home, Circle, Clock, UserCircle } from "lucide-react";
 import { useAuth } from "@/context/auth.context";
 import { useTheme } from "@/hooks/useTheme.hooks";
 import { ProfileMenu } from "./ProfileMenu";
-import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
-import logo from "@/assets/stridetrack_text.png";
+import FlyingFoot from "@/assets/flying_foot.svg?react";
+import StrideTrackText from "@/assets/stridetrack_text.svg?react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -17,7 +17,6 @@ export function Sidebar() {
   const { logout, profile } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [addAthleteOpen, setAddAthleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,7 +33,10 @@ export function Sidebar() {
     <>
       <aside className="fixed left-0 top-0 z-40 hidden h-screen w-56 flex-col border-r border-border bg-card md:flex">
         <div className="px-5 pt-10 pb-6">
-          <img src={logo} alt="StrideTrack" className="h-8 w-auto" />
+          <div className="flex items-center gap-1 text-foreground">
+            <FlyingFoot className="h-8 w-auto" />
+            <StrideTrackText className="h-7 w-auto" />
+          </div>
         </div>
 
         <nav className="flex-1 px-3 py-2">
@@ -88,10 +90,6 @@ export function Sidebar() {
               theme={theme}
               toggleTheme={toggleTheme}
               className="absolute bottom-full left-2 right-2 mb-2"
-              onAddAthlete={() => {
-                setMenuOpen(false);
-                setAddAthleteOpen(true);
-              }}
               onLogout={() => {
                 setMenuOpen(false);
                 logout();
@@ -100,11 +98,6 @@ export function Sidebar() {
           )}
         </div>
       </aside>
-
-      <AddAthleteModal
-        open={addAthleteOpen}
-        onClose={() => setAddAthleteOpen(false)}
-      />
     </>
   );
 }

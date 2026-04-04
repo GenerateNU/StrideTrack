@@ -9,12 +9,14 @@ interface ChartCardProps {
 
 function SectionHeader({ title }: { title: string }) {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex items-center gap-2">
       <div
-        className="h-5 w-1 rounded-full"
+        className="h-4 w-1 rounded-full sm:h-5"
         style={{ backgroundColor: "hsl(var(--primary))" }}
       />
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <h3 className="text-xs font-semibold text-foreground sm:text-sm">
+        {title}
+      </h3>
     </div>
   );
 }
@@ -26,13 +28,13 @@ export const ChartCard = ({
   children,
 }: ChartCardProps) => {
   return (
-    <div className="relative flex-1 rounded-2xl border border-border bg-card p-5 shadow-sm shadow-foreground/[0.02]">
+    <div className="relative flex-1 rounded-xl border border-border bg-card p-3 shadow-sm shadow-foreground/[0.02] sm:rounded-2xl sm:p-5">
       <GraphInfoCard description={description} />
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4 sm:mb-6">
         <SectionHeader title={title} />
-        {headerRight && <div className="mr-8">{headerRight}</div>}
+        {headerRight && <div className="mr-6 sm:mr-8">{headerRight}</div>}
       </div>
-      <div>{children}</div>
+      <div className="-mx-2 sm:mx-0">{children}</div>
     </div>
   );
 };

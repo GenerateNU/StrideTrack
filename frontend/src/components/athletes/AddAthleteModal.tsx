@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { X } from "lucide-react";
 import { useCreateAthlete } from "@/hooks/useAthletes.hooks";
+import { X } from "lucide-react";
+import { useState } from "react";
 
 interface AddAthleteModalProps {
   open: boolean;
@@ -40,7 +40,7 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-foreground/20 backdrop-blur-sm"
+        className="absolute -inset-10 bg-foreground/20"
         onClick={resetAndClose}
       />
       <div className="relative z-10 mx-4 w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-xl">
