@@ -26,6 +26,7 @@ from app.utils.hurdle_chart_transformations import (
     transform_takeoff_ft,
     transform_takeoff_gct,
 )
+from app.utils.hurdle_constants import EXPECTED_HURDLE_COUNTS
 from app.utils.hurdle_metrics import transform_stride_cycles_to_hurdle_metrics
 from app.utils.hurdle_projection import project_hurdle_race
 
@@ -44,9 +45,16 @@ class HurdleService:
         await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
 
         steps = await self.repository.get_hurdle_metrics(run_id)
+        event_type = await self.repository.get_run_event_type(run_id)
+        expected_count = EXPECTED_HURDLE_COUNTS.get(event_type) if event_type else None
+        logger.info(
+            f"Service: event_type={event_type}, expected_count={expected_count}"
+        )
 
         df = pd.DataFrame([s.model_dump() for s in steps])
-        hurdle_df = transform_stride_cycles_to_hurdle_metrics(df)
+        hurdle_df = transform_stride_cycles_to_hurdle_metrics(
+            df, expected_count=expected_count
+        )
         rows = hurdle_df.to_dict(orient="records")
 
         # Sanitize at the dict level so Pydantic sees Python None, not nan.
