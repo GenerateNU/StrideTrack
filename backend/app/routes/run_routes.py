@@ -8,7 +8,7 @@ from app.core.auth import get_current_coach
 from app.core.supabase import get_async_supabase
 from app.repositories.run_repository import RunRepository
 from app.schemas.coach_schemas import Coach
-from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta
+from app.schemas.run_schemas import RunCreate, RunCreateResponse, RunMeta, RunUpdate
 from app.services.run_service import RunService
 
 logger = logging.getLogger(__name__)
@@ -59,3 +59,23 @@ async def get_run_metadata(
     """Get a specific run's metadata."""
     logger.info(f"Route: GET /runs/{run_id}/metadata")
     return await service.get_meta_by_run_id(run_id)
+
+
+@router.patch("/{run_id}", response_model=RunCreateResponse)
+async def update_run(
+    run_id: UUID,
+    data: RunUpdate,
+    service: RunService = Depends(get_run_service),
+) -> RunCreateResponse:
+    """Update a run."""
+    logger.info(f"Route: PATCH /runs/{run_id}")
+    return await service.update_run(run_id, data)
+
+
+@router.delete("/{run_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_run(
+    run_id: UUID, service: RunService = Depends(get_run_service)
+) -> None:
+    """Delete a run."""
+    logger.info(f"Route: DELETE /runs/{run_id}")
+    await service.delete_run(run_id)
