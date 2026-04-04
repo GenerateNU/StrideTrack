@@ -8,6 +8,7 @@ import { ArrowLeft, Activity, Calendar } from "lucide-react";
 import EventHistoryFilterBar from "@/components/charts/history/EventHistoryFilterBar";
 import { EventHistoryChart } from "@/components/charts/history/EventHistoryChart";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
+import { AverageReactionTimeCard } from "@/components/charts/reaction_time/AverageReactionTimeCard";
 
 function nameToHue(name: string): number {
   let hash = 0;
@@ -148,6 +149,7 @@ export default function AthleteProfilePage() {
               </div>
               <div className="text-xs text-muted-foreground">Event Types</div>
             </div>
+            <AverageReactionTimeCard athleteId={athleteId!} />
           </div>
 
           {/* Latest run */}

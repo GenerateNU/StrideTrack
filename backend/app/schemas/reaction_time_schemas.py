@@ -12,3 +12,11 @@ class ReactionTimeResponse(BaseModel):
     onset_timestamp_ms: float
     zone: str
     zone_description: str
+
+
+class AverageReactionTimeResponse(BaseModel):
+    athlete_id: str
+    average_reaction_time_ms: float
+    run_count: int
+    zone: str
+    zone_description: str
