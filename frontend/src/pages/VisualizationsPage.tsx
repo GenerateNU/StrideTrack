@@ -37,7 +37,7 @@ import { TotalStepsKPI } from "@/components/charts/universal/TotalStepsKPI";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
 import { useState } from "react";
 
-const HARDCODED_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0";
+const HARDCODED_RUN_ID = "8fef5e24-b871-4fd7-afd4-190a1f96e42f";
 const HARDCODED_BOSCO_RUN_ID = "b1a2c3d4-5678-9abc-def0-111111111111";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
 const HARDCODED_PARTIAL_RUN_ID = "22222222-2222-2222-2222-222222222222";

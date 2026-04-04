@@ -46,16 +46,12 @@ export const HurdleSplitChart = ({ runId }: ChartProps) => {
     );
   if (!hurdleSplits) return null;
 
-  // Filter out the last hurdle (null split) for display and stats
   const validSplits = hurdleSplits.filter(
     (s) => s.hurdle_split_ms != null
   ) as Array<{ hurdle_num: number; hurdle_split_ms: number }>;
 
-  if (validSplits.length === 0) {
-    return null;
-  }
+  if (validSplits.length === 0) return null;
 
-  // Compute summary stats from the flat list
   const splitValues = validSplits.map((s) => s.hurdle_split_ms);
   const mean = splitValues.reduce((a, b) => a + b, 0) / splitValues.length;
   const stdDev = Math.sqrt(
@@ -64,13 +60,9 @@ export const HurdleSplitChart = ({ runId }: ChartProps) => {
   );
   const cv = (stdDev / mean) * 100;
 
-  const dataMin = Math.min(...splitValues);
-  const dataMax = Math.max(...splitValues);
-  const range = dataMax - dataMin || 1;
-  const yDomain: [number, number] = [
-    Math.max(0, dataMin - range * 0.2),
-    dataMax + range * 0.1,
-  ];
+  const yMin = Math.min(...splitValues);
+  const yMax = Math.max(...splitValues);
+  const yPadding = (yMax - yMin) * 0.2 || 1;
 
   return (
     <ChartCard
@@ -78,12 +70,12 @@ export const HurdleSplitChart = ({ runId }: ChartProps) => {
       description="Time between consecutive hurdle clearances. Low CV% indicates consistent pacing."
       headerRight={
         <div className="flex flex-col items-end">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide sm:text-xs">
             CV%
           </span>
-          <span className="text-2xl font-bold text-foreground">
+          <span className="text-base font-bold text-foreground sm:text-2xl">
             {cv.toFixed(1)}
-            <span className="text-sm font-medium text-muted-foreground ml-1">
+            <span className="text-[10px] font-medium text-muted-foreground ml-0.5 sm:text-sm sm:ml-1">
               %
             </span>
           </span>
@@ -91,27 +83,26 @@ export const HurdleSplitChart = ({ runId }: ChartProps) => {
       }
     >
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart
-          data={validSplits}
-          margin={{ top: 20, right: 60, left: 20, bottom: 40 }}
-        >
-          <CartesianGrid vertical={false} stroke={chartColors.border} />
+        <BarChart data={validSplits}>
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="hurdle_num"
             label={{
               value: "Hurdle Number",
               position: "insideBottom",
-              offset: -30,
+              offset: -5,
               style: {
                 fill: chartColors.mutedForeground,
                 fontSize: 10,
                 textAnchor: "middle",
               },
             }}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <YAxis
-            domain={yDomain}
+            domain={[
+              Math.max(0, Math.floor((yMin - yPadding) / 10) * 10),
+              Math.ceil((yMax + yPadding) / 10) * 10,
+            ]}
             label={{
               value: "Split Time (ms)",
               angle: -90,
@@ -123,7 +114,6 @@ export const HurdleSplitChart = ({ runId }: ChartProps) => {
                 textAnchor: "middle",
               },
             }}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <Tooltip
             contentStyle={{
@@ -139,12 +129,13 @@ export const HurdleSplitChart = ({ runId }: ChartProps) => {
           <ReferenceLine
             y={mean}
             stroke={chartColors.primary}
-            strokeDasharray="4 4"
+            strokeDasharray="6 3"
+            strokeWidth={1.5}
             label={{
               value: "Mean",
               position: "right",
               fill: chartColors.primary,
-              fontSize: 11,
+              fontSize: 10,
             }}
           />
           <Bar

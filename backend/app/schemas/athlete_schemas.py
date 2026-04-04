@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 
 
 class AthleteCreate(BaseModel):
-    coach_id: UUID
     name: str = Field(..., min_length=1, max_length=255)
     height_in: float | None = Field(None, gt=0)
     weight_lbs: float | None = Field(None, gt=0)

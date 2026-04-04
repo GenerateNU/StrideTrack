@@ -42,13 +42,10 @@ export const TakeoffFtChart = ({ runId }: ChartProps) => {
   if (!takeoffFt) return null;
 
   const values = takeoffFt.map((d) => d.takeoff_ft_ms);
-  const dataMin = Math.min(...values);
-  const dataMax = Math.max(...values);
-  const range = dataMax - dataMin || 1;
-  const yDomain: [number, number] = [
-    Math.max(0, dataMin - range * 0.2),
-    dataMax + range * 0.1,
-  ];
+
+  const yMin = Math.min(...values);
+  const yMax = Math.max(...values);
+  const yPadding = (yMax - yMin) * 0.2 || 1;
 
   return (
     <ChartCard
@@ -56,27 +53,26 @@ export const TakeoffFtChart = ({ runId }: ChartProps) => {
       description="Flight time during the hurdle clearance phase at each hurdle."
     >
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart
-          data={takeoffFt}
-          margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-        >
-          <CartesianGrid vertical={false} stroke={chartColors.border} />
+        <BarChart data={takeoffFt}>
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="hurdle_num"
             label={{
               value: "Hurdle Number",
               position: "insideBottom",
-              offset: -30,
+              offset: -5,
               style: {
                 fill: chartColors.mutedForeground,
                 fontSize: 10,
                 textAnchor: "middle",
               },
             }}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <YAxis
-            domain={yDomain}
+            domain={[
+              Math.max(0, Math.floor((yMin - yPadding) / 10) * 10),
+              Math.ceil((yMax + yPadding) / 10) * 10,
+            ]}
             label={{
               value: "Flight Time (ms)",
               angle: -90,
@@ -88,7 +84,6 @@ export const TakeoffFtChart = ({ runId }: ChartProps) => {
                 textAnchor: "middle",
               },
             }}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <Tooltip
             contentStyle={{
