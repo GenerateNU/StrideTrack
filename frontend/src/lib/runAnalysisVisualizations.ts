@@ -25,6 +25,7 @@ import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
 import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
 import { JumpHeightChart } from "@/components/charts/bosco/JumpHeightChart";
 import { RsiChart } from "@/components/charts/bosco/RsiChart";
+import { HurdleTimelineChart } from "@/components/charts/hurdles/HurdleTimelineChart";
 
 export type VisualizationConfig = ComponentType<ChartProps>;
 
@@ -51,6 +52,7 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     SplitScoreChart,
     ProjectedFinishKPI,
     ProjectedSplitChart,
+    HurdleTimelineChart,
   ],
   bosco: [
     ...DEFAULT_CHARTS,

@@ -415,3 +415,67 @@ class TestIndividualMetricAccessors:
         assert len(calc_landing_gct_ms(steps_df)) == expected_len
         assert len(calc_takeoff_ft_ms(steps_df)) == expected_len
         assert len(calc_gct_increase_hurdle_to_hurdle_pct(steps_df)) == expected_len
+
+
+@pytest.mark.unit
+class TestTopNSelection:
+    """Tests for expected_count top-N gap selection behavior."""
+
+    @pytest.fixture
+    def steps_with_extra_gaps(self) -> pd.DataFrame:
+        """A DataFrame with 3 gaps: two short (300ms) and one long (600ms).
+        With expected_count=1, only the longest should be kept."""
+        return pd.DataFrame(
+            {
+                "foot": ["left", "right", "left", "right", "left", "right", "left"],
+                "ic_time": [0, 210, 700, 910, 1400, 1610, 2300],
+                "to_time": [200, 400, 900, 1100, 1600, 1800, 2500],
+                "gct_ms": [200, 190, 200, 190, 200, 190, 200],
+            }
+        )
+
+    def test_top_n_selects_longest_gaps(
+        self, steps_with_extra_gaps: pd.DataFrame
+    ) -> None:
+        """With expected_count=1, only the longest gap should be returned."""
+        result = transform_stride_cycles_to_hurdle_metrics(
+            steps_with_extra_gaps, expected_count=1
+        )
+        assert len(result) == 1
+        assert result.iloc[0]["takeoff_ft_ms"] == 600
+
+    def test_top_n_restores_chronological_order(
+        self, steps_with_extra_gaps: pd.DataFrame
+    ) -> None:
+        """With expected_count=2, the two longest gaps should be in time order."""
+        result = transform_stride_cycles_to_hurdle_metrics(
+            steps_with_extra_gaps, expected_count=2
+        )
+        assert len(result) == 2
+        assert (
+            result.iloc[0]["clearance_start_ms"] < result.iloc[1]["clearance_start_ms"]
+        )
+
+    def test_expected_count_equal_to_gaps_does_nothing(
+        self, steps_df: pd.DataFrame
+    ) -> None:
+        """When expected_count equals the number of detected gaps, result is unchanged."""
+        result_without = transform_stride_cycles_to_hurdle_metrics(steps_df)
+        result_with = transform_stride_cycles_to_hurdle_metrics(
+            steps_df, expected_count=2
+        )
+        assert len(result_with) == len(result_without)
+
+    def test_expected_count_none_does_nothing(self, steps_df: pd.DataFrame) -> None:
+        """When expected_count is None, all gaps above threshold are kept."""
+        result = transform_stride_cycles_to_hurdle_metrics(
+            steps_df, expected_count=None
+        )
+        assert len(result) == 2
+
+    def test_expected_count_greater_than_gaps_does_nothing(
+        self, steps_df: pd.DataFrame
+    ) -> None:
+        """When expected_count exceeds detected gaps, all gaps are kept."""
+        result = transform_stride_cycles_to_hurdle_metrics(steps_df, expected_count=10)
+        assert len(result) == 2
