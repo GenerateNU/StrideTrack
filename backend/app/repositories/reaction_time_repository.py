@@ -19,7 +19,7 @@ class ReactionTimeRepository:
         logger.info(f"Repository: Fetching reaction time metrics for run {run_id}")
         response = (
             await self.supabase.table("run_metrics")
-            .select("ic_time, gct_ms")
+            .select("ic_time, to_time, gct_ms")
             .eq("run_id", str(run_id))
             .order("ic_time")
             .execute()
@@ -54,7 +54,7 @@ class ReactionTimeRepository:
         # Fetch metrics for all those runs
         metrics_response = (
             await self.supabase.table("run_metrics")
-            .select("run_id, ic_time, gct_ms")
+            .select("run_id, ic_time, to_time, gct_ms")
             .in_("run_id", run_ids)
             .order("ic_time")
             .execute()
@@ -65,6 +65,10 @@ class ReactionTimeRepository:
             rid = row["run_id"]
             if rid in result:
                 result[rid].append(
-                    ReactionTimeRunMetric(ic_time=row["ic_time"], gct_ms=row["gct_ms"])
+                    ReactionTimeRunMetric(
+                        ic_time=row["ic_time"],
+                        to_time=row["to_time"],
+                        gct_ms=row["gct_ms"],
+                    )
                 )
         return result

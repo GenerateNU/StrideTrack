@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 class ReactionTimeRunMetric(BaseModel):
     ic_time: float
+    to_time: float
     gct_ms: float
 
 

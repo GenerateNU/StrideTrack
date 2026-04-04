@@ -30,21 +30,12 @@ class ReactionTimeService:
 
         metrics = await self.repository.get_run_metrics(run_id)
 
-        # Stimulus is the start of the run (ic_time = 0)
-        stimulus_ms = 0.0
+        if not metrics:
+            raise ValueError("No metrics found for this run.")
 
-        onset = next(
-            (m for m in metrics if m.gct_ms >= FORCE_THRESHOLD_GCT_MS),
-            None,
-        )
-
-        if onset is None:
-            raise ValueError(
-                f"No GCT onset detected above {FORCE_THRESHOLD_GCT_MS}ms threshold."
-            )
-
-        onset_timestamp_ms = float(onset.ic_time)
-        reaction_time_ms = onset_timestamp_ms - stimulus_ms
+        # Reaction time = to_time of the first stride (when foot first leaves ground)
+        first_stride = metrics[0]
+        reaction_time_ms = float(first_stride.to_time)
         zone, zone_description = _classify_zone(reaction_time_ms)
 
         logger.info(f"Service: Reaction time = {reaction_time_ms:.2f}ms, zone = {zone}")
@@ -52,7 +43,7 @@ class ReactionTimeService:
         return ReactionTimeResponse(
             run_id=str(run_id),
             reaction_time_ms=round(reaction_time_ms, 2),
-            onset_timestamp_ms=onset_timestamp_ms,
+            onset_timestamp_ms=float(first_stride.to_time),
             zone=zone,
             zone_description=zone_description,
         )
@@ -67,13 +58,9 @@ class ReactionTimeService:
         all_metrics = await self.repository.get_all_run_metrics_for_athlete(athlete_id)
 
         reaction_times: list[float] = []
-        for run_id, metrics in all_metrics.items():
-            onset = next(
-                (m for m in metrics if m.gct_ms >= FORCE_THRESHOLD_GCT_MS),
-                None,
-            )
-            if onset is not None:
-                reaction_times.append(float(onset.ic_time))
+        for metrics in all_metrics.values():
+            if metrics:
+                reaction_times.append(float(metrics[0].to_time))
 
         if not reaction_times:
             raise ValueError("No valid reaction time data found for this athlete.")
