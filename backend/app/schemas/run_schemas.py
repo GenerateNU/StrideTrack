@@ -16,6 +16,12 @@ class RunResponse(BaseModel):
     step_time_ms: int = Field(..., gt=0)
 
 
+class RunUpdate(BaseModel):
+    event_type: EventType | None = None
+    name: str | None = Field(None, min_length=1, max_length=100)
+    target_event: str | None = None
+
+
 class LROverlayData(BaseModel):
     stride_num: int
     left: float | None = None
@@ -69,6 +75,7 @@ class RunCreateResponse(BaseModel):
     target_event: str | None = None
     elapsed_ms: int
     created_at: str
+    name: str | None = None
 
 
 class RunMeta(BaseModel):
