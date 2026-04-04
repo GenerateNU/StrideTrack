@@ -1,0 +1,1 @@
+SELECT COUNT(*) FROM RUN WHERE event_type IN ('long_jump', 'triple_jump');

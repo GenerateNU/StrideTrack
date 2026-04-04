@@ -14,9 +14,18 @@ import { SplitScoreChart } from "@/components/charts/hurdles/SplitScoreChart";
 import { StepsBetweenHurdlesChart } from "@/components/charts/hurdles/StepsBetweenHurdlesChart";
 import { TakeoffFtChart } from "@/components/charts/hurdles/TakeoffFtChart";
 import { TakeoffGctChart } from "@/components/charts/hurdles/TakeoffGctChart";
+import { GraphInfoCard } from "@/components/charts/GraphInfoCard";
+import { ApproachProfileChart } from "@/components/charts/long_jump/ApproachProfileChart";
+import { JumpFlightTimeCard } from "@/components/charts/long_jump/JumpFlightTimeCard";
+import { LastStepGctCard } from "@/components/charts/long_jump/LastStepGctCard";
+import { LjFlightTimeChart } from "@/components/charts/long_jump/LjFlightTimeChart";
+import { LjGctChart } from "@/components/charts/long_jump/LjGctChart";
 import { ReactionTimeCard } from "@/components/charts/reaction-time/ReactionTimeCard";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
+import { ContactTimeEfficiencyCard } from "@/components/charts/triple_jump/ContactTimeEfficiencyCard";
+import { PhaseRatioChart } from "@/components/charts/triple_jump/PhaseRatioChart";
+import { TjPhaseTimelineChart } from "@/components/charts/triple_jump/TjPhaseTimelineChart";
 import { FlightTimeChart } from "@/components/charts/universal/FlightTimeChart";
 import { FTAsymmetryKPI } from "@/components/charts/universal/FTAsymmetryKPI";
 import { GCTAsymmetryKPI } from "@/components/charts/universal/GCTAsymmetryKPI";
@@ -33,6 +42,8 @@ const HARDCODED_BOSCO_RUN_ID = "b1a2c3d4-5678-9abc-def0-111111111111";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
 const HARDCODED_PARTIAL_RUN_ID = "22222222-2222-2222-2222-222222222222";
 const HARDCODED_RT_RUN_ID = "cccccccc-0001-4000-8000-000000000001";
+const HARDCODED_LJ_RUN_ID = "aaaaaaaa-0001-4000-8000-000000000001";
+const HARDCODED_TJ_RUN_ID = "bbbbbbbb-0001-4000-8000-000000000001";
 
 export default function VisualizationsPage() {
   const HARDCODED_ATHLETE_ID = "00000000-0000-0000-0000-000000000003";
@@ -45,7 +56,6 @@ export default function VisualizationsPage() {
         <h1 className="text-3xl font-bold mb-8 text-foreground">
           Performance Metrics
         </h1>
-
         <div className="space-y-8">
           {/* Universal Metrics */}
           <h2 className="text-2xl font-bold text-foreground">
@@ -78,6 +88,58 @@ export default function VisualizationsPage() {
           <SplitScoreChart runId={HARDCODED_HURDLE_RUN_ID} />
           <ProjectedFinishKPI runId={HARDCODED_PARTIAL_RUN_ID} />
           <ProjectedSplitChart runId={HARDCODED_PARTIAL_RUN_ID} />
+
+          {/* Long Jump Metrics */}
+          <h2 className="text-2xl font-bold text-foreground">
+            Long Jump Metrics
+          </h2>
+          <div className="flex gap-4 flex-wrap">
+            <LastStepGctCard />
+            <JumpFlightTimeCard />
+          </div>
+          <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+            <GraphInfoCard description="Line chart of GCT across all approach steps, with the final 3 steps shaded. An effective approach shows progressively decreasing GCT into takeoff, reflecting acceleration and increasing reactivity as the athlete attacks the board. Dot colors indicate phase: yellow = antepenultimate, red = penultimate, green = takeoff." />
+            <h3 className="text-xl font-bold mb-3 text-primary">
+              Approach Profile
+            </h3>
+            <ApproachProfileChart runId={HARDCODED_LJ_RUN_ID} />
+          </div>
+          <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+            <GraphInfoCard description="Per-foot GCT across every approach step, with the final 3 steps highlighted. GCT should decrease sharply into takeoff. Allows coaches to identify foot asymmetry in the critical final steps and assess how quickly the athlete transitions from approach to board contact." />
+            <h3 className="text-xl font-bold mb-3 text-primary">
+              Ground Contact Time (GCT) — Left vs Right Foot
+            </h3>
+            <LjGctChart runId={HARDCODED_LJ_RUN_ID} />
+          </div>
+          <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+            <GraphInfoCard description="Per-foot flight time across the approach with emphasis on the takeoff step. A sharp spike in flight time at the final step confirms a powerful, well-timed board contact. Left/right comparison helps detect any asymmetry in propulsive output." />
+            <h3 className="text-xl font-bold mb-3 text-primary">
+              Flight Time (FT) — Left vs Right Foot
+            </h3>
+            <LjFlightTimeChart runId={HARDCODED_LJ_RUN_ID} />
+          </div>
+
+          {/* Triple Jump Metrics */}
+          <h2 className="text-2xl font-bold text-foreground">
+            Triple Jump Metrics
+          </h2>
+          <div className="flex gap-4 flex-wrap">
+            <ContactTimeEfficiencyCard />
+          </div>
+          <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+            <GraphInfoCard description="Stacked bar showing how total flight time is distributed across the three phases. The ideal ratio is approximately 35:30:35 (Hop:Step:Jump). A dominant hop phase often means energy is wasted early; a weak jump phase suggests technical breakdown in the final takeoff." />
+            <h3 className="text-xl font-bold mb-3 text-primary">
+              Phase Ratio — Hop : Step : Jump
+            </h3>
+            <PhaseRatioChart runId={HARDCODED_TJ_RUN_ID} />
+          </div>
+          <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
+            <GraphInfoCard description="Dual timeline showing GCT and flight time per step across the full approach and all three jump phases, annotated with phase labels (Hop, Step, Jump). Helps coaches see how contact and flight mechanics evolve from the approach into each phase and whether the athlete maintains consistent rhythm across all three." />
+            <h3 className="text-xl font-bold mb-3 text-primary">
+              GCT & Flight Time Timeline — Phase Labels
+            </h3>
+            <TjPhaseTimelineChart runId={HARDCODED_TJ_RUN_ID} />
+          </div>
 
           {/* Event History */}
           <EventHistoryFilterBar
