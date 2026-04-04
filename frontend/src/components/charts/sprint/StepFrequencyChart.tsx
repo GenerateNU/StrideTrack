@@ -17,7 +17,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { CategoricalChartState } from "recharts/types/chart/types";
 
 export const StepFrequencyChart = ({ runId }: ChartProps) => {
   const {
@@ -30,7 +29,7 @@ export const StepFrequencyChart = ({ runId }: ChartProps) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((state: CategoricalChartState) => {
+  const handleMouseMove = useCallback((state: any) => {
     if (state?.activeTooltipIndex != null) {
       setActiveIndex(state.activeTooltipIndex);
     }

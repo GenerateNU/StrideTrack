@@ -14,7 +14,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import type { CategoricalChartState } from "recharts/types/chart/types";
 
 interface LROverlayLineChartProps {
   runId: string;
@@ -31,7 +30,7 @@ export const LROverlayLineChart = ({
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((state: CategoricalChartState) => {
+  const handleMouseMove = useCallback((state: any) => {
     if (state?.activeTooltipIndex != null) {
       setActiveIndex(state.activeTooltipIndex);
     }
