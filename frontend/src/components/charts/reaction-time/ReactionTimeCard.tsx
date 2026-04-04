@@ -1,4 +1,6 @@
 import { useReactionTimeMetrics } from "@/hooks/useReactionTimeMetrics.hooks";
+import { QueryLoading } from "@/components/ui/QueryLoading";
+import { QueryError } from "@/components/ui/QueryError";
 
 interface ReactionTimeCardProps {
   runId: string;
@@ -30,9 +32,25 @@ function getZoneStyles(zone: string | undefined): {
 }
 
 export const ReactionTimeCard = ({ runId }: ReactionTimeCardProps) => {
-  const { rtMetrics } = useReactionTimeMetrics(runId);
-  const value = rtMetrics?.reaction_time_ms;
-  const styles = getZoneStyles(rtMetrics?.zone);
+  const {
+    reactionTime,
+    reactionTimeIsLoading,
+    reactionTimeError,
+    reactionTimeRefetch,
+  } = useReactionTimeMetrics(runId);
+
+  if (reactionTimeIsLoading) return <QueryLoading />;
+  if (reactionTimeError)
+    return (
+      <QueryError
+        error={reactionTimeError}
+        refetch={() => void reactionTimeRefetch()}
+      />
+    );
+  if (!reactionTime) return null;
+
+  const value = reactionTime.reaction_time_ms;
+  const styles = getZoneStyles(reactionTime.zone);
 
   return (
     <div className="flex flex-col items-center justify-center h-[300px] gap-2">
@@ -54,7 +72,7 @@ export const ReactionTimeCard = ({ runId }: ReactionTimeCardProps) => {
         <span className="text-red-500">● &gt;300ms</span>
       </div>
       <span className="text-xs text-muted-foreground mt-2 text-center max-w-[200px]">
-        Time from start stimulus to first GCT onset
+        Time from start signal to first foot lift-off
       </span>
     </div>
   );
