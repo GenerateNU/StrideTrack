@@ -4,7 +4,7 @@ import type { ChartProps } from "@/types/chart.types";
 // Universal charts
 import { GroundContactTimeChart } from "@/components/charts/universal/GroundContactChart";
 import { FlightTimeChart } from "@/components/charts/universal/FlightTimeChart";
-import { ReactionTimeCard } from "@/components/charts/reaction_time/ReactionTimeCard";
+import { ReactionTimeCard } from "@/components/charts/reaction-time/ReactionTimeCard";
 
 // Hurdle charts
 import { GctIncreaseChart } from "@/components/charts/hurdles/GctIncreaseChart";
