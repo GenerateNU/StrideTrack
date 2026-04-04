@@ -6,14 +6,13 @@ import { UserCircle } from "lucide-react";
 import { useAuth } from "@/context/auth.context";
 import { useTheme } from "@/hooks/useTheme.hooks";
 import { ProfileMenu } from "./ProfileMenu";
-import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
-import logo from "@/assets/full_logo.png";
+import FlyingFoot from "@/assets/flying_foot.svg?react";
+import StrideTrackText from "@/assets/stridetrack_text.svg?react";
 
 export function AppLayout() {
   const { logout, profile } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [addAthleteOpen, setAddAthleteOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,7 +31,8 @@ export function AppLayout() {
 
       {/* Mobile header only */}
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card/95 px-5 py-4 backdrop-blur-sm md:hidden">
-        <img src={logo} alt="StrideTrack" className="h-9 w-auto" />
+        <FlyingFoot className="h-9 w-auto text-foreground" />
+        <StrideTrackText className="absolute left-1/2 -translate-x-1/2 h-7 w-auto" />
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -46,10 +46,6 @@ export function AppLayout() {
               profile={profile}
               theme={theme}
               toggleTheme={toggleTheme}
-              onAddAthlete={() => {
-                setMenuOpen(false);
-                setAddAthleteOpen(true);
-              }}
               onLogout={() => {
                 setMenuOpen(false);
                 logout();
@@ -64,10 +60,6 @@ export function AppLayout() {
       </main>
 
       <BottomNav />
-      <AddAthleteModal
-        open={addAthleteOpen}
-        onClose={() => setAddAthleteOpen(false)}
-      />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import type { ComponentType } from "react";
 import type { ChartProps } from "@/types/chart.types";
+import { EventCategory } from "@/types/event.types";
+import type { EventTypeEnum } from "@/types/event.types";
 
 // Universal charts
 import { GroundContactTimeChart } from "@/components/charts/universal/GroundContactChart";
@@ -26,12 +28,24 @@ import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
 import { JumpHeightChart } from "@/components/charts/bosco/JumpHeightChart";
 import { RsiChart } from "@/components/charts/bosco/RsiChart";
 import { HurdleTimelineChart } from "@/components/charts/hurdles/HurdleTimelineChart";
+import { FTAsymmetryKPI } from "@/components/charts/universal/FTAsymmetryKPI";
+import { GCTAsymmetryKPI } from "@/components/charts/universal/GCTAsymmetryKPI";
+import { GCTRangePieChart } from "@/components/charts/universal/GCTRangePieChart";
+import { RSIChart } from "@/components/charts/universal/RSIChart";
+import { StepTimeChart } from "@/components/charts/universal/StepTimeChart";
+import { TotalStepsKPI } from "@/components/charts/universal/TotalStepsKPI";
 
 export type VisualizationConfig = ComponentType<ChartProps>;
 
 const DEFAULT_CHARTS: VisualizationConfig[] = [
   GroundContactTimeChart,
   FlightTimeChart,
+  FTAsymmetryKPI,
+  GCTAsymmetryKPI,
+  GCTRangePieChart,
+  RSIChart,
+  StepTimeChart,
+  TotalStepsKPI,
 ];
 
 const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
@@ -54,24 +68,38 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     ProjectedSplitChart,
     HurdleTimelineChart,
   ],
-  bosco: [
+  hurdles_partial: [
     ...DEFAULT_CHARTS,
-    GctFlightChart,
-    JumpHeightChart,
-    RsiChart,
-    FatigueIndexKPI,
+    GctIncreaseChart,
+    HurdleSplitChart,
+    LandingGctChart,
+    StepsBetweenHurdlesChart,
+    TakeoffFtChart,
+    TakeoffGctChart,
+    SplitScoreChart,
+    ProjectedFinishKPI,
+    ProjectedSplitChart,
+    HurdleTimelineChart,
   ],
+  bosco: [GctFlightChart, JumpHeightChart, RsiChart, FatigueIndexKPI],
 };
 
+export function getEventCategory(
+  eventType: EventTypeEnum
+): EventCategory | null {
+  if (eventType.startsWith(EventCategory.HURDLES)) return EventCategory.HURDLES;
+  if (eventType.startsWith(EventCategory.SPRINT)) return EventCategory.SPRINT;
+  if (eventType.startsWith(EventCategory.BOSCO)) return EventCategory.BOSCO;
+  return null;
+}
+
 export function getChartsForEventType(
-  eventType: string
+  eventType: EventTypeEnum
 ): VisualizationConfig[] {
-  const category = eventType.startsWith("hurdles")
-    ? "hurdles"
-    : eventType.startsWith("sprint")
-      ? "sprint"
-      : eventType.startsWith("bosco")
-        ? "bosco"
-        : eventType;
+  if (eventType in visualizationsByEventType) {
+    return visualizationsByEventType[eventType];
+  }
+  const category = getEventCategory(eventType);
+  if (!category) return DEFAULT_CHARTS;
   return visualizationsByEventType[category] ?? DEFAULT_CHARTS;
 }
