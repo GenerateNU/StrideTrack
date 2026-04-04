@@ -11,6 +11,7 @@ from app.core.exception_handlers import (
     invalid_token_handler,
     not_a_coach_handler,
     not_found_exception_handler,
+    unsupported_event_handler,
     value_error_exception_handler,
 )
 from app.core.exceptions import (
@@ -19,20 +20,17 @@ from app.core.exceptions import (
     InvalidTokenException,
     NotACoachException,
     NotFoundException,
+    UnsupportedEventError,
 )
 from app.core.observability import setup_observability
 from app.schemas.health_schemas import RootResponse
 
-# Setup observability before creating FastAPI app
 FastAPIInstrumentor, HTTPXInstrumentor = setup_observability()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # Startup
-
     yield
-    # Shutdown (if needed)
 
 
 app = FastAPI(
@@ -44,7 +42,6 @@ app = FastAPI(
     },
 )
 
-# Instrument FastAPI for automatic request tracing
 FastAPIInstrumentor.instrument_app(app)
 
 app.add_middleware(
@@ -61,6 +58,7 @@ app.add_exception_handler(InvalidTokenException, invalid_token_handler)
 app.add_exception_handler(ExpiredTokenException, expired_token_handler)
 app.add_exception_handler(DevUserNotAllowedException, dev_user_not_allowed_handler)
 app.add_exception_handler(NotACoachException, not_a_coach_handler)
+app.add_exception_handler(UnsupportedEventError, unsupported_event_handler)
 
 
 @app.get("/")

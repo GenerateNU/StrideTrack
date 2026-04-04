@@ -1,0 +1,55 @@
+from __future__ import annotations
+
+from app.utils.split_score_constants import POPULATION_STATS, SEGMENT_LABELS
+
+
+def compute_diffs(
+    segments_ms: list[float],
+    total_ms: float,
+    event_type: str,
+) -> list[dict]:
+    stats = POPULATION_STATS[event_type]
+    means = stats["mean"]
+
+    if len(segments_ms) != len(means):
+        raise ValueError(
+            f"Expected {len(means)} segments for {event_type}, got {len(segments_ms)}."
+        )
+
+    diffs: list[dict] = []
+    for i, raw_ms in enumerate(segments_ms):
+        athlete_pct = (raw_ms / total_ms) * 100.0
+        diff_pct = athlete_pct - means[i]
+        diff_s = (diff_pct / 100.0) * total_ms / 1000.0
+        diffs.append(
+            {
+                "diff_s": round(diff_s, 2),
+                "diff_pct": round(diff_pct, 2),
+            }
+        )
+    return diffs
+
+
+def generate_coaching_notes(
+    diffs: list[dict],
+    event_type: str,
+    on_pace_threshold_s: float = 0.1,
+) -> list[str]:
+    labels = SEGMENT_LABELS[event_type]
+    notes: list[str] = []
+    for diff, label in zip(diffs, labels, strict=True):
+        diff_s = diff["diff_s"]
+        diff_pct = diff["diff_pct"]
+        abs_s = abs(diff_s)
+        abs_pct = abs(diff_pct)
+        if abs_s <= on_pace_threshold_s:
+            notes.append(f"{label}: on pace")
+        elif diff_s > 0:
+            notes.append(
+                f"{label}: {abs_s:.2f}s slower than average ({abs_pct:.1f}% slower)"
+            )
+        else:
+            notes.append(
+                f"{label}: {abs_s:.2f}s faster than average ({abs_pct:.1f}% faster)"
+            )
+    return notes

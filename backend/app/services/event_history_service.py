@@ -49,7 +49,6 @@ class EventHistoryService:
                 total_time_seconds=round(run["elapsed_ms"] / 1000, 3),
             )
             for index, run in enumerate(runs)
-            if run["elapsed_ms"] is not None
         ]
 
         if not data_points:

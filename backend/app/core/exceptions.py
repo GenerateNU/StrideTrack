@@ -1,5 +1,7 @@
 """Custom exceptions for the application."""
 
+from app.utils.split_score_constants import SUPPORTED_EVENTS
+
 
 class NotFoundException(Exception):
     """Raised when a resource is not found."""
@@ -40,3 +42,15 @@ class NotACoachException(Exception):
     def __init__(self, reason: str = "User is not a coach") -> None:
         self.reason = reason
         super().__init__(reason)
+
+
+class UnsupportedEventError(Exception):
+    """Raised when the run's event_type has no split score implementation."""
+
+    def __init__(self, event_type: str) -> None:
+        self.event_type = event_type
+        supported = ", ".join(sorted(SUPPORTED_EVENTS))
+        super().__init__(
+            f"Split score analysis is not supported for event type '{event_type}'. "
+            f"Supported events: {supported}."
+        )
