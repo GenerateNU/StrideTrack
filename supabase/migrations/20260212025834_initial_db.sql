@@ -25,7 +25,7 @@ CREATE TYPE event_type_enum AS ENUM (
     'long_jump',
     'triple_jump',
     'high_jump',
-    'bosco_test',
+    'bosco_test'
 );
 
 CREATE TABLE RUN (
