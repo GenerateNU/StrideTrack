@@ -64,7 +64,7 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Ben Marler"
-              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none"
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-base placeholder:text-muted-foreground focus:outline-none"
             />
           </div>
 
@@ -78,7 +78,7 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
                 value={heightIn}
                 onChange={(e) => setHeightIn(e.target.value)}
                 placeholder="72"
-                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none"
+                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-base placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
             <div>
@@ -90,7 +90,7 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
                 value={weightLbs}
                 onChange={(e) => setWeightLbs(e.target.value)}
                 placeholder="180"
-                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none"
+                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-base placeholder:text-muted-foreground focus:outline-none"
               />
             </div>
           </div>
