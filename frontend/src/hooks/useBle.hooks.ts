@@ -24,6 +24,7 @@ export function useBle() {
   const [bleIsScanning, setBleIsScanning] = useState(false);
 
   const bufferRef = useRef<BleForceRow[]>([]);
+  const startIndexRef = useRef<number | null>(null);
   const deviceIdRef = useRef<string | null>(null);
 
   const checkAvailability = useCallback(async (): Promise<boolean> => {
@@ -134,8 +135,18 @@ export function useBle() {
     return [...bufferRef.current];
   }, []);
 
+  const bleMarkStart = useCallback(() => {
+    startIndexRef.current = bufferRef.current.length;
+  }, []);
+
+  const bleRunBuffer = useCallback((): BleForceRow[] => {
+    const start = startIndexRef.current ?? 0;
+    return bufferRef.current.slice(start);
+  }, []);
+
   const bleClearBuffer = useCallback(() => {
     bufferRef.current = [];
+    startIndexRef.current = null;
   }, []);
 
   return {
@@ -145,6 +156,8 @@ export function useBle() {
     bleConnect,
     bleDisconnect,
     bleDataBuffer,
+    bleMarkStart,
+    bleRunBuffer,
     bleClearBuffer,
   };
 }

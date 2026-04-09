@@ -49,5 +49,16 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.stridetrack.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.stridetrack.app</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
