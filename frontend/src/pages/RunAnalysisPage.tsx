@@ -13,9 +13,6 @@ function AccordionSection({
   runId: string;
 }) {
   const [expanded, setExpanded] = useState(section.defaultExpanded ?? false);
-  const [shouldRender, setShouldRender] = useState(
-    section.defaultExpanded ?? false
-  );
   const [contentHeight, setContentHeight] = useState<number>(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -29,27 +26,12 @@ function AccordionSection({
       observer.observe(contentRef.current);
       return () => observer.disconnect();
     }
-  }, [expanded, shouldRender]);
-
-  const handleToggle = () => {
-    if (!expanded) {
-      setShouldRender(true);
-      requestAnimationFrame(() => setExpanded(true));
-    } else {
-      setExpanded(false);
-    }
-  };
-
-  const handleTransitionEnd = () => {
-    if (!expanded) {
-      setShouldRender(false);
-    }
-  };
+  }, [expanded]);
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
       <button
-        onClick={handleToggle}
+        onClick={() => setExpanded(!expanded)}
         className="flex w-full items-center justify-between px-4 py-4 text-base font-medium text-foreground hover:bg-muted/50 transition-colors"
       >
         {section.label}
@@ -61,20 +43,17 @@ function AccordionSection({
       </button>
       <div
         ref={contentRef}
-        onTransitionEnd={handleTransitionEnd}
         className="transition-all duration-300 ease-in-out overflow-hidden"
         style={{
           maxHeight: expanded ? `${contentHeight}px` : "0px",
           opacity: expanded ? 1 : 0,
         }}
       >
-        {shouldRender && (
-          <div className="flex flex-col gap-6 px-4 pb-4">
-            {section.charts.map((ChartComponent, i) => (
-              <ChartComponent key={i} runId={runId} />
-            ))}
-          </div>
-        )}
+        <div className="flex flex-col gap-6 px-4 pb-4">
+          {section.charts.map((ChartComponent, i) => (
+            <ChartComponent key={i} runId={runId} />
+          ))}
+        </div>
       </div>
     </div>
   );
