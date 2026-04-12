@@ -34,6 +34,7 @@ import { FatigueIndexKPI } from "@/components/charts/bosco/FatigueIndexKPI";
 import { GctFlightChart } from "@/components/charts/bosco/GctFlightChart";
 import { JumpHeightChart } from "@/components/charts/bosco/JumpHeightChart";
 import { RsiChart } from "@/components/charts/bosco/RsiChart";
+import { ReactionTimeCard } from "@/components/charts/reaction-time/ReactionTimeCard";
 
 export type VisualizationConfig = ComponentType<ChartProps>;
 
@@ -58,7 +59,7 @@ const ASYMMETRY: ChartSection = {
 
 const PERFORMANCE: ChartSection = {
   label: "Performance",
-  charts: [RSIChart, GCTRangePieChart, TotalStepsKPI],
+  charts: [RSIChart, GCTRangePieChart, TotalStepsKPI, ReactionTimeCard],
 };
 
 // Event-type sections
