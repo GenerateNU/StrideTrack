@@ -4,12 +4,21 @@ import type { HurdleTimelineResponse } from "@/types/hurdleTimeline.types";
 import { hurdleTimelineResponseSchema } from "@/types/hurdleTimeline.types";
 import { validateResponse } from "@/utils/validation";
 
-export function useHurdleTimeline(runId: string) {
+export function useHurdleTimeline(
+  runId: string,
+  hurdlesCompleted: number | null,
+  targetEvent: string | null
+) {
   const query = useQuery({
-    queryKey: ["hurdle-timeline", runId],
+    queryKey: ["hurdle-timeline", runId, hurdlesCompleted, targetEvent],
     queryFn: async () => {
+      const params = new URLSearchParams();
+      if (hurdlesCompleted)
+        params.append("hurdles_completed", String(hurdlesCompleted));
+      if (targetEvent) params.append("target_event", targetEvent);
+
       const response = await api.get<HurdleTimelineResponse>(
-        `/runs/${runId}/metrics/hurdles/timeline`
+        `/runs/${runId}/metrics/hurdles/timeline?${params.toString()}`
       );
       return validateResponse(response.data, hurdleTimelineResponseSchema);
     },
