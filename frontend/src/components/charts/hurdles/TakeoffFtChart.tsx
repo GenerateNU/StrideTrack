@@ -14,9 +14,9 @@ import {
   YAxis,
 } from "recharts";
 
-export const TakeoffFtChart = ({ runId }: ChartProps) => {
+export const TakeoffFtChart = ({ runId, hurdlesCompleted, targetEvent }: ChartProps) => {
   const { takeoffFt, takeoffFtIsLoading, takeoffFtError, takeoffFtRefetch } =
-    useTakeoffFt(runId);
+    useTakeoffFt(runId, hurdlesCompleted ?? null, targetEvent ?? null);
 
   if (takeoffFtIsLoading)
     return (

@@ -77,13 +77,13 @@ function CustomTooltip(props: {
   );
 }
 
-export const SplitScoreChart = ({ runId }: ChartProps) => {
+export const SplitScoreChart = ({ runId, hurdlesCompleted, targetEvent }: ChartProps) => {
   const {
     splitScore,
     splitScoreIsLoading,
     splitScoreError,
     splitScoreRefetch,
-  } = useSplitScore(runId);
+  } = useSplitScore(runId, hurdlesCompleted ?? null, targetEvent ?? null);
 
   if (splitScoreIsLoading)
     return (

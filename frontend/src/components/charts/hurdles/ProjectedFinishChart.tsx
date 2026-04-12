@@ -21,13 +21,13 @@ const getConfidenceLabel = (confidence: number): string => {
   return "Low";
 };
 
-export const ProjectedFinishKPI = ({ runId }: ChartProps) => {
+export const ProjectedFinishKPI = ({ runId, hurdlesCompleted, targetEvent }: ChartProps) => {
   const {
     hurdleProjection,
     hurdleProjectionIsLoading,
     hurdleProjectionError,
     hurdleProjectionRefetch,
-  } = useHurdleProjection(runId);
+  } = useHurdleProjection(runId, hurdlesCompleted ?? null, targetEvent ?? null);
 
   const description =
     "Confidence is based on how many hurdles were completed, data quality, and how many race phases (acceleration, peak speed, fatigue) the data covers. It increases as the athlete completes more hurdles across more phases.";
