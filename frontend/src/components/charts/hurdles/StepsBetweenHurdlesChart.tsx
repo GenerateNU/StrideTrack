@@ -5,13 +5,21 @@ import { useStepsBetweenHurdles } from "@/hooks/useHurdleMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 import type { ChartProps } from "@/types/chart.types";
 
-export const StepsBetweenHurdlesChart = ({ runId, hurdlesCompleted, targetEvent }: ChartProps) => {
+export const StepsBetweenHurdlesChart = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     stepsBetween,
     stepsBetweenIsLoading,
     stepsBetweenError,
     stepsBetweenRefetch,
-  } = useStepsBetweenHurdles(runId, hurdlesCompleted ?? null, targetEvent ?? null);
+  } = useStepsBetweenHurdles(
+    runId,
+    hurdlesCompleted ?? null,
+    targetEvent ?? null
+  );
 
   if (stepsBetweenIsLoading)
     return (

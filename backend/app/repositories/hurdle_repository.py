@@ -88,3 +88,13 @@ class HurdleRepository:
         if not response.data:
             return None
         return EventType(response.data["event_type"])
+
+    async def get_run_hurdle_params(self, run_id: UUID) -> dict:
+        response = (
+            await self.supabase.table("run")
+            .select("hurdles_completed, target_event")
+            .eq("run_id", str(run_id))
+            .single()
+            .execute()
+        )
+        return response.data

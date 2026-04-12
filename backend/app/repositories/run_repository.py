@@ -103,7 +103,7 @@ class RunRepository:
         response = (
             await self.supabase.table("run")
             .select(
-                "run_id, athlete_id, event_type, target_event, hurdles_completed elapsed_ms, created_at, name, athletes!inner(coach_id)"
+                "run_id, athlete_id, event_type, target_event, hurdles_completed, elapsed_ms, created_at, name, athletes!inner(coach_id)"
             )
             .eq("athletes.coach_id", str(coach_id))
             .order("created_at", desc=True)

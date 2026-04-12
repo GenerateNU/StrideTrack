@@ -77,7 +77,11 @@ const makeFootDot =
     return null;
   };
 
-export const HurdleTimelineChart = ({ runId, hurdlesCompleted, targetEvent }: ChartProps) => {
+export const HurdleTimelineChart = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     hurdleTimeline,
     hurdleTimelineIsLoading,

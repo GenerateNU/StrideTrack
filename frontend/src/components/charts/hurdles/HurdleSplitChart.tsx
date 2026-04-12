@@ -15,7 +15,11 @@ import {
   YAxis,
 } from "recharts";
 
-export const HurdleSplitChart = ({ runId, hurdlesCompleted, targetEvent }: ChartProps) => {
+export const HurdleSplitChart = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     hurdleSplits,
     hurdleSplitsIsLoading,

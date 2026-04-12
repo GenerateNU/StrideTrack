@@ -33,6 +33,7 @@ async def get_hurdle_service(
     repository = HurdleRepository(supabase)
     return HurdleService(repository, coach_id=coach.coach_id)
 
+
 async def get_hurdle_params(
     run_id: UUID,
     service: HurdleService,
@@ -40,12 +41,13 @@ async def get_hurdle_params(
     target_event: str | None,
 ) -> tuple[int | None, str | None]:
     if hurdles_completed is None or target_event is None:
-        run = await service.get_meta_by_run_id(run_id)
+        run = await service.get_run_hurdle_params(run_id)
         if hurdles_completed is None:
-            hurdles_completed = run.hurdles_completed
+            hurdles_completed = run.get("hurdles_completed")
         if target_event is None:
-            target_event = run.target_event
+            target_event = run.get("target_event")
     return hurdles_completed, target_event
+
 
 @router.get("/{run_id}/metrics/hurdles", response_model=list[HurdleMetricRow])
 async def get_hurdle_metrics(
@@ -57,8 +59,16 @@ async def get_hurdle_metrics(
     """Get all hurdle metrics for a specific run."""
     logger.info(f"Route: GET /runs/{run_id}/metrics/hurdles")
 
-    hurdles_completed, target_event = await get_hurdle_params(run_id=run_id, service=service, hurdles_completed=hurdles_completed, target_event=target_event)
-    return await service.get_hurdle_metrics_by_run_id(run_id, hurdles_completed=hurdles_completed)
+    hurdles_completed, target_event = await get_hurdle_params(
+        run_id=run_id,
+        service=service,
+        hurdles_completed=hurdles_completed,
+        target_event=target_event,
+    )
+    return await service.get_hurdle_metrics_by_run_id(
+        run_id, hurdles_completed=hurdles_completed
+    )
+
 
 @router.get("/{run_id}/metrics/hurdles/splits", response_model=list[HurdleSplitBarData])
 async def get_hurdle_splits(
@@ -70,7 +80,12 @@ async def get_hurdle_splits(
     """Get hurdle split bar chart data for a specific run."""
     logger.info(f"Route: GET /runs/{run_id}/metrics/hurdles/splits")
 
-    hurdles_completed, target_event = await get_hurdle_params(run_id=run_id, service=service, hurdles_completed=hurdles_completed, target_event=target_event)
+    hurdles_completed, target_event = await get_hurdle_params(
+        run_id=run_id,
+        service=service,
+        hurdles_completed=hurdles_completed,
+        target_event=target_event,
+    )
     return await service.get_hurdle_splits(run_id, hurdles_completed=hurdles_completed)
 
 
@@ -87,8 +102,15 @@ async def get_steps_between_hurdles(
     """Get steps between hurdles display data for a specific run."""
     logger.info(f"Route: GET /runs/{run_id}/metrics/hurdles/steps-between")
 
-    hurdles_completed, target_event = await get_hurdle_params(run_id=run_id, service=service, hurdles_completed=hurdles_completed, target_event=target_event)
-    return await service.get_steps_between_hurdles(run_id, hurdles_completed=hurdles_completed)
+    hurdles_completed, target_event = await get_hurdle_params(
+        run_id=run_id,
+        service=service,
+        hurdles_completed=hurdles_completed,
+        target_event=target_event,
+    )
+    return await service.get_steps_between_hurdles(
+        run_id, hurdles_completed=hurdles_completed
+    )
 
 
 @router.get(
@@ -103,7 +125,12 @@ async def get_takeoff_gct(
     """Get takeoff GCT bar chart data for a specific run."""
     logger.info(f"Route: GET /runs/{run_id}/metrics/hurdles/takeoff-gct")
 
-    hurdles_completed, target_event = await get_hurdle_params(run_id=run_id, service=service, hurdles_completed=hurdles_completed, target_event=target_event)
+    hurdles_completed, target_event = await get_hurdle_params(
+        run_id=run_id,
+        service=service,
+        hurdles_completed=hurdles_completed,
+        target_event=target_event,
+    )
     return await service.get_takeoff_gct(run_id, hurdles_completed=hurdles_completed)
 
 
@@ -119,7 +146,12 @@ async def get_landing_gct(
     """Get landing GCT bar chart data for a specific run."""
     logger.info(f"Route: GET /runs/{run_id}/metrics/hurdles/landing-gct")
 
-    hurdles_completed, target_event = await get_hurdle_params(run_id=run_id, service=service, hurdles_completed=hurdles_completed, target_event=target_event)
+    hurdles_completed, target_event = await get_hurdle_params(
+        run_id=run_id,
+        service=service,
+        hurdles_completed=hurdles_completed,
+        target_event=target_event,
+    )
     return await service.get_landing_gct(run_id, hurdles_completed=hurdles_completed)
 
 
@@ -135,7 +167,12 @@ async def get_takeoff_ft(
     """Get takeoff flight time bar chart data for a specific run."""
     logger.info(f"Route: GET /runs/{run_id}/metrics/hurdles/takeoff-ft")
 
-    hurdles_completed, target_event = await get_hurdle_params(run_id=run_id, service=service, hurdles_completed=hurdles_completed, target_event=target_event)
+    hurdles_completed, target_event = await get_hurdle_params(
+        run_id=run_id,
+        service=service,
+        hurdles_completed=hurdles_completed,
+        target_event=target_event,
+    )
     return await service.get_takeoff_ft(run_id, hurdles_completed=hurdles_completed)
 
 
@@ -151,7 +188,12 @@ async def get_gct_increase(
     """Get GCT increase hurdle-to-hurdle data for a specific run."""
     logger.info(f"Route: GET /runs/{run_id}/metrics/hurdles/gct-increase")
 
-    hurdles_completed, target_event = await get_hurdle_params(run_id=run_id, service=service, hurdles_completed=hurdles_completed, target_event=target_event)
+    hurdles_completed, target_event = await get_hurdle_params(
+        run_id=run_id,
+        service=service,
+        hurdles_completed=hurdles_completed,
+        target_event=target_event,
+    )
     return await service.get_gct_increase(run_id, hurdles_completed=hurdles_completed)
 
 
@@ -167,8 +209,15 @@ async def get_hurdle_projection(
     """Get projected race time for a partial hurdle run."""
     logger.info(f"Route: GET /runs/{run_id}/metrics/hurdles/projection")
 
-    hurdles_completed, target_event = await get_hurdle_params(run_id=run_id, service=service, hurdles_completed=hurdles_completed, target_event=target_event)
-    return await service.get_hurdle_projection(run_id, hurdles_completed=hurdles_completed, target_event=target_event)
+    hurdles_completed, target_event = await get_hurdle_params(
+        run_id=run_id,
+        service=service,
+        hurdles_completed=hurdles_completed,
+        target_event=target_event,
+    )
+    return await service.get_hurdle_projection(
+        run_id, hurdles_completed=hurdles_completed, target_event=target_event
+    )
 
 
 @router.get("/{run_id}/metrics/hurdles/timeline", response_model=HurdleTimelineResponse)
@@ -181,5 +230,12 @@ async def get_hurdle_timeline(
     """Get time-series data for the hurdle timeline chart."""
     logger.info(f"Route: GET /runs/{run_id}/metrics/hurdles/timeline")
 
-    hurdles_completed, target_event = await get_hurdle_params(run_id=run_id, service=service, hurdles_completed=hurdles_completed, target_event=target_event)
-    return await service.get_hurdle_timeline(run_id, hurdles_completed=hurdles_completed)
+    hurdles_completed, target_event = await get_hurdle_params(
+        run_id=run_id,
+        service=service,
+        hurdles_completed=hurdles_completed,
+        target_event=target_event,
+    )
+    return await service.get_hurdle_timeline(
+        run_id, hurdles_completed=hurdles_completed
+    )

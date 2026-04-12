@@ -1,4 +1,4 @@
-import { BaseKPI } from "@/components/charts/shared/BaseKPI";
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useHurdleProjection } from "@/hooks/useHurdleMetrics.hooks";
@@ -21,7 +21,11 @@ const getConfidenceLabel = (confidence: number): string => {
   return "Low";
 };
 
-export const ProjectedFinishKPI = ({ runId, hurdlesCompleted, targetEvent }: ChartProps) => {
+export const ProjectedFinishKPI = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     hurdleProjection,
     hurdleProjectionIsLoading,
@@ -34,19 +38,19 @@ export const ProjectedFinishKPI = ({ runId, hurdlesCompleted, targetEvent }: Cha
 
   if (hurdleProjectionIsLoading)
     return (
-      <BaseKPI description={description}>
+      <ChartCard title="Projected Finish Time" description={description}>
         <QueryLoading />
-      </BaseKPI>
+      </ChartCard>
     );
 
   if (hurdleProjectionError)
     return (
-      <BaseKPI description={description}>
+      <ChartCard title="Projected Finish Time" description={description}>
         <QueryError
           error={hurdleProjectionError as Error}
           refetch={() => void hurdleProjectionRefetch()}
         />
-      </BaseKPI>
+      </ChartCard>
     );
 
   if (!hurdleProjection || hurdleProjection.projected_total_ms == null)
@@ -55,20 +59,14 @@ export const ProjectedFinishKPI = ({ runId, hurdlesCompleted, targetEvent }: Cha
   const {
     projected_total_ms,
     confidence,
-    target_event,
     completed_splits,
     projected_splits,
     projected_final_segment_ms,
   } = hurdleProjection;
 
-  const targetLabel = target_event.replace("hurdles_", "").replace("m", "m H");
-
   return (
-    <BaseKPI description={description}>
-      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide sm:text-xs">
-        Projected Finish Time ({targetLabel})
-      </p>
-      <p className="text-3xl font-bold text-foreground sm:text-4xl">
+    <ChartCard title="Projected Finish Time" description={description}>
+      <p className="text-3xl font-bold text-foreground sm:text-4xl text-center">
         {formatTime(projected_total_ms)}
       </p>
       <div className="flex items-center justify-center gap-1.5 mt-1 sm:gap-2 sm:mt-2">
@@ -120,6 +118,6 @@ export const ProjectedFinishKPI = ({ runId, hurdlesCompleted, targetEvent }: Cha
           </p>
         </div>
       </div>
-    </BaseKPI>
+    </ChartCard>
   );
 };

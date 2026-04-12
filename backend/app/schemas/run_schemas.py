@@ -15,6 +15,7 @@ class RunResponse(BaseModel):
     flight_ms: int = Field(..., gt=0)
     step_time_ms: int = Field(..., gt=0)
 
+
 class RunUpdate(BaseModel):
     event_type: EventType | None = None
     name: str | None = Field(None, min_length=1, max_length=100)
