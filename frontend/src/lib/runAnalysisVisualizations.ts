@@ -74,7 +74,6 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     StepsBetweenHurdlesChart,
     TakeoffFtChart,
     TakeoffGctChart,
-    SplitScoreChart,
     ProjectedFinishKPI,
     ProjectedSplitChart,
     HurdleTimelineChart,

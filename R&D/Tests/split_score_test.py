@@ -35,8 +35,19 @@ SHORT_LABELS_400MH = [
     "S→H1", "1→2", "2→3", "3→4", "4→5",
     "5→6", "6→7", "7→8", "8→9", "9→10", "10→F",
 ]
+LABELS_110MH = LABELS_400MH  # same structure: Start→H1 ... H10→Fin
+SHORT_LABELS_110MH = SHORT_LABELS_400MH
+LABELS_100MH = LABELS_400MH
+SHORT_LABELS_100MH = SHORT_LABELS_400MH
+
 LABELS_400M = ["0-100m", "100-200m", "200-300m", "300-400m"]
 SHORT_LABELS_400M = ["0-100", "100-200", "200-300", "300-400"]
+
+LABELS_100M = ["0-30m", "30-60m", "60-100m"]
+SHORT_LABELS_100M = ["0-30", "30-60", "60-100"]
+
+LABELS_200M = ["0-100m", "100-200m"]
+SHORT_LABELS_200M = ["0-100", "100-200"]
 
 
 def _pct_color(pct: float) -> str:
@@ -81,8 +92,13 @@ def _extract_floats_until_slash(parts: list[str]) -> list[float]:
     return nums
 
 
-def parse_400mh(filepath: str) -> list[dict]:
-    """Parse 400mH touchdown times from pdftotext layout output."""
+# ── Hurdle parsers (400mH, 110mH, 100mH share the same touchdown format) ──
+
+def _parse_hurdles(filepath: str, min_time: float, max_time: float) -> list[dict]:
+    """
+    Generic hurdle parser for events with 10 hurdles + run-in.
+    Works for 400mH, 110mH, and 100mH — only the finish time range differs.
+    """
     with open(filepath) as f:
         lines = f.readlines()
 
@@ -92,12 +108,10 @@ def parse_400mh(filepath: str) -> list[dict]:
     for line in lines:
         stripped = line.strip()
 
-        # Detect athlete header
         match = re.match(r"^(.+?)\s*\([A-Z]{3}\)", stripped)
         if match and re.search(r"\(\d{4}\)", stripped) and "H1" in stripped:
             athlete = match.group(1).strip()
 
-        # Detect touchdown times line
         if not re.match(r"^\s*date\s", line):
             continue
 
@@ -105,7 +119,6 @@ def parse_400mh(filepath: str) -> list[dict]:
         if len(nums) < 11:
             continue
 
-        # Extract touchdowns and finish time (handle optional 200m split)
         touchdowns, finish_time = None, None
         if len(nums) == 11:
             touchdowns, finish_time = nums[:10], nums[10]
@@ -118,24 +131,40 @@ def parse_400mh(filepath: str) -> list[dict]:
                     touchdowns, finish_time = candidate[:10], candidate[10]
                     break
 
-        if not (touchdowns and finish_time and 44 < finish_time < 65):
+        if not (touchdowns and finish_time and min_time < finish_time < max_time):
             continue
         if not all(touchdowns[j] < touchdowns[j + 1] for j in range(9)):
             continue
 
-        # Compute inter-hurdle intervals from cumulative touchdowns
         intervals = [touchdowns[0]] + [
             round(touchdowns[j] - touchdowns[j - 1], 3) for j in range(1, 10)
         ]
         intervals.append(round(finish_time - touchdowns[9], 3))
 
-        if all(1.0 < iv < 10.0 for iv in intervals):
+        if all(0.5 < iv < 10.0 for iv in intervals):
             races.append(
                 {"athlete": athlete, "time": finish_time, "intervals": intervals}
             )
 
     return races
 
+
+def parse_400mh(filepath: str) -> list[dict]:
+    """Parse 400mH touchdown times (finish time 44–65s)."""
+    return _parse_hurdles(filepath, min_time=44, max_time=65)
+
+
+def parse_110mh(filepath: str) -> list[dict]:
+    """Parse 110mH touchdown times (finish time 12–16s)."""
+    return _parse_hurdles(filepath, min_time=12, max_time=16)
+
+
+def parse_100mh(filepath: str) -> list[dict]:
+    """Parse 100mH (women) touchdown times (finish time 11–15s)."""
+    return _parse_hurdles(filepath, min_time=11, max_time=15)
+
+
+# ── Sprint parsers ──
 
 def parse_400m(filepath: str) -> list[dict]:
     """Parse 400m split times from pdftotext layout output."""
@@ -160,7 +189,6 @@ def parse_400m(filepath: str) -> list[dict]:
         if not official:
             continue
 
-        # Find interval line (next 1–2 lines)
         interval_nums: list[float] = []
         for offset in [1, 2]:
             if i + offset < len(lines) and "interval" in lines[i + offset]:
@@ -171,7 +199,6 @@ def parse_400m(filepath: str) -> list[dict]:
                         continue
                 break
 
-        # Derive 100m splits from cumulative times
         cumulative = [n for n in nums if n < official]
         splits = None
 
@@ -197,7 +224,6 @@ def parse_400m(filepath: str) -> list[dict]:
                 official - cumulative[2],
             ]
 
-        # Fallback: find 4 values in interval line that sum to official
         if not splits and len(interval_nums) >= 4:
             for start in range(len(interval_nums) - 3):
                 candidate = interval_nums[start: start + 4]
@@ -217,24 +243,159 @@ def parse_400m(filepath: str) -> list[dict]:
     return races
 
 
-# Analyzes races
+def parse_100m(filepath: str) -> list[dict]:
+    """
+    Parse 100m split times into 3 segments: 0-30m, 30-60m, 60-100m.
+    The PDF has cumulative times at 10m intervals (10m, 20m, ..., 100m).
+    We use: 30m mark, 60m mark, and finish to derive the three splits.
+    """
+    with open(filepath) as f:
+        lines = f.readlines()
 
+    races: list[dict] = []
+    athlete = ""
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+
+        match = re.match(r"^(.+?)\s*\([A-Z]{3}\)", stripped)
+        if match and re.search(r"\(\d{4}\)", stripped) and "10m" in stripped:
+            athlete = match.group(1).strip()
+
+        if not re.match(r"^\s*date\s", line):
+            continue
+
+        nums = _extract_floats_until_slash(stripped.split()[2:])
+        official = next((n for n in nums if 9.5 < n < 11.5), None)
+        if not official:
+            continue
+
+        # Cumulative times less than official (the split marks)
+        cumulative = sorted([n for n in nums if 1.0 < n < official])
+
+        splits = None
+        # Need at least the 30m, 60m marks from 10m-granularity data
+        if len(cumulative) >= 6:
+            # indices 2, 5 correspond to 30m and 60m in 10m-step data
+            t30 = cumulative[2]
+            t60 = cumulative[5]
+            splits = [
+                round(t30, 3),
+                round(t60 - t30, 3),
+                round(official - t60, 3),
+            ]
+        elif len(cumulative) >= 2:
+            # Some entries only have 30m and 60m directly
+            candidates = [n for n in cumulative if 3.0 < n < 4.5]  # ~30m range
+            candidate60 = [n for n in cumulative if 5.5 < n < 7.5]  # ~60m range
+            if candidates and candidate60:
+                t30 = candidates[0]
+                t60 = candidate60[0]
+                splits = [
+                    round(t30, 3),
+                    round(t60 - t30, 3),
+                    round(official - t60, 3),
+                ]
+
+        if splits and len(splits) == 3 and all(0.5 < s < 8.0 for s in splits):
+            races.append(
+                {
+                    "athlete": athlete,
+                    "time": official,
+                    "splits": splits,
+                }
+            )
+
+    return races
+
+
+def parse_200m(filepath: str) -> list[dict]:
+    """
+    Parse 200m split times into 2 segments: 0-100m and 100-200m.
+    The PDF has cumulative times at 50m, 100m, 150m, and 200m (official).
+    We use the 100m mark to derive the two 100m splits.
+    """
+    with open(filepath) as f:
+        lines = f.readlines()
+
+    races: list[dict] = []
+    athlete = ""
+
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+
+        match = re.match(r"^(.+?)\s*\([A-Z]{3}\)", stripped)
+        if match and re.search(r"\(\d{4}\)", stripped) and "200m" in stripped:
+            athlete = match.group(1).strip()
+
+        if not re.match(r"^\s*date\s", line):
+            continue
+
+        nums = _extract_floats_until_slash(stripped.split()[2:])
+        official = next((n for n in nums if 19.0 < n < 25.0), None)
+        if not official:
+            continue
+
+        cumulative = sorted([n for n in nums if 5.0 < n < official])
+        splits = None
+
+        # Look for the 100m mark (~9.5–11.5s range)
+        t100_candidates = [n for n in cumulative if 9.5 < n < 11.5]
+        if t100_candidates:
+            t100 = t100_candidates[0]
+            splits = [
+                round(t100, 3),
+                round(official - t100, 3),
+            ]
+
+        if splits and len(splits) == 2 and all(8.0 < s < 14.0 for s in splits):
+            races.append(
+                {
+                    "athlete": athlete,
+                    "time": official,
+                    "splits": splits,
+                }
+            )
+
+    return races
+
+
+# ── RaceAnalyzer ──────────────────────────────────────────────────────────────
 
 class RaceAnalyzer:
     """Compares a single run's splits against a population distribution."""
 
+    LABELS = {
+        "400mH": LABELS_400MH,
+        "110mH": LABELS_110MH,
+        "100mH": LABELS_100MH,
+        "400m":  LABELS_400M,
+        "100m":  LABELS_100M,
+        "200m":  LABELS_200M,
+    }
+    SHORT_LABELS = {
+        "400mH": SHORT_LABELS_400MH,
+        "110mH": SHORT_LABELS_110MH,
+        "100mH": SHORT_LABELS_100MH,
+        "400m":  SHORT_LABELS_400M,
+        "100m":  SHORT_LABELS_100M,
+        "200m":  SHORT_LABELS_200M,
+    }
+    SPLIT_KEY = {
+        "400mH": "intervals",
+        "110mH": "intervals",
+        "100mH": "intervals",
+        "400m":  "splits",
+        "100m":  "splits",
+        "200m":  "splits",
+    }
+
     def __init__(self, races: list[dict], event_type: str) -> None:
         self.event_type = event_type
-
-        if event_type == "400mH":
-            self.labels = LABELS_400MH
-            self.short_labels = SHORT_LABELS_400MH
-            raw = np.array([r["intervals"] for r in races])
-        else:
-            self.labels = LABELS_400M
-            self.short_labels = SHORT_LABELS_400M
-            raw = np.array([r["splits"] for r in races])
-
+        self.labels = self.LABELS[event_type]
+        self.short_labels = self.SHORT_LABELS[event_type]
+        key = self.SPLIT_KEY[event_type]
+        raw = np.array([r[key] for r in races])
         times = np.array([r["time"] for r in races])
         self.population = raw / times[:, None] * 100
         self.pop_mean = self.population.mean(axis=0)
@@ -261,290 +422,52 @@ class RaceAnalyzer:
         print(f"{'=' * 55}")
         print(f"  {'Segment':<12} {'% Time':>7} {'Pctile':>7}")
         print(f"  {'-' * 28}")
-
         for i, label in enumerate(self.labels):
             print(f"  {label:<12} {result['normalized'][i]:>6.1f}% {result['percentiles'][i]:>6.0f}th")
         print()
 
-    # ── Mobile Visualization ─────────────────────────────────
 
-    def plot_mobile(
-        self,
-        result: dict,
-        athlete_name: str = "Athlete",
-        save_path: str | None = None,
-    ) -> None:
-        """Generate a mobile-styled race report matching the StrideTrack app."""
-        normalized = result["normalized"]
-        percentiles = result["percentiles"]
-        total_time = result["total_time"]
-        n_seg = len(self.labels)
-
-        # Layout sizing (mobile: ~390px wide at 2x retina)
-        w = 4.0
-        header_h = 0.75
-        chart_h = 2.6
-        row_h = 0.36
-        table_h = 0.4 + row_h * n_seg + 0.1
-        gap = 0.12
-        total_h = header_h + gap + chart_h + gap + table_h + 0.2
-
-        fig = plt.figure(figsize=(w, total_h), facecolor=BG, dpi=200)
-        cursor_y = total_h
-
-        # ── Layout helpers ──
-
-        def card_axes(height: float, pad_lr: float = 0.05) -> plt.Axes:
-            nonlocal cursor_y
-            cursor_y -= height
-            ax = fig.add_axes(
-                [pad_lr, cursor_y / total_h, 1 - 2 * pad_lr, height / total_h]
-            )
-            ax.set_facecolor(CARD)
-            for spine in ax.spines.values():
-                spine.set_color(BORDER)
-                spine.set_linewidth(0.5)
-            ax.set_xticks([])
-            ax.set_yticks([])
-            return ax
-
-        def spacer(h: float = 0.12) -> None:
-            nonlocal cursor_y
-            cursor_y -= h
-
-        # ── Header ──
-
-        cursor_y -= header_h
-        fig.text(
-            0.06, cursor_y / total_h + 0.72 * header_h / total_h,
-            athlete_name,
-            fontsize=12, color=TEXT, fontweight="bold", fontfamily="sans-serif",
-        )
-        fig.text(
-            0.06, cursor_y / total_h + 0.25 * header_h / total_h,
-            f"{self.event_type}  ·  {total_time:.2f}s  ·  vs {self.n_races:,} elite races",
-            fontsize=7, color=TEXT_MUTED, fontfamily="sans-serif",
-        )
-
-        spacer()
-
-        # ── Pacing Chart ──
-
-        ax = card_axes(chart_h, pad_lr=0.04)
-        x = np.arange(n_seg)
-
-        # Population percentile bands
-        p10 = np.percentile(self.population, 10, axis=0)
-        p25 = np.percentile(self.population, 25, axis=0)
-        p75 = np.percentile(self.population, 75, axis=0)
-        p90 = np.percentile(self.population, 90, axis=0)
-
-        ax.fill_between(x, p10, p90, alpha=0.06, color=PRIMARY)
-        ax.fill_between(x, p25, p75, alpha=0.12, color=PRIMARY)
-        ax.plot(x, self.pop_mean, color=PRIMARY, ls="--", lw=1, alpha=0.35)
-        ax.plot(x, normalized, color=TEXT, lw=2, zorder=5)
-
-        # Dots colored by percentile
-        for i, (norm, pct) in enumerate(zip(normalized, percentiles)):
-            ax.plot(
-                i, norm, "o", ms=5, color=_pct_color(pct),
-                zorder=6, markeredgecolor="white", markeredgewidth=1.2,
-            )
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(
-            self.short_labels, fontsize=5.5,
-            color=TEXT_MUTED, fontfamily="sans-serif",
-        )
-        ax.tick_params(axis="y", labelsize=5.5, labelcolor=TEXT_MUTED)
-        ax.set_ylabel("% of Total Time", fontsize=6, color=TEXT_MUTED, fontfamily="sans-serif")
-        ax.grid(axis="y", color=BORDER, linewidth=0.3, alpha=0.5)
-        ax.set_title(
-            "Pacing Profile", fontsize=8, color=TEXT, fontweight="bold",
-            loc="left", pad=6, fontfamily="sans-serif",
-        )
-        ax.text(
-            0.98, 0.97,
-            "— athlete    --- mean    ░ 25th–75th pctile",
-            fontsize=4.5, color=TEXT_MUTED, ha="right", va="top",
-            transform=ax.transAxes, fontfamily="sans-serif",
-        )
-        for spine in ax.spines.values():
-            spine.set_color(BORDER)
-            spine.set_linewidth(0.5)
-
-        spacer()
-
-        # ── Segment Table ──
-
-        ax_t = card_axes(table_h, pad_lr=0.04)
-        ax_t.set_xlim(0, 10)
-        ax_t.set_ylim(0, n_seg + 1.1)
-
-        # Title
-        ax_t.text(
-            0.25, n_seg + 0.6, "Segment Breakdown",
-            fontsize=8, color=TEXT, fontweight="bold",
-            va="center", fontfamily="sans-serif",
-        )
-
-        # Column headers
-        col_headers = [
-            ("Segment", 0.25, "left"),
-            ("Time", 3.2, "right"),
-            ("% Total", 4.8, "right"),
-            ("Pctile", 6.3, "center"),
-        ]
-        for label, xpos, ha in col_headers:
-            ax_t.text(
-                xpos, n_seg + 0.1, label,
-                fontsize=5, color=TEXT_MUTED, fontweight="600",
-                ha=ha, va="center", fontfamily="sans-serif",
-            )
-
-        # Header separator
-        ax_t.plot([0.15, 9.85], [n_seg - 0.05, n_seg - 0.05], color=BORDER, lw=0.5)
-
-        # Rows
-        for i, label in enumerate(self.labels):
-            row_y = n_seg - 0.55 - i * 0.85
-            pct = percentiles[i]
-            norm = normalized[i]
-            raw_s = norm * total_time / 100
-            color = _pct_color(pct)
-
-            # Row separator
-            if i < n_seg - 1:
-                ax_t.plot(
-                    [0.15, 9.85], [row_y - 0.35, row_y - 0.35],
-                    color=BORDER, lw=0.3,
-                )
-
-            # Segment name
-            ax_t.text(
-                0.25, row_y, label,
-                fontsize=6, color=TEXT, fontweight="500",
-                va="center", fontfamily="sans-serif",
-            )
-
-            # Raw time
-            ax_t.text(
-                3.2, row_y, f"{raw_s:.2f}s",
-                fontsize=6, color=TEXT_SOFT, va="center",
-                ha="right", fontfamily="sans-serif",
-            )
-
-            # % of total
-            ax_t.text(
-                4.8, row_y, f"{norm:.1f}%",
-                fontsize=6, color=TEXT_MUTED, va="center",
-                ha="right", fontfamily="sans-serif",
-            )
-
-            # Percentile badge
-            badge = FancyBboxPatch(
-                (5.6, row_y - 0.2), 1.3, 0.4,
-                boxstyle="round,pad=0.08",
-                facecolor=_pct_bg(pct), edgecolor="none", zorder=3,
-            )
-            ax_t.add_patch(badge)
-            ax_t.text(
-                6.25, row_y, f"{pct:.0f}th",
-                fontsize=5.5, color=color, fontweight="bold",
-                ha="center", va="center", zorder=4, fontfamily="sans-serif",
-            )
-
-            # Progress bar
-            bar_x, bar_w = 7.3, 2.5
-            ax_t.add_patch(plt.Rectangle(
-                (bar_x, row_y - 0.09), bar_w, 0.18,
-                facecolor=MUTED_BG, edgecolor="none", zorder=2,
-            ))
-            ax_t.add_patch(plt.Rectangle(
-                (bar_x, row_y - 0.09), bar_w * (pct / 100), 0.18,
-                facecolor=color, edgecolor="none", zorder=3,
-            ))
-
-        # Save
-        if save_path:
-            plt.savefig(save_path, dpi=200, bbox_inches="tight", facecolor=BG)
-            print(f"  Saved: {save_path}")
-        plt.close()
-
-
-# ── Test Data ────────────────────────────────────────────────
-
-MOCK_400MH_RUNS = [
-    {
-        "name": "Warholm WR (Tokyo 2021)",
-        "time": 45.94,
-        "segments": [5.60, 3.48, 3.54, 3.66, 3.68, 3.90, 4.06, 4.12, 4.28, 4.44, 5.18],
-    },
-    {
-        "name": "Mock: Late Collapse",
-        "time": 51.20,
-        "segments": [6.10, 3.80, 3.85, 3.90, 3.95, 4.10, 4.30, 4.80, 5.40, 5.80, 5.20],
-    },
-    {
-        "name": "Mock: Aggressive Start",
-        "time": 49.80,
-        "segments": [5.50, 3.40, 3.50, 3.60, 3.80, 4.20, 4.50, 4.70, 5.00, 5.30, 6.30],
-    },
-]
-
-MOCK_400M_RUNS = [
-    {
-        "name": "van Niekerk WR (Rio 2016)",
-        "time": 43.03,
-        "segments": [10.77, 9.81, 10.48, 11.97],
-    },
-    {
-        "name": "Mock: Too Fast Start",
-        "time": 47.50,
-        "segments": [10.80, 10.20, 12.00, 14.50],
-    },
-]
-
-
-# ── Main ─────────────────────────────────────────────────────
-
+# ── Main ─────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    """Load population data, run mock test cases, generate reports."""
+    """Load all population data and print constants for hardcoding."""
     print("Loading population data...")
-    hurdle_races = parse_400mh(_pdf_to_text("data/AthletesFirst_400H.pdf"))
-    sprint_races = parse_400m(_pdf_to_text("data/AthletesFirst_400S.pdf"))
-    print(f"  400mH: {len(hurdle_races)} races  |  400m: {len(sprint_races)} races")
 
-    hurdle_analyzer = RaceAnalyzer(hurdle_races, "400mH")
-    sprint_analyzer = RaceAnalyzer(sprint_races, "400m")
-    print("400mH mean:", np.round(hurdle_analyzer.population.mean(0), 4).tolist())
-    print("400mH std: ", np.round(hurdle_analyzer.population.std(0),  4).tolist())
-    print("400m  mean:", np.round(sprint_analyzer.population.mean(0), 4).tolist())
-    print("400m  std: ", np.round(sprint_analyzer.population.std(0),  4).tolist())
+    hurdle_400m_races = parse_400mh(_pdf_to_text("data/AthletesFirst_400H_M.pdf"))
+    sprint_400m_races = parse_400m(_pdf_to_text("data/AthletesFirst_400S_M.pdf"))
+    hurdle_110m_races = parse_110mh(_pdf_to_text("data/AthleteFirst_110H_M.pdf"))
+    hurdle_100m_races = parse_100mh(_pdf_to_text("data/AthleteFirst_100H_W.pdf"))
+    sprint_100m_races = parse_100m(_pdf_to_text("data/AthleteFirst_100S_M.pdf"))
+    sprint_200m_races = parse_200m(_pdf_to_text("data/AthleteFirst_200S_M.pdf"))
 
-    for analyzer, mock_runs in [
-        (hurdle_analyzer, MOCK_400MH_RUNS),
-        (sprint_analyzer, MOCK_400M_RUNS),
-    ]:
-        for run in mock_runs:
-            result = analyzer.analyze_run(run["segments"], run["time"])
-            analyzer.print_report(result, run["name"])
+    print(f"  400mH: {len(hurdle_400m_races)} races")
+    print(f"  400m:  {len(sprint_400m_races)} races")
+    print(f"  110mH: {len(hurdle_110m_races)} races")
+    print(f"  100mH: {len(hurdle_100m_races)} races")
+    print(f"  100m:  {len(sprint_100m_races)} races")
+    print(f"  200m:  {len(sprint_200m_races)} races")
 
-            safe_name = (
-                run["name"]
-                .replace(" ", "_")
-                .replace(":", "")
-                .replace("(", "")
-                .replace(")", "")
-            )
-            analyzer.plot_mobile(
-                result,
-                run["name"],
-                save_path=os.path.join(DATA_DIR, f"report_{safe_name}.png"),
-            )
+    events = [
+        ("400mH", hurdle_400m_races),
+        ("400m",  sprint_400m_races),
+        ("110mH", hurdle_110m_races),
+        ("100mH", hurdle_100m_races),
+        ("100m",  sprint_100m_races),
+        ("200m",  sprint_200m_races),
+    ]
 
-    print("Done.")
+    for name, races in events:
+        analyzer = RaceAnalyzer(races, name)
+        pop = analyzer.population
+        print(f"\n── {name} ({len(races)} races) ──")
+        print(f"{name} mean:", np.round(pop.mean(0), 4).tolist())
+        print(f"{name} std: ", np.round(pop.std(0),  4).tolist())
+        print(f"{name} p10: ", np.percentile(pop, 10, axis=0).round(4).tolist())
+        print(f"{name} p25: ", np.percentile(pop, 25, axis=0).round(4).tolist())
+        print(f"{name} p75: ", np.percentile(pop, 75, axis=0).round(4).tolist())
+        print(f"{name} p90: ", np.percentile(pop, 90, axis=0).round(4).tolist())
+
+    print("\nDone.")
 
 
 if __name__ == "__main__":

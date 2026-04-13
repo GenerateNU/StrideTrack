@@ -34,3 +34,4 @@ class SplitScoreResponse(BaseModel):
     coaching_notes: list[str]
     population_mean_pcts: list[float]
     population_std_pcts: list[float]
+    population_percentiles: dict[str, list[float]]
