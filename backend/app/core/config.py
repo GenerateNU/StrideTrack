@@ -29,7 +29,9 @@ class Settings(BaseSettings):
     otel_endpoint: str | None = Field(default=None, description="OTLP endpoint")
 
     # LLM
-    llm_api_key: str = Field(..., description="API key for LiteLLM provider")
+    llm_api_key: str | None = Field(
+        default=None, description="API key for LiteLLM provider"
+    )
     llm_model: str = Field(
         default="openai/gpt-4o-mini", description="LiteLLM model string"
     )

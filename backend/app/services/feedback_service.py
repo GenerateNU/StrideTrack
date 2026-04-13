@@ -85,6 +85,10 @@ class FeedbackService:
         self.coach_id = coach_id
 
     async def get_feedback(self, run_id: UUID) -> str:
+
+        if not settings.llm_api_key:
+            return "Feedback unavailable: no LLM API key configured."
+
         logger.info(f"FeedbackService: generating feedback for run {run_id}")
 
         await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
