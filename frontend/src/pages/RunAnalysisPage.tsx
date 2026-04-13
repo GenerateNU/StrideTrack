@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetRunMeta } from "@/hooks/useRuns.hooks";
+import { useGetRunFeedback } from "@/hooks/useRunFeedback.hooks";
 import { getChartsForEventType } from "@/lib/runAnalysisVisualizations";
 import { ArrowLeft } from "lucide-react";
 
@@ -9,8 +10,9 @@ export default function RunAnalysisPage() {
     runId: string;
   }>();
   const navigate = useNavigate();
-
   const { runMeta } = useGetRunMeta(runId);
+  const { feedback, feedbackIsLoading } = useGetRunFeedback(runId);
+
   const charts = runMeta?.event_type
     ? getChartsForEventType(runMeta.event_type)
     : [];
@@ -36,12 +38,29 @@ export default function RunAnalysisPage() {
           </p>
         )}
       </div>
-
       {runId ? (
         <div className="flex flex-1 flex-col gap-6">
           {charts.map((ChartComponent, i) => (
             <ChartComponent key={i} runId={runId} />
           ))}
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <h3 className="mb-3 text-sm font-semibold text-foreground">
+              AI Coach Feedback
+            </h3>
+            {feedbackIsLoading ? (
+              <p className="text-sm text-muted-foreground animate-pulse">
+                Generating feedback...
+              </p>
+            ) : feedback ? (
+              <p className="text-sm text-foreground leading-relaxed">
+                {feedback}
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No feedback available.
+              </p>
+            )}
+          </div>
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center">
