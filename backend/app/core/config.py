@@ -28,6 +28,12 @@ class Settings(BaseSettings):
     # OpenTelemetry
     otel_endpoint: str | None = Field(default=None, description="OTLP endpoint")
 
+    # LLM
+    llm_api_key: str = Field(..., description="API key for LiteLLM provider")
+    llm_model: str = Field(
+        default="openai/gpt-4o-mini", description="LiteLLM model string"
+    )
+
     @property
     def debug(self) -> bool:
         """Debug mode enabled when environment is development."""
