@@ -180,7 +180,14 @@ class HurdleService:
         hurdle_rows = await self._get_hurdle_metric_rows(run_id)
         markers = [
             HurdleMarker(
-                time_s=round(row.clearance_start_ms / 1000, 4),
+                time_s=round(
+                    (
+                        row.clearance_start_ms
+                        + 0.65 * (row.clearance_end_ms - row.clearance_start_ms)
+                    )
+                    / 1000,
+                    4,
+                ),
                 hurdle_num=row.hurdle_num,
             )
             for row in hurdle_rows
