@@ -173,6 +173,7 @@ export const SplitScoreChart = ({ runId }: ChartProps) => {
             }}
             tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
             domain={yDomain}
+            tickFormatter={(value: number) => `${value.toFixed(1)}`}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
