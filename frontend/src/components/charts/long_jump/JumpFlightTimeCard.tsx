@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
-import { GraphInfoCard } from "@/components/charts/GraphInfoCard";
+import { GraphInfoCard } from "@/components/charts/shared/GraphInfoCard";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useLongJumpMetrics } from "@/hooks/useLongJumpMetrics.hooks";

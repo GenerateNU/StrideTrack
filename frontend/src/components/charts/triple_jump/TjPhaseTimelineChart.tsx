@@ -4,6 +4,8 @@ import {
   useTjStepSeries,
   useTripleJumpMetrics,
 } from "@/hooks/useTripleJumpMetrics.hooks";
+import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
 import {
   CartesianGrid,
   Legend,
@@ -16,9 +18,6 @@ import {
   YAxis,
 } from "recharts";
 
-const LEFT_COLOR = "#f97316";
-const RIGHT_COLOR = "#000000";
-
 interface StepRow {
   label: number;
   gct_left: number | null;
@@ -28,34 +27,28 @@ interface StepRow {
   foot: string;
 }
 
-export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
+export const TjPhaseTimelineChart = ({ runId }: ChartProps) => {
   const {
-    stepSeriesData,
-    stepSeriesLoading,
-    stepSeriesError,
-    refetchStepSeriesData,
+    tjStepSeries,
+    tjStepSeriesIsLoading,
+    tjStepSeriesError,
+    tjStepSeriesRefetch,
   } = useTjStepSeries(runId);
-  const { tjMetrics, tjMetricsLoading, tjMetricsError, refetchTjMetrics } =
-    useTripleJumpMetrics(runId);
+  const {
+    tjMetrics,
+    tjMetricsIsLoading,
+    tjMetricsError,
+    tjMetricsRefetch,
+  } = useTripleJumpMetrics(runId);
 
-  if (stepSeriesLoading || tjMetricsLoading) return <QueryLoading />;
-  if (stepSeriesError)
-    return (
-      <QueryError
-        error={stepSeriesError as Error}
-        refetch={() => void refetchStepSeriesData()}
-      />
-    );
+  if (tjStepSeriesIsLoading || tjMetricsIsLoading) return <QueryLoading />;
+  if (tjStepSeriesError)
+    return <QueryError error={tjStepSeriesError} refetch={tjStepSeriesRefetch} />;
   if (tjMetricsError)
-    return (
-      <QueryError
-        error={tjMetricsError as Error}
-        refetch={() => void refetchTjMetrics()}
-      />
-    );
-  if (!stepSeriesData || !tjMetrics) return null;
+    return <QueryError error={tjMetricsError} refetch={tjMetricsRefetch} />;
+  if (!tjStepSeries || !tjMetrics) return null;
 
-  const sorted = [...stepSeriesData].sort((a, b) => a.ic_time - b.ic_time);
+  const sorted = [...tjStepSeries].sort((a, b) => a.ic_time - b.ic_time);
   const rows: StepRow[] = sorted.map((d, i) => ({
     label: i + 1,
     gct_left: d.foot === "left" ? d.gct_ms : null,
@@ -66,9 +59,9 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
   }));
 
   const phaseLines = [
-    { label: rows[rows.length - 3]?.label, name: "Hop", color: "#3b82f6" },
-    { label: rows[rows.length - 2]?.label, name: "Step", color: "#8b5cf6" },
-    { label: rows[rows.length - 1]?.label, name: "Jump", color: "#10b981" },
+    { label: rows[rows.length - 3]?.label, name: "Hop", color: chartColors.phaseHop },
+    { label: rows[rows.length - 2]?.label, name: "Step", color: chartColors.phaseStep },
+    { label: rows[rows.length - 1]?.label, name: "Jump", color: chartColors.phaseJump },
   ];
 
   const sharedChart = (
@@ -82,20 +75,20 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
         data={rows}
         margin={{ top: 8, right: 16, left: 16, bottom: 0 }}
       >
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+        <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
         <XAxis
           dataKey="label"
-          tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+          tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
           label={{
             value: "Step Number",
             position: "insideBottom",
             offset: -5,
             fontSize: 11,
-            fill: "var(--muted-foreground)",
+            fill: chartColors.mutedForeground,
           }}
         />
         <YAxis
-          tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+          tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
           domain={["auto", "auto"]}
           label={{
             value: yAxisLabel,
@@ -103,13 +96,13 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
             position: "insideLeft",
             offset: -4,
             fontSize: 11,
-            fill: "var(--muted-foreground)",
+            fill: chartColors.mutedForeground,
           }}
         />
         <Tooltip
           contentStyle={{
-            background: "var(--card)",
-            border: "1px solid var(--border)",
+            background: chartColors.card,
+            border: `1px solid ${chartColors.border}`,
             borderRadius: 6,
             fontSize: 12,
           }}
@@ -147,18 +140,18 @@ export const TjPhaseTimelineChart = ({ runId }: { runId: string }) => {
         <Line
           type="monotone"
           dataKey={dataKeys.left}
-          stroke={LEFT_COLOR}
+          stroke={chartColors.leftFoot}
           strokeWidth={2}
-          dot={{ r: 3, fill: LEFT_COLOR }}
+          dot={{ r: 3, fill: chartColors.leftFoot }}
           connectNulls
           name={dataKeys.left}
         />
         <Line
           type="monotone"
           dataKey={dataKeys.right}
-          stroke={RIGHT_COLOR}
+          stroke={chartColors.rightFoot}
           strokeWidth={2}
-          dot={{ r: 3, fill: RIGHT_COLOR }}
+          dot={{ r: 3, fill: chartColors.rightFoot }}
           connectNulls
           name={dataKeys.right}
         />

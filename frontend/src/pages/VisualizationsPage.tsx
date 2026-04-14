@@ -14,7 +14,7 @@ import { SplitScoreChart } from "@/components/charts/hurdles/SplitScoreChart";
 import { StepsBetweenHurdlesChart } from "@/components/charts/hurdles/StepsBetweenHurdlesChart";
 import { TakeoffFtChart } from "@/components/charts/hurdles/TakeoffFtChart";
 import { TakeoffGctChart } from "@/components/charts/hurdles/TakeoffGctChart";
-import { GraphInfoCard } from "@/components/charts/GraphInfoCard";
+import { GraphInfoCard } from "@/components/charts/shared/GraphInfoCard";
 import { ApproachProfileChart } from "@/components/charts/long_jump/ApproachProfileChart";
 import { JumpFlightTimeCard } from "@/components/charts/long_jump/JumpFlightTimeCard";
 import { LastStepGctCard } from "@/components/charts/long_jump/LastStepGctCard";
