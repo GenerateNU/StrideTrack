@@ -3,15 +3,16 @@ from app.schemas.long_jump_schemas import (
     LjTakeoffData,
     LongJumpMetricRow,
 )
+from app.schemas.run_schemas import StepSeriesPoint
 
 
 def transform_lj_approach_profile(
-    raw_steps: list[dict],
+    raw_steps: list[StepSeriesPoint],
     clearance_start_ms: int,
 ) -> list[ApproachProfileData]:
     approach = sorted(
-        [s for s in raw_steps if s["to_time"] <= clearance_start_ms],
-        key=lambda s: s["ic_time"],
+        [s for s in raw_steps if s.to_time <= clearance_start_ms],
+        key=lambda s: s.ic_time,
     )
     n = len(approach)
     result: list[ApproachProfileData] = []
@@ -28,10 +29,10 @@ def transform_lj_approach_profile(
 
         result.append(
             ApproachProfileData(
-                stride_num=int(step["stride_num"]),
-                foot=step["foot"],
-                ic_time=int(step["ic_time"]),
-                gct_ms=int(step["gct_ms"]),
+                stride_num=step.stride_num,
+                foot=step.foot,
+                ic_time=step.ic_time,
+                gct_ms=step.gct_ms,
                 phase=phase,
             )
         )
