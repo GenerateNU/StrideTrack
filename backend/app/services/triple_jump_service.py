@@ -1,7 +1,6 @@
 import logging
 from uuid import UUID
 
-import numpy as np
 import pandas as pd
 
 from app.repositories.triple_jump_repository import TripleJumpRepository
@@ -16,6 +15,7 @@ from app.schemas.triple_jump_schemas import (
     TjContactEfficiencyData,
     TripleJumpMetricRow,
 )
+from app.utils.nan_to_none import nan_to_none
 from app.utils.triple_jump_chart_transformations import (
     transform_tj_contact_efficiency,
     transform_tj_phase_ratio,
@@ -31,16 +31,6 @@ from app.utils.universal_metrics import (
 logger = logging.getLogger(__name__)
 
 
-def _sanitize(rows: list[dict]) -> list[dict]:
-    return [
-        {
-            k: (None if isinstance(v, float) and np.isnan(v) else v)
-            for k, v in row.items()
-        }
-        for row in rows
-    ]
-
-
 class TripleJumpService:
     def __init__(self, repository: TripleJumpRepository) -> None:
         self.repository = repository
@@ -49,9 +39,9 @@ class TripleJumpService:
         self, run_id: UUID
     ) -> tuple[pd.DataFrame, TripleJumpMetricRow]:
         raw_steps = await self.repository.get_triple_jump_metrics(run_id)
-        df = pd.DataFrame(raw_steps)
+        df = pd.DataFrame([s.model_dump() for s in raw_steps])
         tj_df = transform_stride_cycles_to_triple_jump_metrics(df)
-        rows = _sanitize(tj_df.to_dict(orient="records"))
+        rows = nan_to_none(tj_df.to_dict(orient="records"))
         tj_row = TripleJumpMetricRow(**rows[0])
         return df, tj_row
 

@@ -1,7 +1,6 @@
 import logging
 from uuid import UUID
 
-import numpy as np
 import pandas as pd
 
 from app.repositories.long_jump_repository import LongJumpRepository
@@ -21,6 +20,7 @@ from app.utils.long_jump_chart_transformations import (
     transform_lj_takeoff,
 )
 from app.utils.long_jump_metrics import transform_stride_cycles_to_long_jump_metrics
+from app.utils.nan_to_none import nan_to_none
 from app.utils.universal_metrics import (
     compute_gct_range_buckets,
     compute_step_series,
@@ -31,27 +31,17 @@ from app.utils.universal_metrics import (
 logger = logging.getLogger(__name__)
 
 
-def _sanitize(rows: list[dict]) -> list[dict]:
-    return [
-        {
-            k: (None if isinstance(v, float) and np.isnan(v) else v)
-            for k, v in row.items()
-        }
-        for row in rows
-    ]
-
-
 class LongJumpService:
     def __init__(self, repository: LongJumpRepository) -> None:
         self.repository = repository
 
     async def _fetch_and_transform(
         self, run_id: UUID
-    ) -> tuple[pd.DataFrame, LongJumpMetricRow, list[dict]]:
+    ) -> tuple[pd.DataFrame, LongJumpMetricRow, list[StepSeriesPoint]]:
         raw_steps = await self.repository.get_long_jump_metrics(run_id)
-        df = pd.DataFrame(raw_steps)
+        df = pd.DataFrame([s.model_dump() for s in raw_steps])
         lj_df = transform_stride_cycles_to_long_jump_metrics(df)
-        rows = _sanitize(lj_df.to_dict(orient="records"))
+        rows = nan_to_none(lj_df.to_dict(orient="records"))
         lj_row = LongJumpMetricRow(**rows[0])
         return df, lj_row, raw_steps
 
