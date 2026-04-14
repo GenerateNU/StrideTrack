@@ -1,17 +1,19 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useLongJumpMetrics } from "@/hooks/useLongJumpMetrics.hooks";
+import type { ChartProps } from "@/types/chart.types";
 
-const HARDCODED_LJ_RUN_ID = "aaaaaaaa-0001-4000-8000-000000000001";
+export const LastStepFtCard = ({ runId }: ChartProps) => {
+  const { ljMetrics, ljMetricsIsLoading, ljMetricsError, ljMetricsRefetch } =
+    useLongJumpMetrics(runId);
 
-export const LastStepFtCard = () => {
-  const { ljMetrics } = useLongJumpMetrics(HARDCODED_LJ_RUN_ID);
-  const value = ljMetrics?.jump_ft_ms;
+  if (ljMetricsIsLoading) return <QueryLoading />;
+  if (ljMetricsError)
+    return <QueryError error={ljMetricsError} refetch={ljMetricsRefetch} />;
+  if (!ljMetrics) return null;
+
+  const value = ljMetrics.jump_ft_ms;
 
   return (
     <Card className="flex-1 min-w-[160px]">
@@ -21,16 +23,12 @@ export const LastStepFtCard = () => {
         </CardDescription>
         <CardTitle className="text-3xl font-bold tabular-nums">
           {value != null ? value.toFixed(1) : "—"}
-          <span className="text-sm font-normal text-muted-foreground ml-1">
-            ms
-          </span>
+          <span className="text-sm font-normal text-muted-foreground ml-1">ms</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-xs text-muted-foreground leading-snug">
-          Flight time of the final takeoff step — the actual jump. Longer flight
-          time reflects a more powerful and effective takeoff, assuming good
-          technique.
+          Flight time of the final takeoff step — the actual jump. Longer flight time reflects a more powerful and effective takeoff, assuming good technique.
         </p>
       </CardContent>
     </Card>

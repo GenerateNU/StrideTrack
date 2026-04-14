@@ -94,8 +94,8 @@ export default function VisualizationsPage() {
             Long Jump Metrics
           </h2>
           <div className="flex gap-4 flex-wrap">
-            <LastStepGctCard />
-            <JumpFlightTimeCard />
+            <LastStepGctCard runId={HARDCODED_LJ_RUN_ID} />
+            <JumpFlightTimeCard runId={HARDCODED_LJ_RUN_ID} />
           </div>
           <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
             <GraphInfoCard description="Line chart of GCT across all approach steps, with the final 3 steps shaded. An effective approach shows progressively decreasing GCT into takeoff, reflecting acceleration and increasing reactivity as the athlete attacks the board. Dot colors indicate phase: yellow = antepenultimate, red = penultimate, green = takeoff." />
@@ -124,7 +124,7 @@ export default function VisualizationsPage() {
             Triple Jump Metrics
           </h2>
           <div className="flex gap-4 flex-wrap">
-            <ContactTimeEfficiencyCard />
+            <ContactTimeEfficiencyCard runId={HARDCODED_TJ_RUN_ID} />
           </div>
           <div className="relative bg-card border border-border rounded-lg p-6 shadow-sm">
             <GraphInfoCard description="Stacked bar showing how total flight time is distributed across the three phases. The ideal ratio is approximately 35:30:35 (Hop:Step:Jump). A dominant hop phase often means energy is wasted early; a weak jump phase suggests technical breakdown in the final takeoff." />

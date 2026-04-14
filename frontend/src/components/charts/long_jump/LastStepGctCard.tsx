@@ -1,17 +1,20 @@
-import {
-  Card,
-  CardHeader,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { GraphInfoCard } from "@/components/charts/GraphInfoCard";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useLongJumpMetrics } from "@/hooks/useLongJumpMetrics.hooks";
+import type { ChartProps } from "@/types/chart.types";
 
-const HARDCODED_LJ_RUN_ID = "aaaaaaaa-0001-4000-8000-000000000001";
+export const LastStepGctCard = ({ runId }: ChartProps) => {
+  const { ljMetrics, ljMetricsIsLoading, ljMetricsError, ljMetricsRefetch } =
+    useLongJumpMetrics(runId);
 
-export const LastStepGctCard = () => {
-  const { ljMetrics } = useLongJumpMetrics(HARDCODED_LJ_RUN_ID);
-  const value = ljMetrics?.penultimate_gct_ms;
+  if (ljMetricsIsLoading) return <QueryLoading />;
+  if (ljMetricsError)
+    return <QueryError error={ljMetricsError} refetch={ljMetricsRefetch} />;
+  if (!ljMetrics) return null;
+
+  const value = ljMetrics.penultimate_gct_ms;
 
   return (
     <Card className="relative flex-1 min-w-[160px]">
@@ -22,9 +25,7 @@ export const LastStepGctCard = () => {
         </CardDescription>
         <CardTitle className="text-3xl font-bold tabular-nums">
           {value != null ? value.toFixed(1) : "—"}
-          <span className="text-sm font-normal text-muted-foreground ml-1">
-            ms
-          </span>
+          <span className="text-sm font-normal text-muted-foreground ml-1">ms</span>
         </CardTitle>
       </CardHeader>
     </Card>

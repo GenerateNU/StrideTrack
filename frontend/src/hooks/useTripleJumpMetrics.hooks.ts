@@ -27,12 +27,11 @@ export function useTripleJumpMetrics(runId: string | null) {
     },
     enabled: !!runId,
   });
-
   return {
     tjMetrics: query.data ?? null,
-    tjMetricsLoading: query.isLoading,
+    tjMetricsIsLoading: query.isLoading,
     tjMetricsError: query.error,
-    refetchTjMetrics: query.refetch,
+    tjMetricsRefetch: query.refetch,
   };
 }
 
@@ -48,12 +47,11 @@ export function useTjPhaseRatio(runId: string | null) {
     },
     enabled: !!runId,
   });
-
   return {
     phaseRatioData: query.data ?? null,
-    phaseRatioLoading: query.isLoading,
-    phaseRatioError: query.error,
-    refetchPhaseRatioData: query.refetch,
+    phaseRatioDataIsLoading: query.isLoading,
+    phaseRatioDataError: query.error,
+    phaseRatioDataRefetch: query.refetch,
   };
 }
 
@@ -69,12 +67,11 @@ export function useTjContactEfficiency(runId: string | null) {
     },
     enabled: !!runId,
   });
-
   return {
     efficiencyData: query.data ?? null,
-    efficiencyLoading: query.isLoading,
-    efficiencyError: query.error,
-    refetchEfficiencyData: query.refetch,
+    efficiencyDataIsLoading: query.isLoading,
+    efficiencyDataError: query.error,
+    efficiencyDataRefetch: query.refetch,
   };
 }
 
@@ -90,11 +87,10 @@ export function useTjStepSeries(runId: string | null) {
     },
     enabled: !!runId,
   });
-
   return {
-    stepSeriesData: query.data ?? null,
-    stepSeriesLoading: query.isLoading,
-    stepSeriesError: query.error,
-    refetchStepSeriesData: query.refetch,
+    tjStepSeries: query.data ?? null,
+    tjStepSeriesIsLoading: query.isLoading,
+    tjStepSeriesError: query.error,
+    tjStepSeriesRefetch: query.refetch,
   };
 }

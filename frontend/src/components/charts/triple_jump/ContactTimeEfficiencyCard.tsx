@@ -1,17 +1,20 @@
-import {
-  Card,
-  CardHeader,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
 import { GraphInfoCard } from "@/components/charts/GraphInfoCard";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useTripleJumpMetrics } from "@/hooks/useTripleJumpMetrics.hooks";
+import type { ChartProps } from "@/types/chart.types";
 
-const HARDCODED_TJ_RUN_ID = "bbbbbbbb-0001-4000-8000-000000000001";
+export const ContactTimeEfficiencyCard = ({ runId }: ChartProps) => {
+  const { tjMetrics, tjMetricsIsLoading, tjMetricsError, tjMetricsRefetch } =
+    useTripleJumpMetrics(runId);
 
-export const ContactTimeEfficiencyCard = () => {
-  const { tjMetrics } = useTripleJumpMetrics(HARDCODED_TJ_RUN_ID);
-  const value = tjMetrics?.contact_time_efficiency;
+  if (tjMetricsIsLoading) return <QueryLoading />;
+  if (tjMetricsError)
+    return <QueryError error={tjMetricsError} refetch={tjMetricsRefetch} />;
+  if (!tjMetrics) return null;
+
+  const value = tjMetrics.contact_time_efficiency;
 
   return (
     <Card className="relative flex-1 min-w-[160px]">

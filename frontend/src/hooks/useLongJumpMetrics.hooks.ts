@@ -27,12 +27,11 @@ export function useLongJumpMetrics(runId: string | null) {
     },
     enabled: !!runId,
   });
-
   return {
     ljMetrics: query.data ?? null,
-    ljMetricsLoading: query.isLoading,
+    ljMetricsIsLoading: query.isLoading,
     ljMetricsError: query.error,
-    refetchLjMetrics: query.refetch,
+    ljMetricsRefetch: query.refetch,
   };
 }
 
@@ -48,12 +47,11 @@ export function useLjTakeoffData(runId: string | null) {
     },
     enabled: !!runId,
   });
-
   return {
-    takeoffData: query.data ?? null,
-    takeoffLoading: query.isLoading,
-    takeoffError: query.error,
-    refetchTakeoffData: query.refetch,
+    ljTakeoffData: query.data ?? null,
+    ljTakeoffDataIsLoading: query.isLoading,
+    ljTakeoffDataError: query.error,
+    ljTakeoffDataRefetch: query.refetch,
   };
 }
 
@@ -72,12 +70,11 @@ export function useLjApproachProfile(runId: string | null) {
     },
     enabled: !!runId,
   });
-
   return {
     approachData: query.data ?? null,
-    approachLoading: query.isLoading,
-    approachError: query.error,
-    refetchApproachData: query.refetch,
+    approachDataIsLoading: query.isLoading,
+    approachDataError: query.error,
+    approachDataRefetch: query.refetch,
   };
 }
 
@@ -93,11 +90,10 @@ export function useLjStepSeries(runId: string | null) {
     },
     enabled: !!runId,
   });
-
   return {
-    stepSeriesData: query.data ?? null,
-    stepSeriesLoading: query.isLoading,
-    stepSeriesError: query.error,
-    refetchStepSeriesData: query.refetch,
+    ljStepSeries: query.data ?? null,
+    ljStepSeriesIsLoading: query.isLoading,
+    ljStepSeriesError: query.error,
+    ljStepSeriesRefetch: query.refetch,
   };
 }
