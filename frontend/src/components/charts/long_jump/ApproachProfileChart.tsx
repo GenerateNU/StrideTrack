@@ -1,6 +1,8 @@
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useLjApproachProfile } from "@/hooks/useLongJumpMetrics.hooks";
+import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
 import {
   CartesianGrid,
   Legend,
@@ -13,14 +15,11 @@ import {
   YAxis,
 } from "recharts";
 
-const LEFT_COLOR = "#f97316";
-const RIGHT_COLOR = "#000000";
-
 const PHASE_COLORS: Record<string, string> = {
-  approach: "#000000",
-  antepenultimate: "#facc15",
-  penultimate: "#ef4444",
-  takeoff: "#22c55e",
+  approach: chartColors.phaseApproach,
+  antepenultimate: chartColors.phaseAntepenultimate,
+  penultimate: chartColors.phasePenultimate,
+  takeoff: chartColors.phaseTakeoff,
 };
 
 const PHASE_LABELS: Record<string, string> = {
@@ -47,7 +46,7 @@ interface CustomDotProps {
 const CustomDot = (props: CustomDotProps) => {
   const { cx, cy, payload } = props;
   if (cx === undefined || cy === undefined || !payload) return null;
-  const color = PHASE_COLORS[payload.phase] ?? "#000000";
+  const color = PHASE_COLORS[payload.phase] ?? chartColors.phaseApproach;
   const isHighlighted = payload.phase !== "approach";
   return (
     <circle
@@ -61,16 +60,20 @@ const CustomDot = (props: CustomDotProps) => {
   );
 };
 
-export const ApproachProfileChart = ({ runId }: { runId: string }) => {
-  const { approachData, approachLoading, approachError, refetchApproachData } =
-    useLjApproachProfile(runId);
+export const ApproachProfileChart = ({ runId }: ChartProps) => {
+  const {
+    approachData,
+    approachDataIsLoading,
+    approachDataError,
+    approachDataRefetch,
+  } = useLjApproachProfile(runId);
 
-  if (approachLoading) return <QueryLoading />;
-  if (approachError)
+  if (approachDataIsLoading) return <QueryLoading />;
+  if (approachDataError)
     return (
       <QueryError
-        error={approachError as Error}
-        refetch={() => void refetchApproachData()}
+        error={approachDataError}
+        refetch={approachDataRefetch}
       />
     );
   if (!approachData) return null;
@@ -104,19 +107,19 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
           data={rows}
           margin={{ top: 8, right: 16, left: 16, bottom: 0 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="label"
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
             label={{
               value: "Step Number",
               position: "insideBottom",
               offset: -5,
-              style: { fill: "var(--muted-foreground)", fontSize: 10 },
+              style: { fill: chartColors.mutedForeground, fontSize: 10 },
             }}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
             domain={["auto", "auto"]}
             label={{
               value: "GCT (ms)",
@@ -124,7 +127,7 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
               position: "insideLeft",
               offset: 0,
               style: {
-                fill: "var(--muted-foreground)",
+                fill: chartColors.mutedForeground,
                 fontSize: 10,
                 textAnchor: "middle",
               },
@@ -132,8 +135,8 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
           />
           <Tooltip
             contentStyle={{
-              background: "var(--card)",
-              border: "1px solid var(--border)",
+              background: chartColors.card,
+              border: `1px solid ${chartColors.border}`,
               borderRadius: 6,
               fontSize: 12,
             }}
@@ -155,20 +158,20 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
           {finalStepLabel && (
             <ReferenceLine
               x={finalStepLabel}
-              stroke="#f59e0b"
+              stroke={chartColors.phaseAntepenultimate}
               strokeDasharray="4 2"
               label={{
                 value: "Final 3 Steps",
                 position: "insideTopRight",
                 fontSize: 10,
-                fill: "#f59e0b",
+                fill: chartColors.phaseAntepenultimate,
               }}
             />
           )}
           <Line
             type="monotone"
             dataKey="left"
-            stroke={LEFT_COLOR}
+            stroke={chartColors.leftFoot}
             strokeWidth={2}
             dot={<CustomDot />}
             connectNulls
@@ -177,7 +180,7 @@ export const ApproachProfileChart = ({ runId }: { runId: string }) => {
           <Line
             type="monotone"
             dataKey="right"
-            stroke={RIGHT_COLOR}
+            stroke={chartColors.rightFoot}
             strokeWidth={2}
             dot={<CustomDot />}
             connectNulls

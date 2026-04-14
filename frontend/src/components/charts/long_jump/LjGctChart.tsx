@@ -1,6 +1,8 @@
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useLjApproachProfile } from "@/hooks/useLongJumpMetrics.hooks";
+import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
 import {
   CartesianGrid,
   Legend,
@@ -13,9 +15,6 @@ import {
   YAxis,
 } from "recharts";
 
-const LEFT_COLOR = "#f97316";
-const RIGHT_COLOR = "#000000";
-
 interface StepRow {
   label: number;
   left: number | null;
@@ -24,18 +23,17 @@ interface StepRow {
   foot: string;
 }
 
-export const LjGctChart = ({ runId }: { runId: string }) => {
-  const { approachData, approachLoading, approachError, refetchApproachData } =
-    useLjApproachProfile(runId);
+export const LjGctChart = ({ runId }: ChartProps) => {
+  const {
+    approachData,
+    approachDataIsLoading,
+    approachDataError,
+    approachDataRefetch,
+  } = useLjApproachProfile(runId);
 
-  if (approachLoading) return <QueryLoading />;
-  if (approachError)
-    return (
-      <QueryError
-        error={approachError as Error}
-        refetch={() => void refetchApproachData()}
-      />
-    );
+  if (approachDataIsLoading) return <QueryLoading />;
+  if (approachDataError)
+    return <QueryError error={approachDataError} refetch={approachDataRefetch} />;
   if (!approachData) return null;
 
   const sorted = [...approachData].sort((a, b) => a.ic_time - b.ic_time);
@@ -56,20 +54,20 @@ export const LjGctChart = ({ runId }: { runId: string }) => {
           data={rows}
           margin={{ top: 8, right: 16, left: 16, bottom: 0 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="label"
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
             label={{
               value: "Step Number",
               position: "insideBottom",
               offset: -5,
               fontSize: 11,
-              fill: "var(--muted-foreground)",
+              fill: chartColors.mutedForeground,
             }}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
             domain={["auto", "auto"]}
             label={{
               value: "GCT (ms)",
@@ -77,13 +75,13 @@ export const LjGctChart = ({ runId }: { runId: string }) => {
               position: "insideLeft",
               offset: -4,
               fontSize: 11,
-              fill: "var(--muted-foreground)",
+              fill: chartColors.mutedForeground,
             }}
           />
           <Tooltip
             contentStyle={{
-              background: "var(--card)",
-              border: "1px solid var(--border)",
+              background: chartColors.card,
+              border: `1px solid ${chartColors.border}`,
               borderRadius: 6,
               fontSize: 12,
             }}
@@ -107,31 +105,31 @@ export const LjGctChart = ({ runId }: { runId: string }) => {
           {finalStepLabel && (
             <ReferenceLine
               x={finalStepLabel}
-              stroke="#ef4444"
+              stroke={chartColors.phasePenultimate}
               strokeDasharray="4 2"
               label={{
                 value: "Final 3",
                 position: "insideTopRight",
                 fontSize: 10,
-                fill: "#ef4444",
+                fill: chartColors.phasePenultimate,
               }}
             />
           )}
           <Line
             type="monotone"
             dataKey="left"
-            stroke={LEFT_COLOR}
+            stroke={chartColors.leftFoot}
             strokeWidth={2}
-            dot={{ fill: LEFT_COLOR }}
+            dot={{ fill: chartColors.leftFoot }}
             connectNulls
             name="left"
           />
           <Line
             type="monotone"
             dataKey="right"
-            stroke={RIGHT_COLOR}
+            stroke={chartColors.rightFoot}
             strokeWidth={2}
-            dot={{ fill: RIGHT_COLOR }}
+            dot={{ fill: chartColors.rightFoot }}
             connectNulls
             name="right"
           />

@@ -4,6 +4,8 @@ import {
   useLjStepSeries,
   useLongJumpMetrics,
 } from "@/hooks/useLongJumpMetrics.hooks";
+import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
 import {
   CartesianGrid,
   Legend,
@@ -15,9 +17,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
-const LEFT_COLOR = "#f97316";
-const RIGHT_COLOR = "#000000";
 
 interface StepRow {
   label: number;
@@ -43,7 +42,7 @@ const CustomDot = (props: CustomDotProps) => {
         cx={cx}
         cy={cy}
         r={8}
-        fill="#22c55e"
+        fill={chartColors.phaseTakeoff}
         stroke="#fff"
         strokeWidth={2}
       />
@@ -53,32 +52,27 @@ const CustomDot = (props: CustomDotProps) => {
       cx={cx}
       cy={cy}
       r={3}
-      fill={payload.foot === "left" ? LEFT_COLOR : RIGHT_COLOR}
+      fill={payload.foot === "left" ? chartColors.leftFoot : chartColors.rightFoot}
       opacity={0.6}
     />
   );
 };
 
-export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
+export const LjFlightTimeChart = ({ runId }: ChartProps) => {
   const {
-    stepSeriesData,
-    stepSeriesLoading,
-    stepSeriesError,
-    refetchStepSeriesData,
+    ljStepSeries,
+    ljStepSeriesIsLoading,
+    ljStepSeriesError,
+    ljStepSeriesRefetch,
   } = useLjStepSeries(runId);
-  const { ljMetrics, ljMetricsLoading } = useLongJumpMetrics(runId);
+  const { ljMetrics, ljMetricsIsLoading } = useLongJumpMetrics(runId);
 
-  if (stepSeriesLoading || ljMetricsLoading) return <QueryLoading />;
-  if (stepSeriesError)
-    return (
-      <QueryError
-        error={stepSeriesError as Error}
-        refetch={() => void refetchStepSeriesData()}
-      />
-    );
-  if (!stepSeriesData) return null;
+  if (ljStepSeriesIsLoading || ljMetricsIsLoading) return <QueryLoading />;
+  if (ljStepSeriesError)
+    return <QueryError error={ljStepSeriesError} refetch={ljStepSeriesRefetch} />;
+  if (!ljStepSeries) return null;
 
-  const sorted = [...stepSeriesData].sort((a, b) => a.ic_time - b.ic_time);
+  const sorted = [...ljStepSeries].sort((a, b) => a.ic_time - b.ic_time);
   const rows: StepRow[] = sorted.map((d, i) => ({
     label: i + 1,
     left: d.foot === "left" ? (d.flight_ms ?? null) : null,
@@ -97,20 +91,20 @@ export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
           data={rows}
           margin={{ top: 8, right: 80, left: 16, bottom: 0 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="label"
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
             label={{
               value: "Step Number",
               position: "insideBottom",
               offset: -5,
               fontSize: 11,
-              fill: "var(--muted-foreground)",
+              fill: chartColors.mutedForeground,
             }}
           />
           <YAxis
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
             domain={["auto", "auto"]}
             label={{
               value: "Flight Time (ms)",
@@ -118,13 +112,13 @@ export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
               position: "insideLeft",
               offset: -4,
               fontSize: 11,
-              fill: "var(--muted-foreground)",
+              fill: chartColors.mutedForeground,
             }}
           />
           <Tooltip
             contentStyle={{
-              background: "var(--card)",
-              border: "1px solid var(--border)",
+              background: chartColors.card,
+              border: `1px solid ${chartColors.border}`,
               borderRadius: 6,
               fontSize: 12,
             }}
@@ -146,21 +140,21 @@ export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
           {takeoffRow && (
             <ReferenceLine
               x={takeoffRow.label}
-              stroke="#22c55e"
+              stroke={chartColors.phaseTakeoff}
               strokeDasharray="4 2"
               label={{
                 value: jumpFtMs ? `Takeoff → ${jumpFtMs}ms` : "Takeoff",
                 position: "insideTopLeft",
                 dx: -90,
                 fontSize: 10,
-                fill: "#22c55e",
+                fill: chartColors.phaseTakeoff,
               }}
             />
           )}
           <Line
             type="monotone"
             dataKey="left"
-            stroke={LEFT_COLOR}
+            stroke={chartColors.leftFoot}
             strokeWidth={2}
             dot={<CustomDot />}
             connectNulls
@@ -169,7 +163,7 @@ export const LjFlightTimeChart = ({ runId }: { runId: string }) => {
           <Line
             type="monotone"
             dataKey="right"
-            stroke={RIGHT_COLOR}
+            stroke={chartColors.rightFoot}
             strokeWidth={2}
             dot={<CustomDot />}
             connectNulls

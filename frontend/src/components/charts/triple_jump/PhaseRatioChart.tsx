@@ -1,6 +1,8 @@
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useTjPhaseRatio } from "@/hooks/useTripleJumpMetrics.hooks";
+import { chartColors } from "@/lib/chartColors";
+import type { ChartProps } from "@/types/chart.types";
 import {
   Bar,
   BarChart,
@@ -11,25 +13,24 @@ import {
   YAxis,
 } from "recharts";
 
-const PHASE_COLORS = { hop: "#3b82f6", step: "#8b5cf6", jump: "#10b981" };
+const PHASE_COLORS = {
+  hop: chartColors.phaseHop,
+  step: chartColors.phaseStep,
+  jump: chartColors.phaseJump,
+};
 const IDEAL_RATIOS = { hop: 35, step: 30, jump: 35 };
 
-export const PhaseRatioChart = ({ runId }: { runId: string }) => {
+export const PhaseRatioChart = ({ runId }: ChartProps) => {
   const {
     phaseRatioData,
-    phaseRatioLoading,
-    phaseRatioError,
-    refetchPhaseRatioData,
+    phaseRatioDataIsLoading,
+    phaseRatioDataError,
+    phaseRatioDataRefetch,
   } = useTjPhaseRatio(runId);
 
-  if (phaseRatioLoading) return <QueryLoading />;
-  if (phaseRatioError)
-    return (
-      <QueryError
-        error={phaseRatioError as Error}
-        refetch={() => void refetchPhaseRatioData()}
-      />
-    );
+  if (phaseRatioDataIsLoading) return <QueryLoading />;
+  if (phaseRatioDataError)
+    return <QueryError error={phaseRatioDataError} refetch={phaseRatioDataRefetch} />;
   if (!phaseRatioData) return null;
 
   const chartData = [
@@ -63,18 +64,18 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
             type="number"
             domain={[0, 100]}
             unit="%"
-            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
           />
           <YAxis
             type="category"
             dataKey="name"
-            tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+            tick={{ fontSize: 12, fill: chartColors.mutedForeground }}
             width={48}
           />
           <Tooltip
             contentStyle={{
-              background: "var(--card)",
-              border: "1px solid var(--border)",
+              background: chartColors.card,
+              border: `1px solid ${chartColors.border}`,
               borderRadius: 6,
               fontSize: 12,
             }}
@@ -85,7 +86,6 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
               ]) as never
             }
           />
-          {/* Custom legend — fixed order Hop → Step → Jump */}
           <Bar dataKey="hop" stackId="a" fill={PHASE_COLORS.hop} name="Hop">
             <LabelList
               dataKey="hop"
@@ -113,7 +113,6 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
         </BarChart>
       </ResponsiveContainer>
 
-      {/* Manual legend in correct order */}
       <div className="flex justify-center gap-4 text-xs mt-1">
         {[
           { label: "Hop", color: PHASE_COLORS.hop },
@@ -125,7 +124,7 @@ export const PhaseRatioChart = ({ runId }: { runId: string }) => {
               className="inline-block w-3 h-3 rounded-sm"
               style={{ backgroundColor: color }}
             />
-            <span style={{ color: "var(--muted-foreground)" }}>{label}</span>
+            <span style={{ color: chartColors.mutedForeground }}>{label}</span>
           </div>
         ))}
       </div>
