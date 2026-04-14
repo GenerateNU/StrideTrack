@@ -15,16 +15,20 @@ class Interval:
 
 
 def _compute_gaps(contacts_sorted: list[Interval]) -> list[Interval]:
-    """
-    Return gaps between consecutive contact intervals, representing time when neither foot is on the ground.
-    """
-    gaps: list[Interval] = []
     if len(contacts_sorted) < 2:
-        return gaps
+        return []
 
-    for a, b in zip(contacts_sorted[:-1], contacts_sorted[1:], strict=True):
-        if b.start > a.end:
-            gaps.append(Interval(start=a.end, end=b.start))
+    merged: list[list[int]] = [[contacts_sorted[0].start, contacts_sorted[0].end]]
+    for current in contacts_sorted[1:]:
+        last = merged[-1]
+        if current.start <= last[1]:
+            last[1] = max(last[1], current.end)
+        else:
+            merged.append([current.start, current.end])
+
+    gaps: list[Interval] = []
+    for i in range(len(merged) - 1):
+        gaps.append(Interval(start=merged[i][1], end=merged[i + 1][0]))
 
     return gaps
 
@@ -124,6 +128,7 @@ def calc_takeoff_gct_ms(
     df_steps: pd.DataFrame,
     hurdle_min_ft_ms: int = 260,
     hurdle_max_ft_ms: int | None = None,
+    expected_count: int | None = None,
 ) -> pd.DataFrame:
     """
     Take-off GCT: GCT of the last step before hurdle clearance. DataFrame with columns: hurdle_num, takeoff_gct_ms
@@ -138,6 +143,7 @@ def calc_landing_gct_ms(
     df_steps: pd.DataFrame,
     hurdle_min_ft_ms: int = 260,
     hurdle_max_ft_ms: int | None = None,
+    expected_count: int | None = None,
 ) -> pd.DataFrame:
     """
     Landing GCT: GCT of the first step after hurdle clearance. DataFrame with columns: hurdle_num, landing_gct_ms
@@ -152,6 +158,7 @@ def calc_takeoff_ft_ms(
     df_steps: pd.DataFrame,
     hurdle_min_ft_ms: int = 260,
     hurdle_max_ft_ms: int | None = None,
+    expected_count: int | None = None,
 ) -> pd.DataFrame:
     """
     Take-off FT: FT during hurdle clearance. DataFrame with columns: hurdle_num, takeoff_ft_ms
@@ -166,6 +173,7 @@ def calc_gct_increase_hurdle_to_hurdle_pct(
     df_steps: pd.DataFrame,
     hurdle_min_ft_ms: int = 260,
     hurdle_max_ft_ms: int | None = None,
+    expected_count: int | None = None,
 ) -> pd.DataFrame:
     """
     GCT Increase Hurdle-to-Hurdle: (GCT_hurdle_N - GCT_hurdle_1) / GCT_hurdle_1 * 100 DataFrame with columns:
@@ -184,6 +192,7 @@ def transform_stride_cycles_to_hurdle_metrics(
     df_steps: pd.DataFrame,
     hurdle_min_ft_ms: int = 260,
     hurdle_max_ft_ms: int | None = None,
+    expected_count: int | None = None,
 ) -> pd.DataFrame:
     """
     Compute hurdle metrics from stride-cycle rows.
@@ -232,6 +241,14 @@ def transform_stride_cycles_to_hurdle_metrics(
     hurdle_gaps = _filter_hurdle_gaps(
         gaps, min_ms=hurdle_min_ft_ms, max_ms=hurdle_max_ft_ms
     )
+
+    # Top-N selection: keep only the longest gaps if we have more than expected
+    if expected_count is not None and len(hurdle_gaps) > expected_count:
+        hurdle_gaps = sorted(hurdle_gaps, key=lambda g: g.end - g.start, reverse=True)[
+            :expected_count
+        ][:expected_count]
+        hurdle_gaps = sorted(hurdle_gaps, key=lambda g: g.start)
+
     if not hurdle_gaps:
         return pd.DataFrame(columns=out_cols)
 

@@ -19,6 +19,7 @@ import {
 import EventHistoryFilterBar from "@/components/charts/history/EventHistoryFilterBar";
 import { EventHistoryChart } from "@/components/charts/history/EventHistoryChart";
 import type { EventHistoryFilters } from "@/types/eventHistoryFilters.types";
+import { AverageReactionTimeCard } from "@/components/charts/reaction-time/AverageReactionTimeCard";
 import { EVENT_DISPLAY_NAMES } from "@/hooks/useEvents.hooks";
 
 function nameToHue(name: string): number {
@@ -220,6 +221,7 @@ export default function AthleteProfilePage() {
               </div>
               <div className="text-xs text-muted-foreground">Event Types</div>
             </div>
+            <AverageReactionTimeCard athleteId={athleteId!} />
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">

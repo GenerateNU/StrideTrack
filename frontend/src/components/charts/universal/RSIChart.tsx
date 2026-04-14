@@ -5,7 +5,7 @@ import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useRunMetrics } from "@/hooks/useRunMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 import type { ChartProps } from "@/types/chart.types";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -28,16 +28,54 @@ export const RSIChart = ({ runId }: ChartProps) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((state: Record<string, unknown>) => {
-    const index = state?.activeTooltipIndex;
-    if (typeof index === "number") {
-      setActiveIndex(index);
+  const rsiData = useMemo(() => {
+    if (!runMetrics || runMetrics.length === 0) return [];
+
+    const rsiByStride = new Map<number, number[]>();
+    for (const m of runMetrics) {
+      const rsi = m.gct_ms > 0 ? m.flight_ms / m.gct_ms : 0;
+      const existing = rsiByStride.get(m.stride_num);
+      if (existing) {
+        existing.push(rsi);
+      } else {
+        rsiByStride.set(m.stride_num, [rsi]);
+      }
     }
-  }, []);
+
+    return Array.from(rsiByStride.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([stride_num, values]) => ({
+        stride_num,
+        rsi: parseFloat(
+          (values.reduce((s, v) => s + v, 0) / values.length).toFixed(3)
+        ),
+      }));
+  }, [runMetrics]);
+
+  const handleMouseMove = useCallback(
+    (_state: unknown, event: React.MouseEvent | undefined) => {
+      if (!event || !chartRef.current || rsiData.length === 0) return;
+
+      const plotArea = chartRef.current.querySelector(
+        ".recharts-cartesian-grid"
+      );
+      if (!plotArea) return;
+
+      const rect = plotArea.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const ratio = x / rect.width;
+
+      if (ratio < 0 || ratio > 1) return;
+
+      const index = Math.round(ratio * (rsiData.length - 1));
+      setActiveIndex(Math.max(0, Math.min(rsiData.length - 1, index)));
+    },
+    [rsiData]
+  );
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
-      if (!chartRef.current || !runMetrics) return;
+      if (!chartRef.current || rsiData.length === 0) return;
 
       const touch = e.touches[0];
       const plotArea = chartRef.current.querySelector(
@@ -51,48 +89,16 @@ export const RSIChart = ({ runId }: ChartProps) => {
 
       if (ratio < 0 || ratio > 1) return;
 
-      const rsiByStride = new Map<number, number[]>();
-      for (const m of runMetrics) {
-        const rsi = m.gct_ms > 0 ? m.flight_ms / m.gct_ms : 0;
-        const existing = rsiByStride.get(m.stride_num);
-        if (existing) {
-          existing.push(rsi);
-        } else {
-          rsiByStride.set(m.stride_num, [rsi]);
-        }
-      }
-      const dataLength = rsiByStride.size;
-
-      const index = Math.round(ratio * (dataLength - 1));
-      setActiveIndex(Math.max(0, Math.min(dataLength - 1, index)));
+      const index = Math.round(ratio * (rsiData.length - 1));
+      setActiveIndex(Math.max(0, Math.min(rsiData.length - 1, index)));
     },
-    [runMetrics]
+    [rsiData]
   );
 
   if (runMetricsIsLoading) return <QueryLoading />;
   if (runMetricsError)
     return <QueryError error={runMetricsError} refetch={runMetricsRefetch} />;
   if (!runMetrics || runMetrics.length === 0) return null;
-
-  const rsiByStride = new Map<number, number[]>();
-  for (const m of runMetrics) {
-    const rsi = m.gct_ms > 0 ? m.flight_ms / m.gct_ms : 0;
-    const existing = rsiByStride.get(m.stride_num);
-    if (existing) {
-      existing.push(rsi);
-    } else {
-      rsiByStride.set(m.stride_num, [rsi]);
-    }
-  }
-
-  const rsiData = Array.from(rsiByStride.entries())
-    .sort(([a], [b]) => a - b)
-    .map(([stride_num, values]) => ({
-      stride_num,
-      rsi: parseFloat(
-        (values.reduce((s, v) => s + v, 0) / values.length).toFixed(3)
-      ),
-    }));
 
   const rsiValues = rsiData.map((d) => d.rsi);
   const yMin = Math.min(...rsiValues);
@@ -123,7 +129,7 @@ export const RSIChart = ({ runId }: ChartProps) => {
           <LineChart
             data={rsiData}
             margin={{ top: 16, right: 24, left: 0, bottom: 24 }}
-            onMouseMove={handleMouseMove}
+            onMouseMove={handleMouseMove as (state: unknown) => void}
           >
             <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
             <XAxis
