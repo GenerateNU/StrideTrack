@@ -90,6 +90,11 @@ class FeedbackService:
         if not settings.llm_api_key:
             return "Feedback unavailable: no LLM API key configured."
 
+        stored_feedback = await self.repository.get_feedback(run_id)
+        if stored_feedback:
+            logger.info(f"FeedbackService: returning cached feedback for run {run_id}")
+            return stored_feedback
+
         logger.info(f"FeedbackService: generating feedback for run {run_id}")
 
         await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
@@ -112,5 +117,6 @@ class FeedbackService:
             logger.error(f"FeedbackService: LiteLLM call failed for run {run_id}: {e}")
             return "Feedback temporarily unavailable. Please try again later."
 
-        logger.info(f"FeedbackService: feedback generated for run {run_id}")
+        await self.repository.save_feedback(run_id, feedback)
+        logger.info(f"FeedbackService: feedback generated and saved for run {run_id}")
         return feedback

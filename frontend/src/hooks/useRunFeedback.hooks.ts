@@ -18,7 +18,6 @@ export function useGetRunFeedback(runId: string | undefined) {
       return parsed.data;
     },
     enabled: !!runId,
-    staleTime: Infinity,
   });
 
   return {

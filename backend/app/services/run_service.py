@@ -51,6 +51,8 @@ class RunService:
         """Update a run."""
         await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
         logger.info(f"Service: Updating run {run_id}")
+        if data.event_type is not None:
+            await self.repository.save_feedback(run_id, None)
         run = await self.repository.update(run_id, data)
         logger.info(f"Service: Updated run {run_id}")
         return run

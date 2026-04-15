@@ -65,6 +65,7 @@ export function useUpdateRun() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["runs"] });
+      queryClient.invalidateQueries({ queryKey: ["runFeedback"] });
     },
   });
 
