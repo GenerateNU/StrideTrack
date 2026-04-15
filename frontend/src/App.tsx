@@ -4,6 +4,7 @@ import AthleteProfilePage from "@/pages/AthleteProfilePage";
 import HistoryPage from "@/pages/HistoryPage";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
+import NotFoundPage from "@/pages/NotFoundPage";
 import RecordRunPage from "@/pages/RecordRunPage";
 import RunAnalysisPage from "@/pages/RunAnalysisPage";
 import VisualizationsPage from "@/pages/VisualizationsPage";
@@ -35,6 +36,7 @@ function App() {
                     path="/athletes/:athleteId/runs/:runId"
                     element={<RunAnalysisPage />}
                   />
+                  <Route path="*" element={<NotFoundPage />} />
                 </Route>
               </Routes>
             </ProtectedRoute>
