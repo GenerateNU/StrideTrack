@@ -5,11 +5,12 @@ import litellm
 
 from app.core.config import settings
 from app.repositories.run_repository import RunRepository
+from app.schemas.run_schemas import RunResponse
 
 logger = logging.getLogger(__name__)
 
 
-def _summarize_metrics(rows: list) -> dict:
+def _summarize_metrics(rows: list[RunResponse]) -> dict:
     """Compute aggregate stats from RunResponse objects."""
     left = [r for r in rows if r.foot == "left"]
     right = [r for r in rows if r.foot == "right"]
@@ -98,14 +99,18 @@ class FeedbackService:
         stats = _summarize_metrics(rows)
         prompt = _build_prompt(str(meta.event_type), stats)
 
-        response = await litellm.acompletion(
-            model=settings.llm_model,
-            api_key=settings.llm_api_key,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=120,
-            temperature=0.4,
-        )
+        try:
+            response = await litellm.acompletion(
+                model=settings.llm_model,
+                api_key=settings.llm_api_key,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=120,
+                temperature=0.4,
+            )
+            feedback = response.choices[0].message.content.strip()
+        except Exception as e:
+            logger.error(f"FeedbackService: LiteLLM call failed for run {run_id}: {e}")
+            return "Feedback temporarily unavailable. Please try again later."
 
-        feedback = response.choices[0].message.content.strip()
         logger.info(f"FeedbackService: feedback generated for run {run_id}")
         return feedback
