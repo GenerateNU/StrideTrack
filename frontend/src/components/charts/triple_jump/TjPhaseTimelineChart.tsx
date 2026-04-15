@@ -34,16 +34,14 @@ export const TjPhaseTimelineChart = ({ runId }: ChartProps) => {
     tjStepSeriesError,
     tjStepSeriesRefetch,
   } = useTjStepSeries(runId);
-  const {
-    tjMetrics,
-    tjMetricsIsLoading,
-    tjMetricsError,
-    tjMetricsRefetch,
-  } = useTripleJumpMetrics(runId);
+  const { tjMetrics, tjMetricsIsLoading, tjMetricsError, tjMetricsRefetch } =
+    useTripleJumpMetrics(runId);
 
   if (tjStepSeriesIsLoading || tjMetricsIsLoading) return <QueryLoading />;
   if (tjStepSeriesError)
-    return <QueryError error={tjStepSeriesError} refetch={tjStepSeriesRefetch} />;
+    return (
+      <QueryError error={tjStepSeriesError} refetch={tjStepSeriesRefetch} />
+    );
   if (tjMetricsError)
     return <QueryError error={tjMetricsError} refetch={tjMetricsRefetch} />;
   if (!tjStepSeries || !tjMetrics) return null;
@@ -59,9 +57,21 @@ export const TjPhaseTimelineChart = ({ runId }: ChartProps) => {
   }));
 
   const phaseLines = [
-    { label: rows[rows.length - 3]?.label, name: "Hop", color: chartColors.phaseHop },
-    { label: rows[rows.length - 2]?.label, name: "Step", color: chartColors.phaseStep },
-    { label: rows[rows.length - 1]?.label, name: "Jump", color: chartColors.phaseJump },
+    {
+      label: rows[rows.length - 3]?.label,
+      name: "Hop",
+      color: chartColors.phaseHop,
+    },
+    {
+      label: rows[rows.length - 2]?.label,
+      name: "Step",
+      color: chartColors.phaseStep,
+    },
+    {
+      label: rows[rows.length - 1]?.label,
+      name: "Jump",
+      color: chartColors.phaseJump,
+    },
   ];
 
   const sharedChart = (

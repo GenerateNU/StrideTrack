@@ -1,4 +1,9 @@
-import { Card, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
 import { GraphInfoCard } from "@/components/charts/shared/GraphInfoCard";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
@@ -25,7 +30,9 @@ export const JumpFlightTimeCard = ({ runId }: ChartProps) => {
         </CardDescription>
         <CardTitle className="text-3xl font-bold tabular-nums">
           {value != null ? value.toFixed(1) : "—"}
-          <span className="text-sm font-normal text-muted-foreground ml-1">ms</span>
+          <span className="text-sm font-normal text-muted-foreground ml-1">
+            ms
+          </span>
         </CardTitle>
       </CardHeader>
     </Card>

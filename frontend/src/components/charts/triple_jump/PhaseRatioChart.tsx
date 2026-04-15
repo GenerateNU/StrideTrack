@@ -30,7 +30,9 @@ export const PhaseRatioChart = ({ runId }: ChartProps) => {
 
   if (phaseRatioDataIsLoading) return <QueryLoading />;
   if (phaseRatioDataError)
-    return <QueryError error={phaseRatioDataError} refetch={phaseRatioDataRefetch} />;
+    return (
+      <QueryError error={phaseRatioDataError} refetch={phaseRatioDataRefetch} />
+    );
   if (!phaseRatioData) return null;
 
   const chartData = [

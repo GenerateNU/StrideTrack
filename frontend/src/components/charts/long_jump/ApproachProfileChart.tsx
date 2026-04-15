@@ -71,10 +71,7 @@ export const ApproachProfileChart = ({ runId }: ChartProps) => {
   if (approachDataIsLoading) return <QueryLoading />;
   if (approachDataError)
     return (
-      <QueryError
-        error={approachDataError}
-        refetch={approachDataRefetch}
-      />
+      <QueryError error={approachDataError} refetch={approachDataRefetch} />
     );
   if (!approachData) return null;
 

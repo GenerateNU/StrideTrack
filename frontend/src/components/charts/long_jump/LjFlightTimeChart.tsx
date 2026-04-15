@@ -52,7 +52,9 @@ const CustomDot = (props: CustomDotProps) => {
       cx={cx}
       cy={cy}
       r={3}
-      fill={payload.foot === "left" ? chartColors.leftFoot : chartColors.rightFoot}
+      fill={
+        payload.foot === "left" ? chartColors.leftFoot : chartColors.rightFoot
+      }
       opacity={0.6}
     />
   );
@@ -69,7 +71,9 @@ export const LjFlightTimeChart = ({ runId }: ChartProps) => {
 
   if (ljStepSeriesIsLoading || ljMetricsIsLoading) return <QueryLoading />;
   if (ljStepSeriesError)
-    return <QueryError error={ljStepSeriesError} refetch={ljStepSeriesRefetch} />;
+    return (
+      <QueryError error={ljStepSeriesError} refetch={ljStepSeriesRefetch} />
+    );
   if (!ljStepSeries) return null;
 
   const sorted = [...ljStepSeries].sort((a, b) => a.ic_time - b.ic_time);

@@ -33,7 +33,9 @@ export const LjGctChart = ({ runId }: ChartProps) => {
 
   if (approachDataIsLoading) return <QueryLoading />;
   if (approachDataError)
-    return <QueryError error={approachDataError} refetch={approachDataRefetch} />;
+    return (
+      <QueryError error={approachDataError} refetch={approachDataRefetch} />
+    );
   if (!approachData) return null;
 
   const sorted = [...approachData].sort((a, b) => a.ic_time - b.ic_time);

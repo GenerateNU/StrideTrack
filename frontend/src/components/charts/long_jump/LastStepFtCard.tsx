@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useLongJumpMetrics } from "@/hooks/useLongJumpMetrics.hooks";
@@ -23,12 +29,16 @@ export const LastStepFtCard = ({ runId }: ChartProps) => {
         </CardDescription>
         <CardTitle className="text-3xl font-bold tabular-nums">
           {value != null ? value.toFixed(1) : "—"}
-          <span className="text-sm font-normal text-muted-foreground ml-1">ms</span>
+          <span className="text-sm font-normal text-muted-foreground ml-1">
+            ms
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-xs text-muted-foreground leading-snug">
-          Flight time of the final takeoff step — the actual jump. Longer flight time reflects a more powerful and effective takeoff, assuming good technique.
+          Flight time of the final takeoff step — the actual jump. Longer flight
+          time reflects a more powerful and effective takeoff, assuming good
+          technique.
         </p>
       </CardContent>
     </Card>
