@@ -154,9 +154,6 @@ export default function VisualizationsPage() {
           <RsiChart runId={HARDCODED_BOSCO_RUN_ID} />
           <GctFlightChart runId={HARDCODED_BOSCO_RUN_ID} />
           <FatigueIndexKPI runId={HARDCODED_BOSCO_RUN_ID} />
-
-          
-       
         </div>
       </div>
     </div>
