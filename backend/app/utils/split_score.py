@@ -7,8 +7,10 @@ def compute_diffs(
     segments_ms: list[float],
     total_ms: float,
     event_type: str,
+    gender: str = "male",
 ) -> list[dict]:
-    stats = POPULATION_STATS[event_type]
+    gender_key = gender if gender in ("male", "female") else "male"
+    stats = POPULATION_STATS[gender_key][event_type]
     means = stats["mean"]
 
     if len(segments_ms) != len(means):

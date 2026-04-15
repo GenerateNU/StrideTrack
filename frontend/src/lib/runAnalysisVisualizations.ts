@@ -66,6 +66,16 @@ const visualizationsByEventType: Record<string, VisualizationConfig[]> = {
     SplitScoreChart,
     HurdleTimelineChart,
   ],
+  hurdles_60m: [
+    ...DEFAULT_CHARTS,
+    GctIncreaseChart,
+    HurdleSplitChart,
+    LandingGctChart,
+    StepsBetweenHurdlesChart,
+    TakeoffFtChart,
+    TakeoffGctChart,
+    HurdleTimelineChart,
+  ],
   hurdles_partial: [
     ...DEFAULT_CHARTS,
     GctIncreaseChart,

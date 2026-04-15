@@ -13,21 +13,24 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
   const [name, setName] = useState("");
   const [heightIn, setHeightIn] = useState("");
   const [weightLbs, setWeightLbs] = useState("");
+  const [gender, setGender] = useState<"male" | "female" | "">("");
 
   const resetAndClose = () => {
     setName("");
     setHeightIn("");
     setWeightLbs("");
+    setGender("");
     onClose();
   };
 
   const handleSubmit = async () => {
-    if (!name.trim()) return;
+    if (!name.trim() || !gender) return;
     try {
       await createAthlete({
         name: name.trim(),
         height_in: heightIn ? parseFloat(heightIn) : null,
         weight_lbs: weightLbs ? parseFloat(weightLbs) : null,
+        gender,
       });
       resetAndClose();
     } catch {
@@ -68,6 +71,21 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
             />
           </div>
 
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Gender *
+            </label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value as "male" | "female" | "")}
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none"
+            >
+              <option value="" disabled>Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -98,7 +116,7 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
 
         <button
           onClick={handleSubmit}
-          disabled={!name.trim() || createAthleteIsLoading}
+          disabled={!name.trim() || !gender || createAthleteIsLoading}
           className="mt-6 w-full rounded-xl py-3.5 text-sm font-semibold transition-all disabled:opacity-40"
           style={{
             backgroundColor: "hsl(var(--primary))",

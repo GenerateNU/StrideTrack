@@ -4,8 +4,6 @@ import subprocess
 import tempfile
 
 import numpy as np
-from matplotlib import pyplot as plt
-from matplotlib.patches import FancyBboxPatch
 from scipy import stats
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -28,12 +26,30 @@ MUTED_BG = "#f1f5f9"
 # Segment labels
 
 LABELS_400MH = [
-    "Start→H1", "H1→H2", "H2→H3", "H3→H4", "H4→H5",
-    "H5→H6", "H6→H7", "H7→H8", "H8→H9", "H9→H10", "H10→Fin",
+    "Start→H1",
+    "H1→H2",
+    "H2→H3",
+    "H3→H4",
+    "H4→H5",
+    "H5→H6",
+    "H6→H7",
+    "H7→H8",
+    "H8→H9",
+    "H9→H10",
+    "H10→Fin",
 ]
 SHORT_LABELS_400MH = [
-    "S→H1", "1→2", "2→3", "3→4", "4→5",
-    "5→6", "6→7", "7→8", "8→9", "9→10", "10→F",
+    "S→H1",
+    "1→2",
+    "2→3",
+    "3→4",
+    "4→5",
+    "5→6",
+    "6→7",
+    "7→8",
+    "8→9",
+    "9→10",
+    "10→F",
 ]
 LABELS_110MH = LABELS_400MH  # same structure: Start→H1 ... H10→Fin
 SHORT_LABELS_110MH = SHORT_LABELS_400MH
@@ -73,9 +89,7 @@ def _pct_bg(pct: float) -> str:
 def _pdf_to_text(pdf_path: str) -> str:
     """Convert a PDF to text using pdftotext. Returns path to text file."""
     pdf_path = os.path.join(SCRIPT_DIR, pdf_path)
-    txt_path = os.path.join(
-        tempfile.gettempdir(), os.path.basename(pdf_path) + ".txt"
-    )
+    txt_path = os.path.join(tempfile.gettempdir(), os.path.basename(pdf_path) + ".txt")
     subprocess.run(["pdftotext", "-layout", pdf_path, txt_path], check=True)
     return txt_path
 
@@ -93,6 +107,7 @@ def _extract_floats_until_slash(parts: list[str]) -> list[float]:
 
 
 # ── Hurdle parsers (400mH, 110mH, 100mH share the same touchdown format) ──
+
 
 def _parse_hurdles(filepath: str, min_time: float, max_time: float) -> list[dict]:
     """
@@ -124,7 +139,7 @@ def _parse_hurdles(filepath: str, min_time: float, max_time: float) -> list[dict
             touchdowns, finish_time = nums[:10], nums[10]
         else:
             for skip in [5, 6]:
-                candidate = nums[:skip] + nums[skip + 1:]
+                candidate = nums[:skip] + nums[skip + 1 :]
                 if len(candidate) >= 11 and all(
                     candidate[j] < candidate[j + 1] for j in range(10)
                 ):
@@ -165,6 +180,7 @@ def parse_100mh(filepath: str) -> list[dict]:
 
 
 # ── Sprint parsers ──
+
 
 def parse_400m(filepath: str) -> list[dict]:
     """Parse 400m split times from pdftotext layout output."""
@@ -226,7 +242,7 @@ def parse_400m(filepath: str) -> list[dict]:
 
         if not splits and len(interval_nums) >= 4:
             for start in range(len(interval_nums) - 3):
-                candidate = interval_nums[start: start + 4]
+                candidate = interval_nums[start : start + 4]
                 if abs(sum(candidate) - official) < 0.5:
                     splits = candidate
                     break
@@ -362,6 +378,7 @@ def parse_200m(filepath: str) -> list[dict]:
 
 # ── RaceAnalyzer ──────────────────────────────────────────────────────────────
 
+
 class RaceAnalyzer:
     """Compares a single run's splits against a population distribution."""
 
@@ -369,25 +386,40 @@ class RaceAnalyzer:
         "400mH": LABELS_400MH,
         "110mH": LABELS_110MH,
         "100mH": LABELS_100MH,
-        "400m":  LABELS_400M,
-        "100m":  LABELS_100M,
-        "200m":  LABELS_200M,
+        "400m": LABELS_400M,
+        "100m": LABELS_100M,
+        "200m": LABELS_200M,
+        "400mH_W": LABELS_400MH,
+        "400m_W": LABELS_400M,
+        "100mH_W": LABELS_100MH,
+        "100m_W": LABELS_100M,
+        "200m_W": LABELS_200M,
     }
     SHORT_LABELS = {
         "400mH": SHORT_LABELS_400MH,
         "110mH": SHORT_LABELS_110MH,
         "100mH": SHORT_LABELS_100MH,
-        "400m":  SHORT_LABELS_400M,
-        "100m":  SHORT_LABELS_100M,
-        "200m":  SHORT_LABELS_200M,
+        "400m": SHORT_LABELS_400M,
+        "100m": SHORT_LABELS_100M,
+        "200m": SHORT_LABELS_200M,
+        "400mH_W": SHORT_LABELS_400MH,
+        "400m_W": SHORT_LABELS_400M,
+        "100mH_W": SHORT_LABELS_100MH,
+        "100m_W": SHORT_LABELS_100M,
+        "200m_W": SHORT_LABELS_200M,
     }
     SPLIT_KEY = {
         "400mH": "intervals",
         "110mH": "intervals",
         "100mH": "intervals",
-        "400m":  "splits",
-        "100m":  "splits",
-        "200m":  "splits",
+        "400m": "splits",
+        "100m": "splits",
+        "200m": "splits",
+        "400mH_W": "intervals",
+        "400m_W": "splits",
+        "100mH_W": "intervals",
+        "100m_W": "splits",
+        "200m_W": "splits",
     }
 
     def __init__(self, races: list[dict], event_type: str) -> None:
@@ -404,10 +436,12 @@ class RaceAnalyzer:
     def analyze_run(self, segments: list[float], total_time: float) -> dict:
         """Compute per-segment percentiles for a single run."""
         normalized = np.array(segments) / total_time * 100
-        percentiles = np.array([
-            stats.percentileofscore(self.population[:, i], normalized[i])
-            for i in range(len(segments))
-        ])
+        percentiles = np.array(
+            [
+                stats.percentileofscore(self.population[:, i], normalized[i])
+                for i in range(len(segments))
+            ]
+        )
         return {
             "normalized": normalized,
             "percentiles": percentiles,
@@ -418,21 +452,27 @@ class RaceAnalyzer:
         """Print a formatted console report card."""
         print(f"\n{'=' * 55}")
         print(f"  {athlete_name}")
-        print(f"  {self.event_type}  ·  {result['total_time']:.2f}s  ·  vs {self.n_races} races")
+        print(
+            f"  {self.event_type}  ·  {result['total_time']:.2f}s  ·  vs {self.n_races} races"
+        )
         print(f"{'=' * 55}")
         print(f"  {'Segment':<12} {'% Time':>7} {'Pctile':>7}")
         print(f"  {'-' * 28}")
         for i, label in enumerate(self.labels):
-            print(f"  {label:<12} {result['normalized'][i]:>6.1f}% {result['percentiles'][i]:>6.0f}th")
+            print(
+                f"  {label:<12} {result['normalized'][i]:>6.1f}% {result['percentiles'][i]:>6.0f}th"
+            )
         print()
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     """Load all population data and print constants for hardcoding."""
     print("Loading population data...")
 
+    # Men's events
     hurdle_400m_races = parse_400mh(_pdf_to_text("data/AthletesFirst_400H_M.pdf"))
     sprint_400m_races = parse_400m(_pdf_to_text("data/AthletesFirst_400S_M.pdf"))
     hurdle_110m_races = parse_110mh(_pdf_to_text("data/AthleteFirst_110H_M.pdf"))
@@ -440,20 +480,37 @@ def main() -> None:
     sprint_100m_races = parse_100m(_pdf_to_text("data/AthleteFirst_100S_M.pdf"))
     sprint_200m_races = parse_200m(_pdf_to_text("data/AthleteFirst_200S_M.pdf"))
 
+    # Women's events
+    hurdle_400m_w_races = parse_400mh(_pdf_to_text("data/AthleteFirst_400H_W.pdf"))
+    sprint_400m_w_races = parse_400m(_pdf_to_text("data/AthleteFirst_400S_W.pdf"))
+    hurdle_100m_w_races = parse_100mh(_pdf_to_text("data/AthleteFirst_100H_W.pdf"))
+    sprint_100m_w_races = parse_100m(_pdf_to_text("data/AthleteFirst_100S_W.pdf"))
+    sprint_200m_w_races = parse_200m(_pdf_to_text("data/AthleteFirst_200S_W.pdf"))
+
     print(f"  400mH: {len(hurdle_400m_races)} races")
     print(f"  400m:  {len(sprint_400m_races)} races")
     print(f"  110mH: {len(hurdle_110m_races)} races")
     print(f"  100mH: {len(hurdle_100m_races)} races")
     print(f"  100m:  {len(sprint_100m_races)} races")
     print(f"  200m:  {len(sprint_200m_races)} races")
+    print(f"  400mH_W: {len(hurdle_400m_w_races)} races")
+    print(f"  400m_W:  {len(sprint_400m_w_races)} races")
+    print(f"  100mH_W: {len(hurdle_100m_w_races)} races")
+    print(f"  100m_W:  {len(sprint_100m_w_races)} races")
+    print(f"  200m_W:  {len(sprint_200m_w_races)} races")
 
     events = [
         ("400mH", hurdle_400m_races),
-        ("400m",  sprint_400m_races),
+        ("400m", sprint_400m_races),
         ("110mH", hurdle_110m_races),
         ("100mH", hurdle_100m_races),
-        ("100m",  sprint_100m_races),
-        ("200m",  sprint_200m_races),
+        ("100m", sprint_100m_races),
+        ("200m", sprint_200m_races),
+        ("400mH_W", hurdle_400m_w_races),
+        ("400m_W", sprint_400m_w_races),
+        ("100mH_W", hurdle_100m_w_races),
+        ("100m_W", sprint_100m_w_races),
+        ("200m_W", sprint_200m_w_races),
     ]
 
     for name, races in events:
@@ -461,7 +518,7 @@ def main() -> None:
         pop = analyzer.population
         print(f"\n── {name} ({len(races)} races) ──")
         print(f"{name} mean:", np.round(pop.mean(0), 4).tolist())
-        print(f"{name} std: ", np.round(pop.std(0),  4).tolist())
+        print(f"{name} std: ", np.round(pop.std(0), 4).tolist())
         print(f"{name} p10: ", np.percentile(pop, 10, axis=0).round(4).tolist())
         print(f"{name} p25: ", np.percentile(pop, 25, axis=0).round(4).tolist())
         print(f"{name} p75: ", np.percentile(pop, 75, axis=0).round(4).tolist())

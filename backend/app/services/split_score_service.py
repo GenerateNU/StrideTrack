@@ -33,9 +33,13 @@ class SplitScoreService:
         if event_type not in SUPPORTED_EVENTS:
             raise UnsupportedEventError(event_type)
 
+        gender = await self.repository.get_athlete_gender(run_id)
+        gender_key = gender if gender in ("male", "female") else "male"
+        stats = POPULATION_STATS[gender_key][event_type]
+
         raw_metrics = await self.repository.get_run_metrics(run_id)
         segments_ms = self._compute_segments(raw_metrics, elapsed_ms, event_type)
-        diffs = compute_diffs(segments_ms, elapsed_ms, event_type)
+        diffs = compute_diffs(segments_ms, elapsed_ms, event_type, gender_key)
         notes = generate_coaching_notes(diffs, event_type)
 
         segment_scores = [
@@ -58,9 +62,9 @@ class SplitScoreService:
             total_ms=elapsed_ms,
             segments=segment_scores,
             coaching_notes=notes,
-            population_mean_pcts=POPULATION_STATS[event_type]["mean"],
-            population_std_pcts=POPULATION_STATS[event_type]["std"],
-            population_percentiles=POPULATION_STATS[event_type]["percentiles"],
+            population_mean_pcts=stats["mean"],
+            population_std_pcts=stats["std"],
+            population_percentiles=stats["percentiles"],
         )
 
     def _compute_segments(

@@ -7,6 +7,7 @@ interface Athlete {
   name: string;
   height_in: number | null;
   weight_lbs: number | null;
+  gender: "male" | "female" | null;
 }
 
 interface EditAthleteModalProps {
@@ -24,9 +25,8 @@ export function EditAthleteModal({
     useUpdateAthlete();
   const [name, setName] = useState(athlete.name);
   const [heightIn, setHeightIn] = useState(athlete.height_in?.toString() ?? "");
-  const [weightLbs, setWeightLbs] = useState(
-    athlete.weight_lbs?.toString() ?? ""
-  );
+  const [weightLbs, setWeightLbs] = useState(athlete.weight_lbs?.toString() ?? "");
+  const [gender, setGender] = useState<"male" | "female" | "">(athlete.gender ?? "");
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
@@ -37,6 +37,7 @@ export function EditAthleteModal({
           name: name.trim(),
           height_in: heightIn ? parseFloat(heightIn) : null,
           weight_lbs: weightLbs ? parseFloat(weightLbs) : null,
+          gender: gender || null,
         },
       });
       onClose();
@@ -75,6 +76,21 @@ export function EditAthleteModal({
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none"
             />
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Gender
+            </label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value as "male" | "female" | "")}
+              className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none"
+            >
+              <option value="">Not set</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
