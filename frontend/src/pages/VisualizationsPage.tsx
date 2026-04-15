@@ -20,7 +20,6 @@ import { JumpFlightTimeCard } from "@/components/charts/long_jump/JumpFlightTime
 import { LastStepGctCard } from "@/components/charts/long_jump/LastStepGctCard";
 import { LjFlightTimeChart } from "@/components/charts/long_jump/LjFlightTimeChart";
 import { LjGctChart } from "@/components/charts/long_jump/LjGctChart";
-import { ReactionTimeCard } from "@/components/charts/reaction-time/ReactionTimeCard";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
 import { ContactTimeEfficiencyCard } from "@/components/charts/triple_jump/ContactTimeEfficiencyCard";
@@ -41,7 +40,6 @@ const HARDCODED_RUN_ID = "8fef5e24-b871-4fd7-afd4-190a1f96e42f";
 const HARDCODED_BOSCO_RUN_ID = "b1a2c3d4-5678-9abc-def0-111111111111";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
 const HARDCODED_PARTIAL_RUN_ID = "22222222-2222-2222-2222-222222222222";
-const HARDCODED_RT_RUN_ID = "cccccccc-0001-4000-8000-000000000001";
 const HARDCODED_LJ_RUN_ID = "aaaaaaaa-0001-4000-8000-000000000001";
 const HARDCODED_TJ_RUN_ID = "bbbbbbbb-0001-4000-8000-000000000001";
 
@@ -157,11 +155,8 @@ export default function VisualizationsPage() {
           <GctFlightChart runId={HARDCODED_BOSCO_RUN_ID} />
           <FatigueIndexKPI runId={HARDCODED_BOSCO_RUN_ID} />
 
-          {/* Reaction Time */}
-          <h2 className="text-2xl font-bold text-foreground">
-            Reaction Time Test
-          </h2>
-          <ReactionTimeCard runId={HARDCODED_RT_RUN_ID} />
+          
+       
         </div>
       </div>
     </div>
