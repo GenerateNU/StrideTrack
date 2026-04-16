@@ -158,7 +158,6 @@ class HurdleService:
         logger.info(f"Service: Getting hurdle projection for run {run_id}")
         if target_event is None:
             target_event = await self.repository.get_run_target_event(run_id)
-        target_event = await self.repository.get_run_target_event(run_id)
         completed_metrics = await self._get_hurdle_metric_rows(
             run_id, hurdles_completed=hurdles_completed
         )
