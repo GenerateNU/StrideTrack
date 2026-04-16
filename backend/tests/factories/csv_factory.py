@@ -1,34 +1,34 @@
 from io import BytesIO
+from pathlib import Path
 from uuid import uuid4
+
+MOCK_DATA_DIR = Path(__file__).parent.parent / "test_data"
 
 
 class CSVFactory:
-    """Factory for creating CSV test data and files. Always generates unique UUIDs."""
+    """Factory for creating CSV test data and files.
+
+    CSV content is read from pre-generated files in tests/test_data/.
+    """
+
+    # ── CSV content from fixture files ──
 
     @staticmethod
-    def create_valid_csv_content() -> str:
-        """Creates valid CSV content with stride data."""
-        return """Time,Force_Foot1,Force_Foot2
-1296674,0,4095
-1296684,0,4095
-1296694,0,4095
-1296704,0,4095
-1296714,0,4095
-1296724,0,0
-1296734,4095,0
-1296744,4095,0
-1296754,4095,0
-1296764,4095,0
-1296774,0,0
-1296784,0,4095
-1296794,0,4095"""
+    def create_sprint_csv_content() -> str:
+        """Read sprint 100m CSV content from fixture file."""
+        return (MOCK_DATA_DIR / "sprint_100m.csv").read_text()
 
     @staticmethod
-    def create_minimal_csv_content() -> str:
-        """Creates minimal valid CSV with just two rows."""
-        return """Time,Force_Foot1,Force_Foot2
-1296674,0,4095
-1296684,4095,0"""
+    def create_hurdle_110m_csv_content() -> str:
+        """Read 110m hurdle CSV content from fixture file."""
+        return (MOCK_DATA_DIR / "hurdle_110m.csv").read_text()
+
+    @staticmethod
+    def create_hurdle_400m_csv_content() -> str:
+        """Read 400m hurdle CSV content from fixture file."""
+        return (MOCK_DATA_DIR / "hurdle_400m.csv").read_text()
+
+    # ── Invalid CSVs ──
 
     @staticmethod
     def create_invalid_csv_missing_columns() -> str:
@@ -44,6 +44,8 @@ class CSVFactory:
 not_a_number,0,4095
 1296684,invalid,4095"""
 
+    # ── File helpers ──
+
     @staticmethod
     def create_csv_file(
         content: str | None = None, filename: str = "test_run.csv"
@@ -52,14 +54,14 @@ not_a_number,0,4095
         Creates a file-like object for upload.
 
         Args:
-            content: CSV content string. If None, uses create_valid_csv_content()
+            content: CSV content string. If None, uses create_sprint_csv_content()
             filename: Name of the file
 
         Returns:
             Tuple of (filename, file_content, content_type)
         """
         if content is None:
-            content = CSVFactory.create_valid_csv_content()
+            content = CSVFactory.create_sprint_csv_content()
 
         return (filename, BytesIO(content.encode("utf-8")), "text/csv")
 

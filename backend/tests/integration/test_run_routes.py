@@ -5,21 +5,61 @@ from fastapi.testclient import TestClient
 
 from app.schemas.coach_schemas import Coach
 from tests.factories.athlete_factory import AthleteFactory
+from tests.factories.csv_factory import CSVFactory
 
 BASE = "/api/runs"
 ATHLETE_BASE = "/api/athletes"
-
-# Seeded sprint runs
-SEEDED_SPRINT_RUN_ID = "d0271452-4bec-4759-84ef-c62beaafdbf0"
-SEEDED_ATHLETE_ID = "00000000-0000-0000-0000-000000000002"
+CSV_UPLOAD = "/api/csv/upload-run"
 
 
-# Runs — List
+# ── Shared fixture ──
+
+
+@pytest.fixture
+def sprint_run_with_metrics(
+    test_client: TestClient,
+    test_coach: Coach,
+    created_ids: dict,
+) -> dict:
+    """Create a coach → athlete → sprint CSV upload and return IDs.
+
+    Returns dict with 'athlete_id' and 'run_id' for tests that need
+    a run with processed stride metrics.
+    """
+    athlete_data = AthleteFactory.create(
+        coach_id=str(test_coach.coach_id), name="Sprint Metrics Athlete"
+    )
+    athlete_resp = test_client.post(ATHLETE_BASE, json=athlete_data)
+    assert athlete_resp.status_code == 201
+    athlete_id = athlete_resp.json()["athlete_id"]
+    created_ids["athlete_ids"].append(athlete_id)
+
+    csv_content = CSVFactory.create_sprint_csv_content()
+    filename, file_obj, content_type = CSVFactory.create_csv_file(
+        content=csv_content, filename="sprint_metrics_test.csv"
+    )
+    upload_resp = test_client.post(
+        CSV_UPLOAD,
+        data={
+            "athlete_id": athlete_id,
+            "event_type": "sprint_100m",
+            "name": "Test Sprint",
+        },
+        files={"file": (filename, file_obj, content_type)},
+    )
+    assert upload_resp.status_code == 201
+    run_id = upload_resp.json()["run_id"]
+    created_ids["run_ids"].append(run_id)
+
+    return {"athlete_id": athlete_id, "run_id": run_id}
+
+
+# ── Runs — List ──
 
 
 @pytest.mark.integration
 class TestListRuns:
-    """GET /api/run"""
+    """GET /api/runs"""
 
     def test_list_returns_200(self, test_client: TestClient) -> None:
         """The run list endpoint should return 200 with a JSON array."""
@@ -28,25 +68,37 @@ class TestListRuns:
         assert response.status_code == 200
         assert isinstance(response.json(), list)
 
-    def test_seeded_run_appears_in_list(self, test_client: TestClient) -> None:
-        """The seeded sprint run should appear in the full run list."""
+    def test_created_run_appears_in_list(
+        self,
+        test_client: TestClient,
+        sprint_run_with_metrics: dict,
+    ) -> None:
+        """A run created via CSV upload should appear in the subsequent GET list."""
+        run_id = sprint_run_with_metrics["run_id"]
+
         response = test_client.get(BASE)
 
         assert response.status_code == 200
         run_ids = [r["run_id"] for r in response.json()]
-        assert SEEDED_SPRINT_RUN_ID in run_ids
+        assert run_id in run_ids
 
 
-# Runs — List by Athlete
+# ── Runs — List by Athlete ──
 
 
 @pytest.mark.integration
 class TestListRunsByAthlete:
-    """GET /api/run/athlete/{athlete_id}"""
+    """GET /api/runs/athlete/{athlete_id}"""
 
-    def test_list_by_athlete_returns_200(self, test_client: TestClient) -> None:
+    def test_list_by_athlete_returns_200(
+        self,
+        test_client: TestClient,
+        sprint_run_with_metrics: dict,
+    ) -> None:
         """Listing runs for a known athlete should return 200 with their runs."""
-        response = test_client.get(f"{BASE}/athlete/{SEEDED_ATHLETE_ID}")
+        athlete_id = sprint_run_with_metrics["athlete_id"]
+
+        response = test_client.get(f"{BASE}/athlete/{athlete_id}")
 
         assert response.status_code == 200
         data = response.json()
@@ -62,12 +114,12 @@ class TestListRunsByAthlete:
         assert response.status_code == 404
 
 
-# Runs — Create
+# ── Runs — Create ──
 
 
 @pytest.mark.integration
 class TestCreateRun:
-    """POST /api/run"""
+    """POST /api/runs"""
 
     def test_create_run_returns_201(
         self,
@@ -127,26 +179,33 @@ class TestCreateRun:
         assert response.status_code == 422
 
 
-# Run Metrics
+# ── Run Metrics ──
 
 
 @pytest.mark.integration
 class TestGetRunMetrics:
-    """GET /api/run/athletes/{run_id}/metrics"""
+    """GET /api/runs/{run_id}/metrics"""
 
-    def test_get_metrics_returns_200_with_data(self, test_client: TestClient) -> None:
-        """Fetching metrics for the seeded sprint run should return 200 with a
-        non-empty list of stride metric rows."""
-        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics")
+    def test_get_metrics_returns_200_with_data(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
+        """Fetching metrics for a run with data should return 200 with a non-empty list."""
+        run_id = sprint_run_with_metrics["run_id"]
+
+        response = test_client.get(f"{BASE}/{run_id}/metrics")
 
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_metrics_row_has_expected_fields(self, test_client: TestClient) -> None:
+    def test_metrics_row_has_expected_fields(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
         """Each metrics row should contain the fields defined in RunResponse."""
-        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics")
+        run_id = sprint_run_with_metrics["run_id"]
+
+        response = test_client.get(f"{BASE}/{run_id}/metrics")
 
         assert response.status_code == 200
         row = response.json()[0]
@@ -159,8 +218,7 @@ class TestGetRunMetrics:
     def test_get_metrics_nonexistent_run_returns_200_empty(
         self, test_client: TestClient
     ) -> None:
-        """Fetching metrics for a non-existent run should return 200 or 404
-        with an empty list."""
+        """Fetching metrics for a non-existent run should return 200 or 404."""
         fake_id = str(uuid4())
 
         response = test_client.get(f"{BASE}/{fake_id}/metrics")
@@ -168,17 +226,21 @@ class TestGetRunMetrics:
         assert response.status_code in (200, 404)
 
 
-# LR Overlay
+# ── LR Overlay ──
 
 
 @pytest.mark.integration
 class TestGetLrOverlay:
-    """GET /api/run/athletes/{run_id}/metrics/lr-overlay"""
+    """GET /api/runs/{run_id}/metrics/lr-overlay"""
 
-    def test_lr_overlay_gct_returns_200(self, test_client: TestClient) -> None:
+    def test_lr_overlay_gct_returns_200(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
         """Requesting LR overlay with metric=gct_ms should return 200 with data."""
+        run_id = sprint_run_with_metrics["run_id"]
+
         response = test_client.get(
-            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/lr-overlay",
+            f"{BASE}/{run_id}/metrics/lr-overlay",
             params={"metric": "gct_ms"},
         )
 
@@ -187,20 +249,28 @@ class TestGetLrOverlay:
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_lr_overlay_flight_returns_200(self, test_client: TestClient) -> None:
+    def test_lr_overlay_flight_returns_200(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
         """Requesting LR overlay with metric=flight_ms should return 200 with data."""
+        run_id = sprint_run_with_metrics["run_id"]
+
         response = test_client.get(
-            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/lr-overlay",
+            f"{BASE}/{run_id}/metrics/lr-overlay",
             params={"metric": "flight_ms"},
         )
 
         assert response.status_code == 200
         assert isinstance(response.json(), list)
 
-    def test_lr_overlay_row_has_stride_num(self, test_client: TestClient) -> None:
+    def test_lr_overlay_row_has_stride_num(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
         """Each LR overlay row should contain a stride_num field."""
+        run_id = sprint_run_with_metrics["run_id"]
+
         response = test_client.get(
-            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/lr-overlay",
+            f"{BASE}/{run_id}/metrics/lr-overlay",
             params={"metric": "gct_ms"},
         )
 
@@ -209,25 +279,33 @@ class TestGetLrOverlay:
         assert "stride_num" in row
 
 
-# Stacked Bar
+# ── Stacked Bar ──
 
 
 @pytest.mark.integration
 class TestGetStackedBar:
-    """GET /api/run/athletes/{run_id}/metrics/stacked-bar"""
+    """GET /api/runs/{run_id}/metrics/stacked-bar"""
 
-    def test_stacked_bar_returns_200(self, test_client: TestClient) -> None:
+    def test_stacked_bar_returns_200(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
         """Requesting stacked bar data should return 200 with a non-empty list."""
-        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar")
+        run_id = sprint_run_with_metrics["run_id"]
+
+        response = test_client.get(f"{BASE}/{run_id}/metrics/stacked-bar")
 
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
         assert len(data) > 0
 
-    def test_stacked_bar_row_has_expected_fields(self, test_client: TestClient) -> None:
+    def test_stacked_bar_row_has_expected_fields(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
         """Each stacked bar row should contain stride_num, foot, label, gct_ms, flight_ms."""
-        response = test_client.get(f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/stacked-bar")
+        run_id = sprint_run_with_metrics["run_id"]
+
+        response = test_client.get(f"{BASE}/{run_id}/metrics/stacked-bar")
 
         assert response.status_code == 200
         row = response.json()[0]
@@ -238,29 +316,33 @@ class TestGetStackedBar:
         assert "flight_ms" in row
 
 
-# Sprint Drift
+# ── Sprint Drift ──
 
 
 @pytest.mark.integration
 class TestGetSprintDrift:
-    """GET /api/run/athletes/{run_id}/metrics/sprint-drift"""
+    """GET /api/runs/{run_id}/metrics/sprint/drift"""
 
-    def test_sprint_drift_returns_200(self, test_client: TestClient) -> None:
+    def test_sprint_drift_returns_200(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
         """Requesting sprint drift should return 200 with gct and ft drift percentages."""
-        response = test_client.get(
-            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/sprint/drift"
-        )
+        run_id = sprint_run_with_metrics["run_id"]
+
+        response = test_client.get(f"{BASE}/{run_id}/metrics/sprint/drift")
 
         assert response.status_code == 200
         data = response.json()
         assert "gct_drift_pct" in data
         assert "ft_drift_pct" in data
 
-    def test_sprint_drift_values_are_floats(self, test_client: TestClient) -> None:
+    def test_sprint_drift_values_are_floats(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
         """Both drift values should be numeric floats."""
-        response = test_client.get(
-            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/sprint/drift"
-        )
+        run_id = sprint_run_with_metrics["run_id"]
+
+        response = test_client.get(f"{BASE}/{run_id}/metrics/sprint/drift")
 
         assert response.status_code == 200
         data = response.json()
@@ -268,18 +350,20 @@ class TestGetSprintDrift:
         assert isinstance(data["ft_drift_pct"], float)
 
 
-# Step Frequency
+# ── Step Frequency ──
 
 
 @pytest.mark.integration
 class TestGetStepFrequency:
-    """GET /api/run/athletes/{run_id}/metrics/step-frequency"""
+    """GET /api/runs/{run_id}/metrics/sprint/step-frequency"""
 
-    def test_step_frequency_returns_200(self, test_client: TestClient) -> None:
+    def test_step_frequency_returns_200(
+        self, test_client: TestClient, sprint_run_with_metrics: dict
+    ) -> None:
         """Requesting step frequency should return 200 with a non-empty list."""
-        response = test_client.get(
-            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/sprint/step-frequency"
-        )
+        run_id = sprint_run_with_metrics["run_id"]
+
+        response = test_client.get(f"{BASE}/{run_id}/metrics/sprint/step-frequency")
 
         assert response.status_code == 200
         data = response.json()
@@ -287,12 +371,12 @@ class TestGetStepFrequency:
         assert len(data) > 0
 
     def test_step_frequency_row_has_expected_fields(
-        self, test_client: TestClient
+        self, test_client: TestClient, sprint_run_with_metrics: dict
     ) -> None:
         """Each step frequency row should contain stride_num, foot, label, step_frequency_hz."""
-        response = test_client.get(
-            f"{BASE}/{SEEDED_SPRINT_RUN_ID}/metrics/sprint/step-frequency"
-        )
+        run_id = sprint_run_with_metrics["run_id"]
+
+        response = test_client.get(f"{BASE}/{run_id}/metrics/sprint/step-frequency")
 
         assert response.status_code == 200
         row = response.json()[0]
@@ -302,7 +386,7 @@ class TestGetStepFrequency:
         assert "step_frequency_hz" in row
 
 
-# Update Run
+# ── Update Run ──
 
 
 @pytest.mark.integration
@@ -375,7 +459,9 @@ class TestUpdateRun:
         data = response.json()
         assert data["name"] == "Morning Sprint"
 
-    def test_update_nonexistent_run_returns_404(self, test_client: TestClient) -> None:
+    def test_update_nonexistent_run_returns_404(
+        self, test_client: TestClient
+    ) -> None:
         """Patching a non-existent run ID should return 404."""
         fake_id = str(uuid4())
 
@@ -386,7 +472,7 @@ class TestUpdateRun:
         assert response.status_code == 404
 
 
-# Delete Run
+# ── Delete Run ──
 
 
 @pytest.mark.integration
@@ -417,7 +503,6 @@ class TestDeleteRun:
         run_resp = test_client.post(BASE, json=run_data)
         assert run_resp.status_code == 201
         run_id = run_resp.json()["run_id"]
-        # Don't add to created_ids — this test deletes it itself
 
         response = test_client.delete(f"{BASE}/{run_id}")
 
@@ -433,3 +518,4 @@ class TestDeleteRun:
         response = test_client.delete(f"{BASE}/{fake_id}")
 
         assert response.status_code == 404
+
