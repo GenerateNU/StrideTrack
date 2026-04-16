@@ -32,6 +32,8 @@ from app.utils.hurdle_projection import project_hurdle_race
 
 logger = logging.getLogger(__name__)
 
+HURDLE_MARKER_FLIGHT_POSITION = 0.65
+
 
 class HurdleService:
     """Service for hurdle-metric related business logic."""
@@ -183,7 +185,8 @@ class HurdleService:
                 time_s=round(
                     (
                         row.clearance_start_ms
-                        + 0.65 * (row.clearance_end_ms - row.clearance_start_ms)
+                        + HURDLE_MARKER_FLIGHT_POSITION
+                        * (row.clearance_end_ms - row.clearance_start_ms)
                     )
                     / 1000,
                     4,
