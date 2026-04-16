@@ -9,6 +9,22 @@ from app.schemas.run_schemas import RunResponse
 
 logger = logging.getLogger(__name__)
 
+EVENT_CONTEXT = {
+    "sprint_60m": "This is a 60m sprint, a short explosive race where start and acceleration are critical",
+    "sprint_100m": "This is a 100m sprint, a max velocity race where mechanics and fatigue in the final 30m matter",
+    "sprint_200m": "This is a 200m sprint, involves bend running, speed endurance, and fatigue management",
+    "sprint_400m": "This is a 400m sprint, a full lap race where pacing and late race fatigue are major factors",
+    "hurdles_60m": "This is a 60m hurdles race, a short sprint with hurdle clearances requiring consistent takeoff and landing",
+    "hurdles_100m": "This is a 100m hurdles race, requires consistent hurdle mechanics and efficient ground contacts between barriers",
+    "hurdles_110m": "This is a 110m hurdles race, requires consistent hurdle mechanics and efficient ground contacts between barriers",
+    "hurdles_400m": "This is a 400m hurdles race, combines sprint endurance with hurdle clearance consistency over a full lap",
+    "hurdles_partial": "This is a partial hurdles run, only some hurdles were completed.",
+    "long_jump": "This is a long jump, a horizontal jump event where approach speed and takeoff mechanics are key",
+    "triple_jump": "This is a triple jump, involves three phases: hop, step, and jump, requiring consistent mechanics throughout",
+    "high_jump": "This is a high jump, a vertical jump event where approach consistency and takeoff power are critical",
+    "bosco_test": "This is a Bosco jump test, a repeated vertical jump protocol measuring reactive strength and consistency",
+}
+
 
 def _summarize_metrics(rows: list[RunResponse]) -> dict:
     """Compute aggregate stats from RunResponse objects."""
@@ -60,6 +76,8 @@ def _build_prompt(event_type: str, stats: dict) -> str:
     def fmt(val: float | None, unit: str) -> str:
         return f"{val}{unit}" if val is not None else "N/A"
 
+    context = EVENT_CONTEXT.get(event_type, "This is a track and field event.")
+
     data = (
         f"Event: {event_type}\n"
         f"Total strides: {stats['total_strides']}\n"
@@ -71,10 +89,10 @@ def _build_prompt(event_type: str, stats: dict) -> str:
     )
 
     return (
-        "You are a concise track and field coach. "
+        f"You are a concise track and field coach. {context} "
         "Given the following run metrics, write exactly 2 sentences: "
         "first, a brief summary of the athlete's performance; "
-        "second, one specific actionable improvement tip. "
+        "second, one specific actionable improvement tip relevant to this event. "
         "No bullet points or headers. Under 60 words total.\n\n"
         f"{data}"
     )

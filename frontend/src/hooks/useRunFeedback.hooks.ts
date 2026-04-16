@@ -18,6 +18,7 @@ export function useGetRunFeedback(runId: string | undefined) {
       return parsed.data;
     },
     enabled: !!runId,
+    gcTime: 0,
   });
 
   return {
