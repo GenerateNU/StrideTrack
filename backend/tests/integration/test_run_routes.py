@@ -459,9 +459,7 @@ class TestUpdateRun:
         data = response.json()
         assert data["name"] == "Morning Sprint"
 
-    def test_update_nonexistent_run_returns_404(
-        self, test_client: TestClient
-    ) -> None:
+    def test_update_nonexistent_run_returns_404(self, test_client: TestClient) -> None:
         """Patching a non-existent run ID should return 404."""
         fake_id = str(uuid4())
 
@@ -518,4 +516,3 @@ class TestDeleteRun:
         response = test_client.delete(f"{BASE}/{fake_id}")
 
         assert response.status_code == 404
-
