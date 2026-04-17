@@ -117,25 +117,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (import(/* @vite-ignore */ "@capacitor/app") as Promise<any>).then(
         (mod) => {
-          mod.App.addListener(
-            "appUrlOpen",
-            ({ url }: { url: string }) => {
-              // URL looks like: com.stridetrack.app://auth/callback#access_token=...&refresh_token=...
-              const hashIndex = url.indexOf("#");
-              if (hashIndex === -1) return;
+          mod.App.addListener("appUrlOpen", ({ url }: { url: string }) => {
+            // URL looks like: com.stridetrack.app://auth/callback#access_token=...&refresh_token=...
+            const hashIndex = url.indexOf("#");
+            if (hashIndex === -1) return;
 
-              const params = new URLSearchParams(url.substring(hashIndex + 1));
-              const accessToken = params.get("access_token");
-              const refreshToken = params.get("refresh_token");
+            const params = new URLSearchParams(url.substring(hashIndex + 1));
+            const accessToken = params.get("access_token");
+            const refreshToken = params.get("refresh_token");
 
-              if (accessToken && refreshToken) {
-                supabase.auth.setSession({
-                  access_token: accessToken,
-                  refresh_token: refreshToken,
-                });
-              }
+            if (accessToken && refreshToken) {
+              supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
             }
-          ).then((listener: { remove: () => Promise<void> }) => {
+          }).then((listener: { remove: () => Promise<void> }) => {
             appUrlListener = listener;
           });
         }

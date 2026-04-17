@@ -90,9 +90,11 @@ export function useBle() {
       await BleClient.connect(device.deviceId, () =>
         handleDisconnect(device.deviceId)
       );
-      setBleIsConnected(true);
 
       await startListening(device.deviceId);
+
+      // Only mark connected after notifications are confirmed active
+      setBleIsConnected(true);
     } catch (error) {
       setBleIsScanning(false);
       throw error;
