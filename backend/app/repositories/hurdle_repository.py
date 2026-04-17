@@ -5,7 +5,7 @@ from supabase._async.client import AsyncClient
 
 from app.core.exceptions import NotFoundException
 from app.schemas.event_type import EventType
-from app.schemas.hurdle_schemas import HurdleStepRow
+from app.schemas.hurdle_schemas import HurdleRunParams, HurdleStepRow
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,9 @@ class HurdleRepository:
             return None
         return EventType(response.data["event_type"])
 
-    async def get_run_hurdle_params(self, run_id: UUID) -> dict:
+    async def get_run_hurdle_params(self, run_id: UUID) -> HurdleRunParams:
+        """Get hurdle params (hurdles completed and target event) for a run."""
+        logger.info(f"Repository: Fetching hurdle params for run: {run_id}")
         response = (
             await self.supabase.table("run")
             .select("hurdles_completed, target_event")
@@ -97,4 +99,6 @@ class HurdleRepository:
             .single()
             .execute()
         )
-        return response.data
+        if not response.data:
+            raise NotFoundException("Run", str(run_id))
+        return HurdleRunParams(**response.data)

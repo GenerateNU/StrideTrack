@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useGetRunMeta } from "@/hooks/useRuns.hooks";
-import { getChartsForEventType } from "@/lib/runAnalysisVisualizations";
-import { ArrowLeft } from "lucide-react";
 import api from "@/lib/api";
+import { useGetRunMeta } from "@/hooks/useRuns.hooks";
+import type { ChartSection } from "@/lib/runAnalysisVisualizations";
+import { getSectionsForEventType } from "@/lib/runAnalysisVisualizations";
+import { ArrowLeft, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 const TARGET_EVENT_OPTIONS = [
@@ -12,6 +13,66 @@ const TARGET_EVENT_OPTIONS = [
   { label: "110m Hurdles", value: "hurdles_110m" },
   { label: "400m Hurdles", value: "hurdles_400m" },
 ];
+
+function AccordionSection({
+  section,
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: {
+  section: ChartSection;
+  runId: string;
+  hurdlesCompleted?: number | null;
+  targetEvent?: string | null;
+}) {
+  const [expanded, setExpanded] = useState(section.defaultExpanded ?? false);
+  const [contentHeight, setContentHeight] = useState<number>(0);
+  const innerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!innerRef.current) return;
+    const el = innerRef.current;
+    const update = () => setContentHeight(el.offsetHeight);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="border border-border rounded-lg overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center justify-between px-4 py-4 text-base font-medium text-foreground hover:bg-muted/50 transition-colors"
+      >
+        {section.label}
+        <ChevronDown
+          className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
+            expanded ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      <div
+        className="transition-all duration-300 ease-in-out overflow-hidden"
+        style={{
+          maxHeight: expanded ? `${contentHeight}px` : "0px",
+          opacity: expanded ? 1 : 0,
+        }}
+      >
+        <div ref={innerRef} className="flex flex-col gap-6 px-4 pb-4">
+          {section.charts.map((ChartComponent, i) => (
+            <ChartComponent
+              key={i}
+              runId={runId}
+              hurdlesCompleted={hurdlesCompleted}
+              targetEvent={targetEvent}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function RunAnalysisPage() {
   const { athleteId, runId } = useParams<{
@@ -63,8 +124,8 @@ export default function RunAnalysisPage() {
     }
   };
 
-  const charts = runMeta?.event_type
-    ? getChartsForEventType(runMeta.event_type)
+  const sections = runMeta?.event_type
+    ? getSectionsForEventType(runMeta.event_type)
     : [];
 
   const showCharts = !isHurdlesPartial || hurdleParams.hasSubmitted;
@@ -72,93 +133,90 @@ export default function RunAnalysisPage() {
   return (
     <div className="flex h-full flex-col pt-4">
       <div className="mb-6">
-        <button
-          onClick={() => navigate(`/athletes/${athleteId}`)}
-          className="mb-4 flex items-center gap-1 text-sm text-muted-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Athlete
-        </button>
-        <div className="flex items-end justify-between">
-          <div className="flex items-end gap-8">
-            <div>
-              <h2 className="text-xl font-bold text-foreground">
-                Event Analysis
-              </h2>
-              {runMeta && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {runMeta.event_type
-                    .replace(/_/g, " ")
-                    .replace(/\b\w/g, (c) => c.toUpperCase())}{" "}
-                  · {new Date(runMeta.created_at).toLocaleDateString()}
-                  {` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
-                </p>
-              )}
-            </div>
-            {isHurdlesPartial && (
-              <>
-                <div className="h-10 w-px bg-border" />
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-foreground">
-                    Target Event
-                  </label>
-                  <select
-                    value={hurdleParams.targetEvent ?? ""}
-                    onChange={(e) =>
-                      setHurdleParams((prev) => ({
-                        ...prev,
-                        targetEvent: e.target.value || null,
-                        hasSubmitted: false,
-                      }))
-                    }
-                    className="rounded-md border border-border bg-background px-2 py-1.5 text-xs"
-                  >
-                    <option value="">Select event...</option>
-                    {TARGET_EVENT_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-foreground">
-                    Hurdles Completed
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={hurdleParams.hurdlesCompleted ?? ""}
-                    onChange={(e) =>
-                      setHurdleParams((prev) => ({
-                        ...prev,
-                        hurdlesCompleted: e.target.value
-                          ? Number(e.target.value)
-                          : null,
-                        hasSubmitted: false,
-                      }))
-                    }
-                    className="rounded-md border border-border bg-background px-2 py-1.5 text-xs w-fit"
-                  />
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!canSubmit}
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-                >
-                  Apply
-                </button>
-              </>
-            )}
-          </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(`/athletes/${athleteId}`)}
+            className="flex items-center text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          {runMeta && (
+            <p className="text-sm text-muted-foreground">
+              {runMeta.event_type
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase())}{" "}
+              · {new Date(runMeta.created_at).toLocaleDateString()}
+              {` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
+            </p>
+          )}
         </div>
+        {isHurdlesPartial && (
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-foreground">
+                Target Event
+              </label>
+              <select
+                value={hurdleParams.targetEvent ?? ""}
+                onChange={(e) =>
+                  setHurdleParams((prev) => ({
+                    ...prev,
+                    targetEvent: e.target.value || null,
+                    hasSubmitted: false,
+                  }))
+                }
+                className="rounded-md border border-border bg-background px-2 py-1.5 text-xs"
+              >
+                <option value="">Select event...</option>
+                {TARGET_EVENT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-foreground">
+                Hurdles Completed
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={hurdleParams.hurdlesCompleted ?? ""}
+                onChange={(e) =>
+                  setHurdleParams((prev) => ({
+                    ...prev,
+                    hurdlesCompleted: e.target.value
+                      ? Number(e.target.value)
+                      : null,
+                    hasSubmitted: false,
+                  }))
+                }
+                className="rounded-md border border-border bg-background px-2 py-1.5 text-xs w-24"
+              />
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            >
+              Apply
+            </button>
+          </div>
+        )}
       </div>
 
       {runId && showCharts ? (
-        <div className="flex flex-1 flex-col gap-6">
-          {charts.map((ChartComponent, i) => (
-            <ChartComponent key={i} runId={runId} />
+        <div className="flex flex-1 flex-col gap-4">
+          {sections.map((section) => (
+            <AccordionSection
+              key={section.label}
+              section={section}
+              runId={runId}
+              hurdlesCompleted={hurdleParams.hurdlesCompleted}
+              targetEvent={hurdleParams.targetEvent}
+            />
           ))}
         </div>
       ) : runId && !showCharts ? (

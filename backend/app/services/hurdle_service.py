@@ -10,6 +10,7 @@ from app.schemas.hurdle_schemas import (
     HurdleMarker,
     HurdleMetricRow,
     HurdleProjectionResponse,
+    HurdleRunParams,
     HurdleSplitBarData,
     HurdleTimelinePoint,
     HurdleTimelineResponse,
@@ -31,6 +32,8 @@ from app.utils.hurdle_metrics import transform_stride_cycles_to_hurdle_metrics
 from app.utils.hurdle_projection import project_hurdle_race
 
 logger = logging.getLogger(__name__)
+
+HURDLE_MARKER_FLIGHT_POSITION = 0.65
 
 
 class HurdleService:
@@ -225,7 +228,15 @@ class HurdleService:
         hurdle_rows = await self._get_hurdle_metric_rows(run_id)
         markers = [
             HurdleMarker(
-                time_s=round(row.clearance_start_ms / 1000, 4),
+                time_s=round(
+                    (
+                        row.clearance_start_ms
+                        + HURDLE_MARKER_FLIGHT_POSITION
+                        * (row.clearance_end_ms - row.clearance_start_ms)
+                    )
+                    / 1000,
+                    4,
+                ),
                 hurdle_num=row.hurdle_num,
             )
             for row in hurdle_rows
@@ -241,6 +252,8 @@ class HurdleService:
             hurdle_markers=markers,
         )
 
-    async def get_run_hurdle_params(self, run_id: UUID) -> dict:
+    async def get_run_hurdle_params(self, run_id: UUID) -> HurdleRunParams:
+        """Get hurdle params (target event and hurdles completed) for a run."""
+        logger.info(f"Service: Getting hurdle params for run {run_id}")
         await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
         return await self.repository.get_run_hurdle_params(run_id)
