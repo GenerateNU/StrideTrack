@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { Outlet } from "react-router-dom";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import { BottomNav } from "./BottomNav";
 import { Sidebar } from "./Sidebar";
 import { UserCircle } from "lucide-react";
@@ -56,7 +57,9 @@ export function AppLayout() {
       </header>
 
       <main className="relative w-full flex-1 px-5 pb-20 md:pt-6 md:pl-64 md:pr-8 md:pb-8">
-        <Outlet />
+        <Suspense fallback={<QueryLoading />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <BottomNav />
