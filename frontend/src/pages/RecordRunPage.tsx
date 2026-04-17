@@ -345,21 +345,6 @@ export default function RecordRunPage() {
             locally.
           </div>
         )}
-
-        {/* Web-only manual connect button — browser requires a click gesture */}
-        {!isNative && !bleIsConnected && !isConnecting && (
-          <button
-            type="button"
-            onClick={handleManualConnect}
-            className="px-3 py-1.5 rounded-full text-xs font-semibold"
-            style={{
-              backgroundColor: "hsl(var(--primary))",
-              color: "hsl(var(--primary-foreground))",
-            }}
-          >
-            Connect Sensor
-          </button>
-        )}
       </div>
 
       {/* Timer circle */}
@@ -393,22 +378,59 @@ export default function RecordRunPage() {
         </span>
       </div>
 
-      {/* Start/Stop button — hidden after stopping */}
-      {!isStopped && (
-        <button
-          onClick={isRunning ? stopTimer : startTimer}
-          disabled={!isRunning && !bleIsConnected}
-          className="mt-10 w-56 py-4 rounded-2xl font-semibold text-xl cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{
-            backgroundColor: isRunning
-              ? "hsl(var(--destructive))"
-              : "hsl(var(--primary))",
-            color: "hsl(var(--primary-foreground))",
-          }}
-        >
-          {isRunning ? "Stop" : "Start"}
-        </button>
-      )}
+      {/* Connect / Start / Stop button — hidden after stopping */}
+      {!isStopped &&
+        (() => {
+          const needsConnect =
+            !isNative && !bleIsConnected && !isRunning && !isConnecting;
+          const showConnecting = isConnecting;
+
+          if (showConnecting) {
+            return (
+              <button
+                disabled
+                className="mt-10 w-56 py-4 rounded-2xl font-semibold text-xl cursor-not-allowed opacity-70 transition-all"
+                style={{
+                  backgroundColor: "hsl(var(--primary))",
+                  color: "hsl(var(--primary-foreground))",
+                }}
+              >
+                Connecting...
+              </button>
+            );
+          }
+
+          if (needsConnect) {
+            return (
+              <button
+                onClick={handleManualConnect}
+                className="mt-10 w-56 py-4 rounded-2xl font-semibold text-xl cursor-pointer transition-all"
+                style={{
+                  backgroundColor: "hsl(var(--primary))",
+                  color: "hsl(var(--primary-foreground))",
+                }}
+              >
+                Connect Sensor
+              </button>
+            );
+          }
+
+          return (
+            <button
+              onClick={isRunning ? stopTimer : startTimer}
+              disabled={!isRunning && !bleIsConnected}
+              className="mt-10 w-56 py-4 rounded-2xl font-semibold text-xl cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: isRunning
+                  ? "hsl(var(--destructive))"
+                  : "hsl(var(--primary))",
+                color: "hsl(var(--primary-foreground))",
+              }}
+            >
+              {isRunning ? "Stop" : "Start"}
+            </button>
+          );
+        })()}
 
       {/* Save/Delete buttons — shown after stopping */}
       {isStopped && (
