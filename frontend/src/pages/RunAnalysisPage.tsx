@@ -4,7 +4,7 @@ import { useGetRunMeta } from "@/hooks/useRuns.hooks";
 import type { ChartSection } from "@/lib/runAnalysisVisualizations";
 import { getSectionsForEventType } from "@/lib/runAnalysisVisualizations";
 import { ArrowLeft, ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -20,30 +20,47 @@ function AccordionSection({
   runId,
   hurdlesCompleted,
   targetEvent,
+  forceMount,
 }: {
   section: ChartSection;
   runId: string;
   hurdlesCompleted?: number | null;
   targetEvent?: string | null;
+  forceMount?: boolean;
 }) {
   const [expanded, setExpanded] = useState(section.defaultExpanded ?? false);
+  const [hasBeenOpened, setHasBeenOpened] = useState(
+    section.defaultExpanded ?? false
+  );
   const [contentHeight, setContentHeight] = useState<number>(0);
+  const [hasTransition, setHasTransition] = useState(false);
   const innerRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!innerRef.current) return;
+    setContentHeight(innerRef.current.offsetHeight);
+    setHasTransition(true);
+  }, [hasBeenOpened, forceMount]);
 
   useEffect(() => {
     if (!innerRef.current) return;
     const el = innerRef.current;
     const update = () => setContentHeight(el.offsetHeight);
-    update();
     const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [hasBeenOpened, forceMount]);
+
+  const mountContent = hasBeenOpened || forceMount;
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
       <button
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => {
+          const next = !expanded;
+          setExpanded(next);
+          if (next) setHasBeenOpened(true);
+        }}
         className="flex w-full items-center justify-between px-4 py-4 text-base font-medium text-foreground hover:bg-muted/50 transition-colors"
       >
         {section.label}
@@ -54,21 +71,25 @@ function AccordionSection({
         />
       </button>
       <div
-        className="transition-all duration-300 ease-in-out overflow-hidden"
+        className="overflow-hidden"
         style={{
           maxHeight: expanded ? `${contentHeight}px` : "0px",
           opacity: expanded ? 1 : 0,
+          transition: hasTransition
+            ? "max-height 300ms ease-in-out, opacity 300ms ease-in-out"
+            : "none",
         }}
       >
         <div ref={innerRef} className="flex flex-col gap-6 px-4 pb-4">
-          {section.charts.map((ChartComponent, i) => (
-            <ChartComponent
-              key={i}
-              runId={runId}
-              hurdlesCompleted={hurdlesCompleted}
-              targetEvent={targetEvent}
-            />
-          ))}
+          {mountContent &&
+            section.charts.map((ChartComponent, i) => (
+              <ChartComponent
+                key={i}
+                runId={runId}
+                hurdlesCompleted={hurdlesCompleted}
+                targetEvent={targetEvent}
+              />
+            ))}
         </div>
       </div>
     </div>
@@ -128,6 +149,25 @@ export default function RunAnalysisPage() {
   const sections = runMeta?.event_type
     ? getSectionsForEventType(runMeta.event_type)
     : [];
+
+  const [preloadRest, setPreloadRest] = useState(false);
+  useEffect(() => {
+    const w = window as Window & {
+      requestIdleCallback?: (
+        cb: () => void,
+        opts?: { timeout: number }
+      ) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (typeof w.requestIdleCallback === "function") {
+      const id = w.requestIdleCallback(() => setPreloadRest(true), {
+        timeout: 2000,
+      });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = setTimeout(() => setPreloadRest(true), 1500);
+    return () => clearTimeout(id);
+  }, []);
 
   const showCharts = !isHurdlesPartial || hurdleParams.hasSubmitted;
 
@@ -217,6 +257,7 @@ export default function RunAnalysisPage() {
               runId={runId}
               hurdlesCompleted={hurdleParams.hurdlesCompleted}
               targetEvent={hurdleParams.targetEvent}
+              forceMount={preloadRest && !(section.defaultExpanded ?? false)}
             />
           ))}
           <RunFeedbackCard runId={runId} />
