@@ -6,9 +6,11 @@ from app.utils.split_score import compute_diffs, generate_coaching_notes
 from app.utils.split_score_constants import POPULATION_STATS
 
 
-def _mean_segments_ms(event_type: str, total_ms: float = 50_000.0) -> list[float]:
+def _mean_segments_ms(
+    event_type: str, total_ms: float = 50_000.0, gender: str = "male"
+) -> list[float]:
     """Build a segment list that sits exactly at the population mean."""
-    means = POPULATION_STATS[event_type]["mean"]
+    means = POPULATION_STATS[gender][event_type]["mean"]
     return [m / 100.0 * total_ms for m in means]
 
 
@@ -25,8 +27,8 @@ class TestComputeDiffs:
 
     def test_slow_segments_have_positive_diff(self) -> None:
         total_ms = 50_000.0
-        means = POPULATION_STATS["hurdles_400m"]["mean"]
-        stds = POPULATION_STATS["hurdles_400m"]["std"]
+        means = POPULATION_STATS["male"]["hurdles_400m"]["mean"]
+        stds = POPULATION_STATS["male"]["hurdles_400m"]["std"]
         slow_pcts = [m + 2 * s for m, s in zip(means, stds, strict=True)]
         segments_ms = [p / 100.0 * total_ms for p in slow_pcts]
         result = compute_diffs(segments_ms, total_ms, "hurdles_400m")
@@ -37,8 +39,8 @@ class TestComputeDiffs:
 
     def test_fast_segments_have_negative_diff(self) -> None:
         total_ms = 50_000.0
-        means = POPULATION_STATS["hurdles_400m"]["mean"]
-        stds = POPULATION_STATS["hurdles_400m"]["std"]
+        means = POPULATION_STATS["male"]["hurdles_400m"]["mean"]
+        stds = POPULATION_STATS["male"]["hurdles_400m"]["std"]
         fast_pcts = [m - 2 * s for m, s in zip(means, stds, strict=True)]
         segments_ms = [p / 100.0 * total_ms for p in fast_pcts]
         result = compute_diffs(segments_ms, total_ms, "hurdles_400m")
@@ -59,7 +61,7 @@ class TestComputeDiffs:
 
     def test_unsupported_event_raises_key_error(self) -> None:
         with pytest.raises(KeyError):
-            compute_diffs([1000.0] * 4, 50_000.0, "hurdles_110m")
+            compute_diffs([1000.0] * 4, 50_000.0, "high_jump")
 
 
 @pytest.mark.unit

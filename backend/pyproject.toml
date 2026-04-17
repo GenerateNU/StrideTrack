@@ -23,6 +23,7 @@ dependencies = [
     "supabase>=2.27.0",
     "uvicorn>=0.40.0",
     "scipy>=1.17.1",
+    "litellm>=1.83.7",
 ]
 
 [dependency-groups]

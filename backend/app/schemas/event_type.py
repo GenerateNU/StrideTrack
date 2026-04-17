@@ -15,4 +15,3 @@ class EventType(StrEnum):
     triple_jump = "triple_jump"
     high_jump = "high_jump"
     bosco_test = "bosco_test"
-    reaction_time_test = "reaction_time_test"

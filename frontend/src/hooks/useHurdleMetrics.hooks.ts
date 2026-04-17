@@ -21,16 +21,25 @@ import { validateResponse } from "@/utils/validation";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 
-export function useHurdleSplits(runId: string | null) {
+export function useHurdleSplits(
+  runId: string | null,
+  hurdlesCompleted: number | null,
+  targetEvent: string | null
+) {
   const query = useQuery({
-    queryKey: ["hurdle-splits", runId],
+    queryKey: ["hurdle-splits", runId, hurdlesCompleted, targetEvent],
     queryFn: async () => {
       if (!runId) {
         return null;
       }
 
+      const params = new URLSearchParams();
+      if (hurdlesCompleted)
+        params.append("hurdles_completed", String(hurdlesCompleted));
+      if (targetEvent) params.append("target_event", targetEvent);
+
       const response = await api.get<HurdleSplitBarData[]>(
-        `/runs/${runId}/metrics/hurdles/splits`
+        `/runs/${runId}/metrics/hurdles/splits?${params.toString()}`
       );
 
       return validateResponse(response.data, z.array(hurdleSplitBarSchema));
@@ -46,16 +55,25 @@ export function useHurdleSplits(runId: string | null) {
   };
 }
 
-export function useStepsBetweenHurdles(runId: string | null) {
+export function useStepsBetweenHurdles(
+  runId: string | null,
+  hurdlesCompleted: number | null,
+  targetEvent: string | null
+) {
   const query = useQuery({
-    queryKey: ["hurdle-steps-between", runId],
+    queryKey: ["hurdle-steps-between", runId, hurdlesCompleted, targetEvent],
     queryFn: async () => {
       if (!runId) {
         return null;
       }
 
+      const params = new URLSearchParams();
+      if (hurdlesCompleted)
+        params.append("hurdles_completed", String(hurdlesCompleted));
+      if (targetEvent) params.append("target_event", targetEvent);
+
       const response = await api.get<StepsBetweenHurdlesData[]>(
-        `/runs/${runId}/metrics/hurdles/steps-between`
+        `/runs/${runId}/metrics/hurdles/steps-between?${params.toString()}`
       );
 
       return validateResponse(
@@ -74,16 +92,25 @@ export function useStepsBetweenHurdles(runId: string | null) {
   };
 }
 
-export function useTakeoffGct(runId: string | null) {
+export function useTakeoffGct(
+  runId: string | null,
+  hurdlesCompleted: number | null,
+  targetEvent: string | null
+) {
   const query = useQuery({
-    queryKey: ["hurdle-takeoff-gct", runId],
+    queryKey: ["hurdle-takeoff-gct", runId, hurdlesCompleted, targetEvent],
     queryFn: async () => {
       if (!runId) {
         return null;
       }
 
+      const params = new URLSearchParams();
+      if (hurdlesCompleted)
+        params.append("hurdles_completed", String(hurdlesCompleted));
+      if (targetEvent) params.append("target_event", targetEvent);
+
       const response = await api.get<TakeoffGctBarData[]>(
-        `/runs/${runId}/metrics/hurdles/takeoff-gct`
+        `/runs/${runId}/metrics/hurdles/takeoff-gct?${params.toString()}`
       );
 
       return validateResponse(response.data, z.array(takeoffGctBarSchema));
@@ -99,16 +126,25 @@ export function useTakeoffGct(runId: string | null) {
   };
 }
 
-export function useLandingGct(runId: string | null) {
+export function useLandingGct(
+  runId: string | null,
+  hurdlesCompleted: number | null,
+  targetEvent: string | null
+) {
   const query = useQuery({
-    queryKey: ["hurdle-landing-gct", runId],
+    queryKey: ["hurdle-landing-gct", runId, hurdlesCompleted, targetEvent],
     queryFn: async () => {
       if (!runId) {
         return null;
       }
 
+      const params = new URLSearchParams();
+      if (hurdlesCompleted)
+        params.append("hurdles_completed", String(hurdlesCompleted));
+      if (targetEvent) params.append("target_event", targetEvent);
+
       const response = await api.get<LandingGctBarData[]>(
-        `/runs/${runId}/metrics/hurdles/landing-gct`
+        `/runs/${runId}/metrics/hurdles/landing-gct?${params.toString()}`
       );
 
       return validateResponse(response.data, z.array(landingGctBarSchema));
@@ -124,16 +160,25 @@ export function useLandingGct(runId: string | null) {
   };
 }
 
-export function useTakeoffFt(runId: string | null) {
+export function useTakeoffFt(
+  runId: string | null,
+  hurdlesCompleted: number | null,
+  targetEvent: string | null
+) {
   const query = useQuery({
-    queryKey: ["hurdle-takeoff-ft", runId],
+    queryKey: ["hurdle-takeoff-ft", runId, hurdlesCompleted, targetEvent],
     queryFn: async () => {
       if (!runId) {
         return null;
       }
 
+      const params = new URLSearchParams();
+      if (hurdlesCompleted)
+        params.append("hurdles_completed", String(hurdlesCompleted));
+      if (targetEvent) params.append("target_event", targetEvent);
+
       const response = await api.get<TakeoffFtBarData[]>(
-        `/runs/${runId}/metrics/hurdles/takeoff-ft`
+        `/runs/${runId}/metrics/hurdles/takeoff-ft?${params.toString()}`
       );
 
       return validateResponse(response.data, z.array(takeoffFtBarSchema));
@@ -149,16 +194,25 @@ export function useTakeoffFt(runId: string | null) {
   };
 }
 
-export function useGctIncrease(runId: string | null) {
+export function useGctIncrease(
+  runId: string | null,
+  hurdlesCompleted: number | null,
+  targetEvent: string | null
+) {
   const query = useQuery({
-    queryKey: ["hurdle-gct-increase", runId],
+    queryKey: ["hurdle-gct-increase", runId, hurdlesCompleted, targetEvent],
     queryFn: async () => {
       if (!runId) {
         return null;
       }
 
+      const params = new URLSearchParams();
+      if (hurdlesCompleted)
+        params.append("hurdles_completed", String(hurdlesCompleted));
+      if (targetEvent) params.append("target_event", targetEvent);
+
       const response = await api.get<GctIncreaseData[]>(
-        `/runs/${runId}/metrics/hurdles/gct-increase`
+        `/runs/${runId}/metrics/hurdles/gct-increase?${params.toString()}`
       );
 
       return validateResponse(response.data, z.array(gctIncreaseSchema));
@@ -174,16 +228,25 @@ export function useGctIncrease(runId: string | null) {
   };
 }
 
-export function useHurdleProjection(runId: string | null) {
+export function useHurdleProjection(
+  runId: string | null,
+  hurdlesCompleted: number | null,
+  targetEvent: string | null
+) {
   const query = useQuery({
-    queryKey: ["hurdle-projection", runId],
+    queryKey: ["hurdle-projection", runId, hurdlesCompleted, targetEvent],
     queryFn: async () => {
       if (!runId) {
         return null;
       }
 
+      const params = new URLSearchParams();
+      if (hurdlesCompleted)
+        params.append("hurdles_completed", String(hurdlesCompleted));
+      if (targetEvent) params.append("target_event", targetEvent);
+
       const response = await api.get<HurdleProjectionResponse>(
-        `/runs/${runId}/metrics/hurdles/projection`
+        `/runs/${runId}/metrics/hurdles/projection?${params.toString()}`
       );
 
       return validateResponse(response.data, hurdleProjectionResponseSchema);

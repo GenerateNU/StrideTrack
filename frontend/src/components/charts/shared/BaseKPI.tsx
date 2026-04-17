@@ -7,7 +7,7 @@ interface BaseKPIProps {
 
 export const BaseKPI = ({ description, children }: BaseKPIProps) => {
   return (
-    <div className="relative flex flex-col items-center justify-center rounded-lg bg-card border border-border p-5 gap-1 shadow-sm">
+    <div className="relative flex flex-col items-center justify-center rounded-xl bg-card border border-border p-3 gap-1 shadow-sm shadow-foreground/[0.02] sm:rounded-2xl sm:p-5">
       <GraphInfoCard description={description} />
       {children}
     </div>

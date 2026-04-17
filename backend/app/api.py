@@ -8,11 +8,14 @@ from app.routes.bosco_routes import router as bosco_router
 from app.routes.csv_routes import router as csv_router
 from app.routes.event_history_routes import router as event_history_router
 from app.routes.example_routes import router as example_router
+from app.routes.feedback_routes import router as feedback_router
 from app.routes.hurdle_routes import router as hurdle_router
+from app.routes.long_jump_routes import router as long_jump_router
 from app.routes.reaction_time_routes import router as reaction_time_router
 from app.routes.run_routes import router as run_router
 from app.routes.split_score_routes import router as split_score_router
 from app.routes.sprint_metric_routes import router as sprint_metric_router
+from app.routes.triple_jump_routes import router as triple_jump_router
 from app.routes.universal_metric_routes import router as universal_metric_router
 from app.schemas.health_schemas import HealthResponse
 
@@ -32,6 +35,7 @@ async def health_check(
 
 # Run CRUD + all per-run metrics (shared /runs prefix, distinct tags)
 api_router.include_router(run_router)
+api_router.include_router(feedback_router)
 api_router.include_router(universal_metric_router)
 api_router.include_router(sprint_metric_router)
 api_router.include_router(hurdle_router)
@@ -45,3 +49,5 @@ api_router.include_router(athlete_router)
 api_router.include_router(auth_router)
 api_router.include_router(csv_router)
 api_router.include_router(example_router)
+api_router.include_router(long_jump_router)
+api_router.include_router(triple_jump_router)

@@ -10,6 +10,7 @@ from app.schemas.hurdle_schemas import (
     HurdleMarker,
     HurdleMetricRow,
     HurdleProjectionResponse,
+    HurdleRunParams,
     HurdleSplitBarData,
     HurdleTimelinePoint,
     HurdleTimelineResponse,
@@ -26,10 +27,13 @@ from app.utils.hurdle_chart_transformations import (
     transform_takeoff_ft,
     transform_takeoff_gct,
 )
+from app.utils.hurdle_constants import EXPECTED_HURDLE_COUNTS
 from app.utils.hurdle_metrics import transform_stride_cycles_to_hurdle_metrics
 from app.utils.hurdle_projection import project_hurdle_race
 
 logger = logging.getLogger(__name__)
+
+HURDLE_MARKER_FLIGHT_POSITION = 0.65
 
 
 class HurdleService:
@@ -39,14 +43,30 @@ class HurdleService:
         self.repository = repository
         self.coach_id = coach_id
 
-    async def _get_hurdle_metric_rows(self, run_id: UUID) -> list[HurdleMetricRow]:
+    async def _get_hurdle_metric_rows(
+        self, run_id: UUID, hurdles_completed: int | None = None
+    ) -> list[HurdleMetricRow]:
         """Fetch raw steps, run the hurdle transform, and return validated HurdleMetricRow objects."""
         await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
 
         steps = await self.repository.get_hurdle_metrics(run_id)
+        event_type = await self.repository.get_run_event_type(run_id)
+
+        if hurdles_completed is not None:
+            expected_count = hurdles_completed
+        else:
+            expected_count = (
+                EXPECTED_HURDLE_COUNTS.get(event_type) if event_type else None
+            )
+
+        logger.info(
+            f"Service: event_type={event_type}, expected_count={expected_count}"
+        )
 
         df = pd.DataFrame([s.model_dump() for s in steps])
-        hurdle_df = transform_stride_cycles_to_hurdle_metrics(df)
+        hurdle_df = transform_stride_cycles_to_hurdle_metrics(
+            df, expected_count=expected_count
+        )
         rows = hurdle_df.to_dict(orient="records")
 
         # Sanitize at the dict level so Pydantic sees Python None, not nan.
@@ -60,60 +80,96 @@ class HurdleService:
 
         return [HurdleMetricRow(**row) for row in sanitized]
 
-    async def get_hurdle_metrics_by_run_id(self, run_id: UUID) -> list[HurdleMetricRow]:
+    async def get_hurdle_metrics_by_run_id(
+        self, run_id: UUID, hurdles_completed: int | None = None
+    ) -> list[HurdleMetricRow]:
         """Get all per-hurdle metrics for a run."""
         logger.info(f"Service: Getting hurdle metrics for run {run_id}")
-        result = await self._get_hurdle_metric_rows(run_id)
+        result = await self._get_hurdle_metric_rows(
+            run_id, hurdles_completed=hurdles_completed
+        )
         logger.info(f"Service: Returning {len(result)} hurdle rows for run {run_id}")
         return result
 
-    async def get_hurdle_splits(self, run_id: UUID) -> list[HurdleSplitBarData]:
+    async def get_hurdle_splits(
+        self, run_id: UUID, hurdles_completed: int | None = None
+    ) -> list[HurdleSplitBarData]:
         """Transform hurdle data for split bar chart."""
         logger.info(f"Service: Getting hurdle splits for run {run_id}")
-        data = await self._get_hurdle_metric_rows(run_id)
+        data = await self._get_hurdle_metric_rows(
+            run_id, hurdles_completed=hurdles_completed
+        )
         return transform_hurdle_splits(data)
 
     async def get_steps_between_hurdles(
-        self, run_id: UUID
+        self, run_id: UUID, hurdles_completed: int | None = None
     ) -> list[StepsBetweenHurdlesData]:
         """Transform hurdle data for steps-between display."""
         logger.info(f"Service: Getting steps between hurdles for run {run_id}")
-        data = await self._get_hurdle_metric_rows(run_id)
+        data = await self._get_hurdle_metric_rows(
+            run_id, hurdles_completed=hurdles_completed
+        )
         return transform_steps_between_hurdles(data)
 
-    async def get_takeoff_gct(self, run_id: UUID) -> list[TakeoffGctBarData]:
+    async def get_takeoff_gct(
+        self, run_id: UUID, hurdles_completed: int | None = None
+    ) -> list[TakeoffGctBarData]:
         """Transform hurdle data for takeoff GCT bar chart."""
         logger.info(f"Service: Getting takeoff GCT for run {run_id}")
-        data = await self._get_hurdle_metric_rows(run_id)
+        data = await self._get_hurdle_metric_rows(
+            run_id, hurdles_completed=hurdles_completed
+        )
         return transform_takeoff_gct(data)
 
-    async def get_landing_gct(self, run_id: UUID) -> list[LandingGctBarData]:
+    async def get_landing_gct(
+        self, run_id: UUID, hurdles_completed: int | None = None
+    ) -> list[LandingGctBarData]:
         """Transform hurdle data for landing GCT bar chart."""
         logger.info(f"Service: Getting landing GCT for run {run_id}")
-        data = await self._get_hurdle_metric_rows(run_id)
+        data = await self._get_hurdle_metric_rows(
+            run_id, hurdles_completed=hurdles_completed
+        )
         return transform_landing_gct(data)
 
-    async def get_takeoff_ft(self, run_id: UUID) -> list[TakeoffFtBarData]:
+    async def get_takeoff_ft(
+        self, run_id: UUID, hurdles_completed: int | None = None
+    ) -> list[TakeoffFtBarData]:
         """Transform hurdle data for takeoff FT bar chart."""
         logger.info(f"Service: Getting takeoff FT for run {run_id}")
-        data = await self._get_hurdle_metric_rows(run_id)
+        data = await self._get_hurdle_metric_rows(
+            run_id, hurdles_completed=hurdles_completed
+        )
         return transform_takeoff_ft(data)
 
-    async def get_gct_increase(self, run_id: UUID) -> list[GctIncreaseData]:
+    async def get_gct_increase(
+        self, run_id: UUID, hurdles_completed: int | None = None
+    ) -> list[GctIncreaseData]:
         """Transform hurdle data for GCT increase KPI."""
         logger.info(f"Service: Getting GCT increase for run {run_id}")
-        data = await self._get_hurdle_metric_rows(run_id)
+        data = await self._get_hurdle_metric_rows(
+            run_id, hurdles_completed=hurdles_completed
+        )
         return transform_gct_increase(data)
 
-    async def get_hurdle_projection(self, run_id: UUID) -> HurdleProjectionResponse:
+    async def get_hurdle_projection(
+        self,
+        run_id: UUID,
+        hurdles_completed: int | None = None,
+        target_event: str | None = None,
+    ) -> HurdleProjectionResponse:
         """Project total race time from a partial hurdle run."""
         logger.info(f"Service: Getting hurdle projection for run {run_id}")
-        target_event = await self.repository.get_run_target_event(run_id)
-        completed_metrics = await self._get_hurdle_metric_rows(run_id)
+        if target_event is None:
+            target_event = await self.repository.get_run_target_event(run_id)
+        completed_metrics = await self._get_hurdle_metric_rows(
+            run_id, hurdles_completed=hurdles_completed
+        )
         result = project_hurdle_race(completed_metrics, target_event)
         return HurdleProjectionResponse(**result)
 
-    async def get_hurdle_timeline(self, run_id: UUID) -> HurdleTimelineResponse:
+    async def get_hurdle_timeline(
+        self, run_id: UUID, hurdles_completed: int | None = None
+    ) -> HurdleTimelineResponse:
         """Build time-series points for the hurdle timeline chart."""
         logger.info(f"Service: Getting hurdle timeline for run {run_id}")
         steps = await self.repository.get_hurdle_metrics(run_id)
@@ -172,7 +228,15 @@ class HurdleService:
         hurdle_rows = await self._get_hurdle_metric_rows(run_id)
         markers = [
             HurdleMarker(
-                time_s=round(row.clearance_start_ms / 1000, 4),
+                time_s=round(
+                    (
+                        row.clearance_start_ms
+                        + HURDLE_MARKER_FLIGHT_POSITION
+                        * (row.clearance_end_ms - row.clearance_start_ms)
+                    )
+                    / 1000,
+                    4,
+                ),
                 hurdle_num=row.hurdle_num,
             )
             for row in hurdle_rows
@@ -187,3 +251,9 @@ class HurdleService:
             right_points=right_points,
             hurdle_markers=markers,
         )
+
+    async def get_run_hurdle_params(self, run_id: UUID) -> HurdleRunParams:
+        """Get hurdle params (target event and hurdles completed) for a run."""
+        logger.info(f"Service: Getting hurdle params for run {run_id}")
+        await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
+        return await self.repository.get_run_hurdle_params(run_id)

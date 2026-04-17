@@ -7,6 +7,7 @@ import pandas as pd
 
 from app.core.exceptions import UnsupportedEventError
 from app.repositories.split_score_repository import SplitScoreRepository
+from app.schemas.event_type import EventType
 from app.schemas.split_score_schemas import RunMetric, SegmentScore, SplitScoreResponse
 from app.utils.hurdle_metrics import transform_stride_cycles_to_hurdle_metrics
 from app.utils.split_score import compute_diffs, generate_coaching_notes
@@ -17,6 +18,14 @@ from app.utils.split_score_constants import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+HURDLE_COUNT: dict[EventType, int] = {
+    EventType.hurdles_400m: 10,
+    EventType.hurdles_110m: 10,
+    EventType.hurdles_100m: 10,
+    EventType.hurdles_60m: 5,
+}
 
 
 class SplitScoreService:
@@ -73,8 +82,6 @@ class SplitScoreService:
         elapsed_ms: float,
         event_type: str,
     ) -> list[float]:
-        from app.schemas.event_type import EventType
-
         if event_type == EventType.hurdles_400m:
             return self._compute_hurdle_segments(raw_metrics, elapsed_ms, n_hurdles=10)
         if event_type == EventType.hurdles_110m:
@@ -93,7 +100,9 @@ class SplitScoreService:
         self, raw_metrics: list[RunMetric], elapsed_ms: float, n_hurdles: int
     ) -> list[float]:
         df = pd.DataFrame([m.model_dump() for m in raw_metrics])
-        hurdle_df = transform_stride_cycles_to_hurdle_metrics(df)
+        hurdle_df = transform_stride_cycles_to_hurdle_metrics(
+            df, expected_count=n_hurdles
+        )
         if len(hurdle_df) < n_hurdles:
             raise ValueError(
                 f"Expected {n_hurdles} hurdles, detected {len(hurdle_df)}. "

@@ -14,13 +14,17 @@ import {
   YAxis,
 } from "recharts";
 
-export const TakeoffGctChart = ({ runId }: ChartProps) => {
+export const TakeoffGctChart = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     takeoffGct,
     takeoffGctIsLoading,
     takeoffGctError,
     takeoffGctRefetch,
-  } = useTakeoffGct(runId);
+  } = useTakeoffGct(runId, hurdlesCompleted ?? null, targetEvent ?? null);
 
   if (takeoffGctIsLoading)
     return (
@@ -48,13 +52,10 @@ export const TakeoffGctChart = ({ runId }: ChartProps) => {
   const values = takeoffGct
     .map((d) => d.takeoff_gct_ms)
     .filter((v): v is number => v != null);
-  const dataMin = Math.min(...values);
-  const dataMax = Math.max(...values);
-  const range = dataMax - dataMin || 1;
-  const yDomain: [number, number] = [
-    Math.max(0, dataMin - range * 0.2),
-    dataMax + range * 0.1,
-  ];
+
+  const yMin = Math.min(...values);
+  const yMax = Math.max(...values);
+  const yPadding = (yMax - yMin) * 0.2 || 1;
 
   return (
     <ChartCard
@@ -62,27 +63,26 @@ export const TakeoffGctChart = ({ runId }: ChartProps) => {
       description="Ground contact time on the takeoff step before each hurdle clearance."
     >
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart
-          data={takeoffGct}
-          margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
-        >
-          <CartesianGrid vertical={false} stroke={chartColors.border} />
+        <BarChart data={takeoffGct}>
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="hurdle_num"
             label={{
               value: "Hurdle Number",
               position: "insideBottom",
-              offset: -30,
+              offset: -5,
               style: {
                 fill: chartColors.mutedForeground,
                 fontSize: 10,
                 textAnchor: "middle",
               },
             }}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <YAxis
-            domain={yDomain}
+            domain={[
+              Math.max(0, Math.floor((yMin - yPadding) / 10) * 10),
+              Math.ceil((yMax + yPadding) / 10) * 10,
+            ]}
             label={{
               value: "Ground Contact Time (ms)",
               angle: -90,
@@ -94,7 +94,6 @@ export const TakeoffGctChart = ({ runId }: ChartProps) => {
                 textAnchor: "middle",
               },
             }}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <Tooltip
             contentStyle={{

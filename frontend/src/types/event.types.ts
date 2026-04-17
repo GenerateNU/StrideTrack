@@ -13,7 +13,6 @@ export const eventTypeEnum = z.enum([
   "triple_jump",
   "high_jump",
   "bosco_test",
-  "reaction_time_test",
 ]);
 
 export type EventTypeEnum = z.infer<typeof eventTypeEnum>;

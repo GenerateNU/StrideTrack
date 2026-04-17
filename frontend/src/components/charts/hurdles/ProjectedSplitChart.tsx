@@ -1,6 +1,6 @@
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
-import { ChartCard } from "@/components/charts/shared/ChartCard";
 import { useHurdleProjection } from "@/hooks/useHurdleMetrics.hooks";
 import { chartColors } from "@/lib/chartColors";
 import type { ChartProps } from "@/types/chart.types";
@@ -26,23 +26,26 @@ const TITLE = "Projected Splits";
 const DESCRIPTION =
   "Completed splits shown solid, projected splits shown hatched. Reference line marks average of completed splits.";
 
-export const ProjectedSplitChart = ({ runId }: ChartProps) => {
+export const ProjectedSplitChart = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     hurdleProjection,
     hurdleProjectionIsLoading,
     hurdleProjectionError,
     hurdleProjectionRefetch,
-  } = useHurdleProjection(runId);
+  } = useHurdleProjection(runId, hurdlesCompleted ?? null, targetEvent ?? null);
 
-  if (hurdleProjectionIsLoading) {
+  if (hurdleProjectionIsLoading)
     return (
       <ChartCard title={TITLE} description={DESCRIPTION}>
         <QueryLoading />
       </ChartCard>
     );
-  }
 
-  if (hurdleProjectionError) {
+  if (hurdleProjectionError)
     return (
       <ChartCard title={TITLE} description={DESCRIPTION}>
         <QueryError
@@ -51,17 +54,13 @@ export const ProjectedSplitChart = ({ runId }: ChartProps) => {
         />
       </ChartCard>
     );
-  }
 
-  if (!hurdleProjection) {
-    return null;
-  }
+  if (!hurdleProjection) return null;
 
   const { completed_splits, projected_splits } = hurdleProjection;
 
-  if (completed_splits.length === 0 && projected_splits.length === 0) {
+  if (completed_splits.length === 0 && projected_splits.length === 0)
     return null;
-  }
 
   const chartData: ChartRow[] = [
     ...completed_splits.map((s) => ({
@@ -77,10 +76,9 @@ export const ProjectedSplitChart = ({ runId }: ChartProps) => {
   ];
 
   const allValues = chartData.map((d) => d.split_ms);
-  const minSplit = Math.min(...allValues);
-  const maxSplit = Math.max(...allValues);
-  const yFloor = Math.floor((minSplit * 0.85) / 10) * 10;
-  const yCeil = Math.ceil((maxSplit * 1.05) / 10) * 10;
+  const yMin = Math.min(...allValues);
+  const yMax = Math.max(...allValues);
+  const yPadding = (yMax - yMin) * 0.2 || 1;
 
   const completedValues = completed_splits.map((s) => s.split_ms);
   const mean =
@@ -89,10 +87,7 @@ export const ProjectedSplitChart = ({ runId }: ChartProps) => {
   return (
     <ChartCard title={TITLE} description={DESCRIPTION}>
       <ResponsiveContainer width="100%" height={300}>
-        <BarChart
-          data={chartData}
-          margin={{ top: 20, right: 60, left: 20, bottom: 40 }}
-        >
+        <BarChart data={chartData}>
           <defs>
             <pattern
               id="projected-pattern"
@@ -116,23 +111,25 @@ export const ProjectedSplitChart = ({ runId }: ChartProps) => {
               />
             </pattern>
           </defs>
-          <CartesianGrid vertical={false} stroke={chartColors.border} />
+          <CartesianGrid strokeDasharray="3 3" stroke={chartColors.border} />
           <XAxis
             dataKey="hurdle_num"
             label={{
               value: "Hurdle Number",
               position: "insideBottom",
-              offset: -30,
+              offset: -5,
               style: {
                 fill: chartColors.mutedForeground,
                 fontSize: 10,
                 textAnchor: "middle",
               },
             }}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <YAxis
-            domain={[yFloor, yCeil]}
+            domain={[
+              Math.max(0, Math.floor((yMin - yPadding) / 10) * 10),
+              Math.ceil((yMax + yPadding) / 10) * 10,
+            ]}
             label={{
               value: "Split Time (ms)",
               angle: -90,
@@ -144,7 +141,6 @@ export const ProjectedSplitChart = ({ runId }: ChartProps) => {
                 textAnchor: "middle",
               },
             }}
-            tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
           />
           <Tooltip
             contentStyle={{
@@ -166,12 +162,13 @@ export const ProjectedSplitChart = ({ runId }: ChartProps) => {
           <ReferenceLine
             y={mean}
             stroke={chartColors.primary}
-            strokeDasharray="4 4"
+            strokeDasharray="6 3"
+            strokeWidth={1.5}
             label={{
               value: "Avg (completed)",
               position: "right",
               fill: chartColors.primary,
-              fontSize: 11,
+              fontSize: 10,
             }}
           />
           <Bar dataKey="split_ms" radius={[6, 6, 0, 0]} name="Split Time">
@@ -196,20 +193,24 @@ export const ProjectedSplitChart = ({ runId }: ChartProps) => {
         </BarChart>
       </ResponsiveContainer>
 
-      <div className="flex items-center justify-center gap-6 mt-3">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-4 mt-3 sm:gap-6">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <div
-            className="w-4 h-3 rounded-sm"
+            className="w-3 h-2.5 rounded-sm sm:w-4 sm:h-3"
             style={{ backgroundColor: chartColors.primary }}
           />
-          <span className="text-xs text-muted-foreground">Completed</span>
+          <span className="text-[10px] text-muted-foreground sm:text-xs">
+            Completed
+          </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <div
-            className="w-4 h-3 rounded-sm border border-dashed"
+            className="w-3 h-2.5 rounded-sm border border-dashed sm:w-4 sm:h-3"
             style={{ borderColor: chartColors.mutedForeground }}
           />
-          <span className="text-xs text-muted-foreground">Projected</span>
+          <span className="text-[10px] text-muted-foreground sm:text-xs">
+            Projected
+          </span>
         </div>
       </div>
     </ChartCard>

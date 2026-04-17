@@ -4,7 +4,8 @@ import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
 import { useGetAllRuns } from "@/hooks/useRuns.hooks";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { QueryError } from "@/components/ui/QueryError";
-import { Search, ChevronDown, ChevronUp } from "lucide-react";
+import { AddAthleteModal } from "@/components/athletes/AddAthleteModal";
+import { Search, ChevronDown, ChevronUp, Plus } from "lucide-react";
 
 // Generate a consistent hue from a string for avatar variety
 function nameToHue(name: string): number {
@@ -22,6 +23,7 @@ export default function HomePage() {
   const { runs, runsIsLoading: runsLoading } = useGetAllRuns();
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [addAthleteOpen, setAddAthleteOpen] = useState(false);
 
   if (athletesIsLoading || runsLoading) return <QueryLoading />;
   if (athletesError)
@@ -33,13 +35,30 @@ export default function HomePage() {
 
   return (
     <div className="space-y-5 py-4">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground">Your Athletes</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {athletes.length} athlete{athletes.length !== 1 ? "s" : ""} ·{" "}
-          {runs.length} event{runs.length !== 1 ? "s" : ""} recorded
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Your Athletes</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {athletes.length} athlete{athletes.length !== 1 ? "s" : ""} ·{" "}
+            {runs.length} event{runs.length !== 1 ? "s" : ""} recorded
+          </p>
+        </div>
+        <button
+          onClick={() => setAddAthleteOpen(true)}
+          className="flex h-10 w-10 items-center justify-center rounded-full shadow-sm transition-colors"
+          style={{
+            backgroundColor: "hsl(var(--primary))",
+            color: "hsl(var(--primary-foreground))",
+          }}
+        >
+          <Plus className="h-5 w-5" />
+        </button>
       </div>
+
+      <AddAthleteModal
+        open={addAthleteOpen}
+        onClose={() => setAddAthleteOpen(false)}
+      />
 
       <div className="relative">
         <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
