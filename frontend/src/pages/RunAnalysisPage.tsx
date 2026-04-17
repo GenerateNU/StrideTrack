@@ -33,13 +33,13 @@ function AccordionSection({
     section.defaultExpanded ?? false
   );
   const [contentHeight, setContentHeight] = useState<number>(0);
+  const [hasTransition, setHasTransition] = useState(false);
   const innerRef = useRef<HTMLDivElement>(null);
-  const isFirstRender = useRef(true);
 
   useLayoutEffect(() => {
     if (!innerRef.current) return;
     setContentHeight(innerRef.current.offsetHeight);
-    isFirstRender.current = false;
+    setHasTransition(true);
   }, [hasBeenOpened, forceMount]);
 
   useEffect(() => {
@@ -75,9 +75,9 @@ function AccordionSection({
         style={{
           maxHeight: expanded ? `${contentHeight}px` : "0px",
           opacity: expanded ? 1 : 0,
-          transition: isFirstRender.current
-            ? "none"
-            : "max-height 300ms ease-in-out, opacity 300ms ease-in-out",
+          transition: hasTransition
+            ? "max-height 300ms ease-in-out, opacity 300ms ease-in-out"
+            : "none",
         }}
       >
         <div ref={innerRef} className="flex flex-col gap-6 px-4 pb-4">
