@@ -132,87 +132,79 @@ export default function RunAnalysisPage() {
 
   return (
     <div className="flex h-full flex-col pt-4">
-      <div className="mb-6 flex items-center gap-3">
-        <button
-          onClick={() => navigate(`/athletes/${athleteId}`)}
-          className="flex items-center text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
-        <div className="flex items-end justify-between">
-          <div className="flex items-end gap-8">
-            <div>
-              <h2 className="text-xl font-bold text-foreground">
-                Event Analysis
-              </h2>
-              {runMeta && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {runMeta.event_type
-                    .replace(/_/g, " ")
-                    .replace(/\b\w/g, (c) => c.toUpperCase())}{" "}
-                  · {new Date(runMeta.created_at).toLocaleDateString()}
-                  {` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
-                </p>
-              )}
-            </div>
-            {isHurdlesPartial && (
-              <>
-                <div className="h-10 w-px bg-border" />
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-foreground">
-                    Target Event
-                  </label>
-                  <select
-                    value={hurdleParams.targetEvent ?? ""}
-                    onChange={(e) =>
-                      setHurdleParams((prev) => ({
-                        ...prev,
-                        targetEvent: e.target.value || null,
-                        hasSubmitted: false,
-                      }))
-                    }
-                    className="rounded-md border border-border bg-background px-2 py-1.5 text-xs"
-                  >
-                    <option value="">Select event...</option>
-                    {TARGET_EVENT_OPTIONS.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs font-medium text-foreground">
-                    Hurdles Completed
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={hurdleParams.hurdlesCompleted ?? ""}
-                    onChange={(e) =>
-                      setHurdleParams((prev) => ({
-                        ...prev,
-                        hurdlesCompleted: e.target.value
-                          ? Number(e.target.value)
-                          : null,
-                        hasSubmitted: false,
-                      }))
-                    }
-                    className="rounded-md border border-border bg-background px-2 py-1.5 text-xs w-fit"
-                  />
-                </div>
-                <button
-                  onClick={handleSubmit}
-                  disabled={!canSubmit}
-                  className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-                >
-                  Apply
-                </button>
-              </>
-            )}
-          </div>
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(`/athletes/${athleteId}`)}
+            className="flex items-center text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          {runMeta && (
+            <p className="text-sm text-muted-foreground">
+              {runMeta.event_type
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (c) => c.toUpperCase())}{" "}
+              · {new Date(runMeta.created_at).toLocaleDateString()}
+              {` · ${(runMeta.elapsed_ms / 1000).toFixed(2)}s`}
+            </p>
+          )}
         </div>
+        {isHurdlesPartial && (
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-foreground">
+                Target Event
+              </label>
+              <select
+                value={hurdleParams.targetEvent ?? ""}
+                onChange={(e) =>
+                  setHurdleParams((prev) => ({
+                    ...prev,
+                    targetEvent: e.target.value || null,
+                    hasSubmitted: false,
+                  }))
+                }
+                className="rounded-md border border-border bg-background px-2 py-1.5 text-xs"
+              >
+                <option value="">Select event...</option>
+                {TARGET_EVENT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-medium text-foreground">
+                Hurdles Completed
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={hurdleParams.hurdlesCompleted ?? ""}
+                onChange={(e) =>
+                  setHurdleParams((prev) => ({
+                    ...prev,
+                    hurdlesCompleted: e.target.value
+                      ? Number(e.target.value)
+                      : null,
+                    hasSubmitted: false,
+                  }))
+                }
+                className="rounded-md border border-border bg-background px-2 py-1.5 text-xs w-24"
+              />
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+            >
+              Apply
+            </button>
+          </div>
+        )}
       </div>
 
       {runId && showCharts ? (

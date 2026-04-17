@@ -43,9 +43,9 @@ async def get_hurdle_params(
     if hurdles_completed is None or target_event is None:
         run = await service.get_run_hurdle_params(run_id)
         if hurdles_completed is None:
-            hurdles_completed = run.get("hurdles_completed")
+            hurdles_completed = run.hurdles_completed
         if target_event is None:
-            target_event = run.get("target_event")
+            target_event = run.target_event
     return hurdles_completed, target_event
 
 

@@ -10,6 +10,7 @@ from app.schemas.hurdle_schemas import (
     HurdleMarker,
     HurdleMetricRow,
     HurdleProjectionResponse,
+    HurdleRunParams,
     HurdleSplitBarData,
     HurdleTimelinePoint,
     HurdleTimelineResponse,
@@ -251,6 +252,8 @@ class HurdleService:
             hurdle_markers=markers,
         )
 
-    async def get_run_hurdle_params(self, run_id: UUID) -> dict:
+    async def get_run_hurdle_params(self, run_id: UUID) -> HurdleRunParams:
+        """Get hurdle params (target event and hurdles completed) for a run."""
+        logger.info(f"Service: Getting hurdle params for run {run_id}")
         await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
         return await self.repository.get_run_hurdle_params(run_id)
