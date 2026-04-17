@@ -1,18 +1,36 @@
 import logging
+from uuid import UUID
 
 import pandas as pd
 from supabase._async.client import AsyncClient
 
+from app.core.exceptions import NotFoundException
 from app.schemas.csv_schemas import CSVInsertResult
 
 logger = logging.getLogger(__name__)
 
 
 class CSVRepository:
+    """Repository for CSV-based run ingestion and stride data storage."""
+
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
         self.metrics_table = "run_metrics"
         self.run_table = "run"
+
+    async def verify_athlete_belongs_to_coach(
+        self, athlete_id: str, coach_id: UUID
+    ) -> None:
+        """Verify an athlete belongs to the coach. Raises NotFoundException if not."""
+        result = (
+            await self.supabase.table("athletes")
+            .select("athlete_id")
+            .eq("athlete_id", athlete_id)
+            .eq("coach_id", str(coach_id))
+            .execute()
+        )
+        if not result.data:
+            raise NotFoundException("Athlete", athlete_id)
 
     async def create_record(
         self,

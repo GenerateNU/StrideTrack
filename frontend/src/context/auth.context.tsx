@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { Capacitor } from "@capacitor/core";
 import { supabase } from "@/lib/supabase";
 import { getDevToken, setDevToken, clearDevToken } from "@/lib/dev";
 import api from "@/lib/api";
@@ -110,14 +111,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => data.subscription.unsubscribe();
+    // Listen for deep-link redirects from OAuth on native platforms
+    let appUrlListener: { remove: () => Promise<void> } | undefined;
+    if (Capacitor.isNativePlatform()) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (import(/* @vite-ignore */ "@capacitor/app") as Promise<any>).then(
+        (mod) => {
+          mod.App.addListener("appUrlOpen", ({ url }: { url: string }) => {
+            // URL looks like: com.stridetrack.app://auth/callback#access_token=...&refresh_token=...
+            const hashIndex = url.indexOf("#");
+            if (hashIndex === -1) return;
+
+            const params = new URLSearchParams(url.substring(hashIndex + 1));
+            const accessToken = params.get("access_token");
+            const refreshToken = params.get("refresh_token");
+
+            if (accessToken && refreshToken) {
+              supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              });
+            }
+          }).then((listener: { remove: () => Promise<void> }) => {
+            appUrlListener = listener;
+          });
+        }
+      );
+    }
+
+    return () => {
+      data.subscription.unsubscribe();
+      appUrlListener?.remove();
+    };
   }, [checkAuth, fetchProfile]);
 
   const loginWithGoogle = async () => {
     clearDevToken();
+    const redirectTo = Capacitor.isNativePlatform()
+      ? "com.stridetrack.app://auth/callback"
+      : window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo },
     });
     if (error) throw error;
   };
