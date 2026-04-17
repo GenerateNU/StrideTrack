@@ -19,7 +19,7 @@ export function useAverageReactionTime(athleteId: string | null) {
     queryFn: async () => {
       if (!athleteId) return null;
       const response = await api.get<AverageReactionTime>(
-        `/runs/athletes/${athleteId}/metrics/reaction-time/average`
+        `/athletes/${athleteId}/metrics/reaction-time/average`
       );
       return validateResponse(response.data, averageReactionTimeSchema);
     },

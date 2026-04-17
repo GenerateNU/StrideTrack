@@ -42,16 +42,6 @@ async def create_run(
     return await service.create_run(data)
 
 
-@router.get("/athlete/{athlete_id}", response_model=list[RunCreateResponse])
-async def list_runs_by_athlete(
-    athlete_id: UUID,
-    service: RunService = Depends(get_run_service),
-) -> list[RunCreateResponse]:
-    """Get all runs for a specific athlete."""
-    logger.info(f"Route: GET /runs/athlete/{athlete_id}")
-    return await service.get_runs_by_athlete_id(athlete_id)
-
-
 @router.get("/{run_id}/metadata", response_model=RunMeta)
 async def get_run_metadata(
     run_id: UUID, service: RunService = Depends(get_run_service)
