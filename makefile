@@ -114,7 +114,7 @@ network-create: ## Create Docker network for services
 
 up: network-create ## Start all services (bun x supabase + App + Jaeger)
 	@printf "$(BLUE)Starting bun x supabase...\n$(NC)"
-	@bun x supabase start --exclude vector
+	@bun x supabase start --exclude vector,analytics,realtime,storage
 	@printf "\n"
 	@printf "$(BLUE)Starting application services...\n$(NC)"
 	@docker compose up -d
