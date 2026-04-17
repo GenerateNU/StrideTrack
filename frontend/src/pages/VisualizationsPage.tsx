@@ -14,9 +14,16 @@ import { SplitScoreChart } from "@/components/charts/hurdles/SplitScoreChart";
 import { StepsBetweenHurdlesChart } from "@/components/charts/hurdles/StepsBetweenHurdlesChart";
 import { TakeoffFtChart } from "@/components/charts/hurdles/TakeoffFtChart";
 import { TakeoffGctChart } from "@/components/charts/hurdles/TakeoffGctChart";
-import { ReactionTimeCard } from "@/components/charts/reaction-time/ReactionTimeCard";
+import { ApproachProfileChart } from "@/components/charts/long_jump/ApproachProfileChart";
+import { JumpFlightTimeCard } from "@/components/charts/long_jump/JumpFlightTimeCard";
+import { LastStepGctCard } from "@/components/charts/long_jump/LastStepGctCard";
+import { LjFlightTimeChart } from "@/components/charts/long_jump/LjFlightTimeChart";
+import { LjGctChart } from "@/components/charts/long_jump/LjGctChart";
 import { SprintDriftKPIs } from "@/components/charts/sprint/DriftKPI";
 import { StepFrequencyChart } from "@/components/charts/sprint/StepFrequencyChart";
+import { ContactTimeEfficiencyCard } from "@/components/charts/triple_jump/ContactTimeEfficiencyCard";
+import { PhaseRatioChart } from "@/components/charts/triple_jump/PhaseRatioChart";
+import { TjPhaseTimelineChart } from "@/components/charts/triple_jump/TjPhaseTimelineChart";
 import { FlightTimeChart } from "@/components/charts/universal/FlightTimeChart";
 import { FTAsymmetryKPI } from "@/components/charts/universal/FTAsymmetryKPI";
 import { GCTAsymmetryKPI } from "@/components/charts/universal/GCTAsymmetryKPI";
@@ -32,7 +39,8 @@ const HARDCODED_RUN_ID = "8fef5e24-b871-4fd7-afd4-190a1f96e42f";
 const HARDCODED_BOSCO_RUN_ID = "b1a2c3d4-5678-9abc-def0-111111111111";
 const HARDCODED_HURDLE_RUN_ID = "11111111-1111-1111-1111-111111111111";
 const HARDCODED_PARTIAL_RUN_ID = "22222222-2222-2222-2222-222222222222";
-const HARDCODED_RT_RUN_ID = "cccccccc-0001-4000-8000-000000000001";
+const HARDCODED_LJ_RUN_ID = "aaaaaaaa-0001-4000-8000-000000000001";
+const HARDCODED_TJ_RUN_ID = "bbbbbbbb-0001-4000-8000-000000000001";
 
 export default function VisualizationsPage() {
   const HARDCODED_ATHLETE_ID = "00000000-0000-0000-0000-000000000003";
@@ -45,7 +53,6 @@ export default function VisualizationsPage() {
         <h1 className="text-3xl font-bold mb-8 text-foreground">
           Performance Metrics
         </h1>
-
         <div className="space-y-8">
           {/* Universal Metrics */}
           <h2 className="text-2xl font-bold text-foreground">
@@ -79,6 +86,26 @@ export default function VisualizationsPage() {
           <ProjectedFinishKPI runId={HARDCODED_PARTIAL_RUN_ID} />
           <ProjectedSplitChart runId={HARDCODED_PARTIAL_RUN_ID} />
 
+          {/* Long Jump Metrics */}
+          <h2 className="text-2xl font-bold text-foreground">
+            Long Jump Metrics
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <LastStepGctCard runId={HARDCODED_LJ_RUN_ID} />
+            <JumpFlightTimeCard runId={HARDCODED_LJ_RUN_ID} />
+          </div>
+          <ApproachProfileChart runId={HARDCODED_LJ_RUN_ID} />
+          <LjGctChart runId={HARDCODED_LJ_RUN_ID} />
+          <LjFlightTimeChart runId={HARDCODED_LJ_RUN_ID} />
+
+          {/* Triple Jump Metrics */}
+          <h2 className="text-2xl font-bold text-foreground">
+            Triple Jump Metrics
+          </h2>
+          <ContactTimeEfficiencyCard runId={HARDCODED_TJ_RUN_ID} />
+          <PhaseRatioChart runId={HARDCODED_TJ_RUN_ID} />
+          <TjPhaseTimelineChart runId={HARDCODED_TJ_RUN_ID} />
+
           {/* Event History */}
           <EventHistoryFilterBar
             athleteId={HARDCODED_ATHLETE_ID}
@@ -94,12 +121,6 @@ export default function VisualizationsPage() {
           <RsiChart runId={HARDCODED_BOSCO_RUN_ID} />
           <GctFlightChart runId={HARDCODED_BOSCO_RUN_ID} />
           <FatigueIndexKPI runId={HARDCODED_BOSCO_RUN_ID} />
-
-          {/* Reaction Time */}
-          <h2 className="text-2xl font-bold text-foreground">
-            Reaction Time Test
-          </h2>
-          <ReactionTimeCard runId={HARDCODED_RT_RUN_ID} />
         </div>
       </div>
     </div>

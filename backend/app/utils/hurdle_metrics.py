@@ -1,17 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 import numpy as np
 import pandas as pd
 
-# Interval utilities
-
-
-@dataclass(frozen=True)
-class Interval:
-    start: int
-    end: int  # end is exclusive, duration is end - start
+from app.utils.interval import Interval
 
 
 def _compute_gaps(contacts_sorted: list[Interval]) -> list[Interval]:
