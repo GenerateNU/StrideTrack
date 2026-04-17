@@ -13,7 +13,20 @@ class SplitScoreRepository:
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
 
+    async def verify_run_belongs_to_coach(self, run_id: UUID, coach_id: UUID) -> None:
+        """Verify a run belongs to one of the coach's athletes."""
+        result = (
+            await self.supabase.table("run")
+            .select("run_id, athletes!inner(coach_id)")
+            .eq("run_id", str(run_id))
+            .eq("athletes.coach_id", str(coach_id))
+            .execute()
+        )
+        if not result.data:
+            raise NotFoundException("Run", str(run_id))
+
     async def get_run_meta(self, run_id: UUID) -> SplitScoreRunMeta:
+        """Fetch run metadata (event type and elapsed time) for a run."""
         logger.info(f"Repository: Fetching run meta for {run_id}")
         response = (
             await self.supabase.table("run")
@@ -27,7 +40,8 @@ class SplitScoreRepository:
         logger.info(f"Repository: Found run meta for {run_id}")
         return SplitScoreRunMeta(**response.data[0])
 
-    async def get_athlete_gender(self, run_id: UUID) -> str:
+    async def get_athlete_gender(self, run_id: UUID) -> str | None:
+        """Fetch the gender of the athlete who owns the run. Returns None if unset."""
         logger.info(f"Repository: Fetching athlete gender for run {run_id}")
         response = (
             await self.supabase.table("run")
@@ -40,9 +54,10 @@ class SplitScoreRepository:
             raise NotFoundException("Run", str(run_id))
         gender = response.data[0].get("athletes", {}).get("gender")
         logger.info(f"Repository: Found gender '{gender}' for run {run_id}")
-        return gender or "male"  # default to male if not set
+        return gender
 
     async def get_run_metrics(self, run_id: UUID) -> list[RunMetric]:
+        """Fetch all stride metrics for a run ordered by initial contact time."""
         logger.info(f"Repository: Fetching stride metrics for {run_id}")
         response = (
             await self.supabase.table("run_metrics")

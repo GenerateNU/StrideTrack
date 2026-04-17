@@ -20,19 +20,14 @@ from app.utils.split_score_constants import (
 logger = logging.getLogger(__name__)
 
 
-HURDLE_COUNT: dict[EventType, int] = {
-    EventType.hurdles_400m: 10,
-    EventType.hurdles_110m: 10,
-    EventType.hurdles_100m: 10,
-    EventType.hurdles_60m: 5,
-}
-
-
 class SplitScoreService:
-    def __init__(self, repository: SplitScoreRepository) -> None:
+    def __init__(self, repository: SplitScoreRepository, coach_id: UUID) -> None:
         self.repository = repository
+        self.coach_id = coach_id
 
     async def get_split_score(self, run_id: UUID) -> SplitScoreResponse:
+        """Compute split score percentiles for a run against population data."""
+        await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
         logger.info(f"Service: Computing split score for run {run_id}")
 
         run_meta = await self.repository.get_run_meta(run_id)
@@ -82,6 +77,7 @@ class SplitScoreService:
         elapsed_ms: float,
         event_type: str,
     ) -> list[float]:
+        """Dispatch to the correct segment computation method for the event type."""
         if event_type == EventType.hurdles_400m:
             return self._compute_hurdle_segments(raw_metrics, elapsed_ms, n_hurdles=10)
         if event_type == EventType.hurdles_110m:
@@ -99,6 +95,7 @@ class SplitScoreService:
     def _compute_hurdle_segments(
         self, raw_metrics: list[RunMetric], elapsed_ms: float, n_hurdles: int
     ) -> list[float]:
+        """Extract hurdle-to-hurdle splits from raw stride metrics."""
         df = pd.DataFrame([m.model_dump() for m in raw_metrics])
         hurdle_df = transform_stride_cycles_to_hurdle_metrics(
             df, expected_count=n_hurdles
@@ -118,6 +115,7 @@ class SplitScoreService:
     def _compute_sprint_segments(
         self, raw_metrics: list[RunMetric], elapsed_ms: float, n_splits: int
     ) -> list[float]:
+        """Divide strides into equal quantiles as a proxy for distance-based segments."""
         df = (
             pd.DataFrame([m.model_dump() for m in raw_metrics])
             .sort_values("ic_time")

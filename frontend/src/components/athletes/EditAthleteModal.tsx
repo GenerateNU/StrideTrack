@@ -1,14 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useUpdateAthlete } from "@/hooks/useAthletes.hooks";
-
-interface Athlete {
-  athlete_id: string;
-  name: string;
-  height_in: number | null;
-  weight_lbs: number | null;
-  gender: "male" | "female" | null;
-}
+import type { Athlete } from "@/types/athlete.types";
 
 interface EditAthleteModalProps {
   open: boolean;

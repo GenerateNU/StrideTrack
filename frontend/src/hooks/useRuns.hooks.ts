@@ -5,17 +5,14 @@ import { z } from "zod";
 import api from "@/lib/api";
 import { runResponseSchema, runMetaSchema } from "@/types/run.types";
 import type { Run, RunMeta } from "@/types/run.types";
+import { validateResponse } from "@/utils/validation";
 
 export function useGetAllRuns() {
   const query = useQuery({
     queryKey: ["runs"],
     queryFn: async () => {
       const response = await api.get<Run[]>("/runs");
-      const parsed = z.array(runResponseSchema).safeParse(response.data);
-      if (!parsed.success) {
-        throw new Error("Invalid response format");
-      }
-      return parsed.data;
+      return validateResponse(response.data, z.array(runResponseSchema));
     },
   });
 
@@ -32,11 +29,7 @@ export function useGetRunMeta(runId: string | undefined) {
     queryKey: ["runMeta", runId],
     queryFn: async () => {
       const response = await api.get<RunMeta>(`/runs/${runId}/metadata`);
-      const parsed = runMetaSchema.safeParse(response.data);
-      if (!parsed.success) {
-        throw new Error("Invalid response format");
-      }
-      return parsed.data;
+      return validateResponse(response.data, runMetaSchema);
     },
     enabled: !!runId,
   });
