@@ -1,4 +1,5 @@
 import api from "@/lib/api";
+import { RunFeedbackCard } from "@/components/charts/feedback/RunFeedbackCard";
 import { useGetRunMeta } from "@/hooks/useRuns.hooks";
 import type { ChartSection } from "@/lib/runAnalysisVisualizations";
 import { getSectionsForEventType } from "@/lib/runAnalysisVisualizations";
@@ -218,6 +219,7 @@ export default function RunAnalysisPage() {
               targetEvent={hurdleParams.targetEvent}
             />
           ))}
+          <RunFeedbackCard runId={runId} />
         </div>
       ) : runId && !showCharts ? (
         <div className="rounded-2xl border border-dashed border-border p-12 text-center">
