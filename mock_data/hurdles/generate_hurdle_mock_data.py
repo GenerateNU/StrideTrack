@@ -1,16 +1,16 @@
 """
 Generate realistic 400m hurdles mock sensor data.
 
-Realistic parameters:
-- Sample rate: 100Hz (10ms per sample)
-- Race duration: ~58 seconds
-- Normal stride GCT: 120-160ms, flight: 90-130ms
-- Hurdle clearance flight: 350-480ms
-- 10 hurdles evenly spaced across the race
-- Left/right foot alternate, offset by half a stride cycle
+Fixed from original:
+  1. True strictly-alternating foot contacts — left and right feet NEVER
+     overlap on the ground, matching real sprint/hurdle biomechanics.
+  2. Realistic hurdle placement — last hurdle at ~51.5 s for a 58 s race,
+     so H10->Fin is ~11 % of total time (not 21 %).
+  3. Gradual per-segment fatigue modelled in hurdle spacing.
 """
 
 import csv
+import math
 import random
 
 random.seed(42)
@@ -18,103 +18,120 @@ random.seed(42)
 SAMPLE_RATE_HZ = 100
 MS_PER_SAMPLE = 10
 
-# Stride parameters (in ms)
-NORMAL_GCT_MS = (120, 160)  # ground contact time range
-NORMAL_FLIGHT_MS = (90, 130)  # normal flight time range
-HURDLE_FLIGHT_MS = (350, 480)  # hurdle clearance flight time range
-FORCE_PEAK = (2000, 4000)  # peak force during ground contact
+# Stride parameters (ms)
+NORMAL_GCT_MS = (120, 160)      # ground contact time
+STEP_FLIGHT_MS = (50, 90)       # gap from one foot lifting to OTHER foot landing
+HURDLE_FLIGHT_MS = (320, 420)   # lead-leg clearance gap
+FORCE_PEAK = (2000, 3500)
 
-# Race structure
 RACE_DURATION_MS = 58000
 NUM_HURDLES = 10
 
-# Hurdle positions — spaced roughly evenly, first at ~3.5s, last at ~50s
-HURDLE_TIMES_MS = [3500, 8200, 12900, 17600, 22300, 27000, 31700, 36400, 41100, 45800]
+# H10 at ~51.5s leaves ~6.5s (11.2%) for H10->Fin — no spike
+HURDLE_TIMES_MS = [
+    5600,   # H1
+    10180,  # H2
+    14860,  # H3
+    19640,  # H4
+    24570,  # H5
+    29650,  # H6
+    34880,  # H7
+    40260,  # H8
+    45790,  # H9
+    51470,  # H10
+]
 
-print("Script starting...")
 
-
-def in_hurdle_clearance(t_ms: int) -> bool:
-    for ht in HURDLE_TIMES_MS:
-        if ht - 50 <= t_ms <= ht + 500:
-            return True
-    return False
-
-
-def generate_foot_contacts(offset_ms: int = 0) -> list[tuple[int, int]]:
+def generate_alternating_contacts():
     """
-    Generate (start_ms, end_ms) ground contact intervals for one foot.
-    offset_ms staggers left vs right foot.
+    Strictly alternating (foot, ic_ms, to_ms) tuples.
+    After each lift-off there is a flight gap before the OTHER foot lands.
+    Guaranteed: no two entries overlap in time.
     """
     contacts = []
-    t = offset_ms
+    t = 0
+    foot = "left"
+    hurdle_queue = list(HURDLE_TIMES_MS)
 
     while t < RACE_DURATION_MS:
-        # Check if we're approaching a hurdle clearance
-        near_hurdle = any(abs(t - ht) < 300 for ht in HURDLE_TIMES_MS)
-
         gct = random.randint(*NORMAL_GCT_MS)
-        if near_hurdle:
-            flight = random.randint(*HURDLE_FLIGHT_MS)
+        to_time = t + gct
+        contacts.append((foot, t, to_time))
+
+        if hurdle_queue and to_time >= hurdle_queue[0] - 300:
+            flight_gap = random.randint(*HURDLE_FLIGHT_MS)
+            hurdle_queue.pop(0)
         else:
-            flight = random.randint(*NORMAL_FLIGHT_MS)
+            flight_gap = random.randint(*STEP_FLIGHT_MS)
 
-        contact_start = t
-        contact_end = t + gct
-        contacts.append((contact_start, contact_end))
-
-        t = contact_end + flight
+        t = to_time + flight_gap
+        foot = "right" if foot == "left" else "left"
 
     return contacts
 
 
-def force_curve(t_ms: int, start_ms: int, end_ms: int) -> int:
-    """Bell-curve shaped force during ground contact."""
+def force_curve(t_ms, start_ms, end_ms):
     duration = end_ms - start_ms
     if duration <= 0:
         return 0
     mid = (start_ms + end_ms) / 2
     sigma = duration / 4
     peak = random.randint(*FORCE_PEAK)
-    import math
-
-    val = peak * math.exp(-((t_ms - mid) ** 2) / (2 * sigma**2))
+    val = peak * math.exp(-((t_ms - mid) ** 2) / (2 * sigma ** 2))
     return max(0, int(val))
 
 
-def build_force_array(contacts: list[tuple[int, int]], duration_ms: int) -> list[int]:
-    """Build force array at 10ms resolution."""
-    n_samples = duration_ms // MS_PER_SAMPLE + 1
-    forces = [0] * n_samples
-
-    for start, end in contacts:
+def build_force_arrays(contacts, duration_ms):
+    n = duration_ms // MS_PER_SAMPLE + 1
+    left_f = [0] * n
+    right_f = [0] * n
+    for foot, start, end in contacts:
+        arr = left_f if foot == "left" else right_f
         s_idx = start // MS_PER_SAMPLE
         e_idx = end // MS_PER_SAMPLE
-        for i in range(s_idx, min(e_idx + 1, n_samples)):
+        for i in range(s_idx, min(e_idx + 1, n)):
             t = i * MS_PER_SAMPLE
-            forces[i] = force_curve(t, start, end)
+            arr[i] = force_curve(t, start, end)
+    return left_f, right_f
 
-    return forces
+
+def validate_no_overlap(contacts):
+    for i in range(len(contacts) - 1):
+        f1, s1, e1 = contacts[i]
+        f2, s2, e2 = contacts[i + 1]
+        if s2 < e1:
+            raise ValueError(f"Overlap: {f1}[{s1}-{e1}] -> {f2}[{s2}-{e2}]")
+    print("OK No simultaneous ground contact")
+
+
+def print_splits():
+    checkpoints = [0] + HURDLE_TIMES_MS + [RACE_DURATION_MS]
+    labels = ["Start"] + [f"H{i}" for i in range(1, 11)] + ["Fin"]
+    print("\nSplit distribution:")
+    for i in range(len(checkpoints) - 1):
+        seg = checkpoints[i + 1] - checkpoints[i]
+        pct = seg / RACE_DURATION_MS * 100
+        print(f"  {labels[i]:7s}->{labels[i+1]:<4s}: {seg:5d}ms  {pct:5.1f}%")
 
 
 def main():
-    left_contacts = generate_foot_contacts(offset_ms=0)
-    right_contacts = generate_foot_contacts(offset_ms=200)  # offset by ~half stride
+    print("Generating fixed 400m hurdles data...")
+    contacts = generate_alternating_contacts()
+    validate_no_overlap(contacts)
+    left_f, right_f = build_force_arrays(contacts, RACE_DURATION_MS)
+    n = min(len(left_f), len(right_f))
 
-    left_forces = build_force_array(left_contacts, RACE_DURATION_MS)
-    right_forces = build_force_array(right_contacts, RACE_DURATION_MS)
-
-    n = min(len(left_forces), len(right_forces))
-
-    with open("hurdle_400m_mock.csv", "w", newline="") as f:
+    with open("hurdle_400m.csv", "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["Time", "Force_Foot1", "Force_Foot2"])
         for i in range(n):
-            writer.writerow([i * MS_PER_SAMPLE, left_forces[i], right_forces[i]])
+            writer.writerow([i * MS_PER_SAMPLE, left_f[i], right_f[i]])
 
-    print(f"Generated {n} rows (~{n * MS_PER_SAMPLE / 1000:.1f}s of data)")
-    print(f"Left foot contacts: {len(left_contacts)}")
-    print(f"Right foot contacts: {len(right_contacts)}")
+    lc = sum(1 for foot, _, _ in contacts if foot == "left")
+    rc = sum(1 for foot, _, _ in contacts if foot == "right")
+    print(f"Written {n} rows ({n * MS_PER_SAMPLE / 1000:.1f}s) to hurdle_400m.csv")
+    print(f"Left contacts: {lc}, Right contacts: {rc}")
+    print_splits()
 
 
 if __name__ == "__main__":
