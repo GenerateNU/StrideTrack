@@ -184,7 +184,7 @@ export const SplitScoreChart = ({
             verticalAlign="top"
             align="right"
             iconType="line"
-            wrapperStyle={{ fontSize: 11 }}
+            wrapperStyle={{ fontSize: 11, color: chartColors.foreground }}
           />
 
           {/* 10th–90th percentile band — outer, light */}
