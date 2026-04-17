@@ -9,7 +9,6 @@ import {
   type ReactNode,
 } from "react";
 import { Capacitor } from "@capacitor/core";
-import { App as CapApp } from "@capacitor/app";
 import { supabase } from "@/lib/supabase";
 import { getDevToken, setDevToken, clearDevToken } from "@/lib/dev";
 import api from "@/lib/api";
@@ -115,24 +114,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen for deep-link redirects from OAuth on native platforms
     let appUrlListener: { remove: () => Promise<void> } | undefined;
     if (Capacitor.isNativePlatform()) {
-      CapApp.addListener("appUrlOpen", ({ url }) => {
-        // URL looks like: com.stridetrack.app://auth/callback#access_token=...&refresh_token=...
-        const hashIndex = url.indexOf("#");
-        if (hashIndex === -1) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (import(/* @vite-ignore */ "@capacitor/app") as Promise<any>).then(
+        (mod) => {
+          mod.App.addListener(
+            "appUrlOpen",
+            ({ url }: { url: string }) => {
+              // URL looks like: com.stridetrack.app://auth/callback#access_token=...&refresh_token=...
+              const hashIndex = url.indexOf("#");
+              if (hashIndex === -1) return;
 
-        const params = new URLSearchParams(url.substring(hashIndex + 1));
-        const accessToken = params.get("access_token");
-        const refreshToken = params.get("refresh_token");
+              const params = new URLSearchParams(url.substring(hashIndex + 1));
+              const accessToken = params.get("access_token");
+              const refreshToken = params.get("refresh_token");
 
-        if (accessToken && refreshToken) {
-          supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
+              if (accessToken && refreshToken) {
+                supabase.auth.setSession({
+                  access_token: accessToken,
+                  refresh_token: refreshToken,
+                });
+              }
+            }
+          ).then((listener: { remove: () => Promise<void> }) => {
+            appUrlListener = listener;
           });
         }
-      }).then((listener) => {
-        appUrlListener = listener;
-      });
+      );
     }
 
     return () => {

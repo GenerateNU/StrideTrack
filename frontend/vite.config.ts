@@ -10,6 +10,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: ["@capacitor/app"],
+  },
   server: {
     // Proxy OTLP traces to Jaeger so the browser doesn't hit CORS.
     // When frontend runs in Docker, set OTEL_PROXY_TARGET=http://host.docker.internal:4318 so the container can reach Jaeger on the host.
