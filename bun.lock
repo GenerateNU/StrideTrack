@@ -5,7 +5,7 @@
     "": {
       "name": "stridetrack",
       "dependencies": {
-        "supabase": "^2.90.0",
+        "supabase": "^2.68.1",
       },
     },
   },
