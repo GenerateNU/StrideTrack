@@ -4,6 +4,11 @@ import { BleClient } from "@capacitor-community/bluetooth-le";
 const FORCE_PLATE_SERVICE_UUID = "0000180d-0000-1000-8000-00805f9b34fb";
 const FORCE_PLATE_CHARACTERISTIC_UUID = "00002a37-0000-1000-8000-00805f9b34fb";
 
+// True when running in a browser that supports Web Bluetooth.
+// On native Capacitor (iOS/Android), WKWebView/WebView don't expose navigator.bluetooth,
+// so this is false and we fall through to the BleClient (Capacitor) path.
+const IS_WEB_BLUETOOTH = "bluetooth" in navigator;
+
 export interface BleForceRow {
   time: number;
   force_foot1: number;
@@ -24,57 +29,106 @@ export function useBle() {
 
   const bufferRef = useRef<BleForceRow[]>([]);
   const startIndexRef = useRef<number | null>(null);
+
+  // ── Native (Capacitor) refs ──────────────────────────────────
   const deviceIdRef = useRef<string | null>(null);
 
-  // On web, BleClient.isEnabled() is not supported and throws.
-  // Fall back to checking navigator.bluetooth (Web Bluetooth API) instead.
-  const resolveAvailability = useCallback(async (): Promise<boolean> => {
-    try {
-      await BleClient.initialize();
-      const enabled = await BleClient.isEnabled();
-      return enabled;
-    } catch {
-      return "bluetooth" in navigator;
-    }
-  }, []);
+  // ── Web Bluetooth refs ───────────────────────────────────────
+  const webDeviceRef = useRef<BluetoothDevice | null>(null);
+  const webCharRef = useRef<BluetoothRemoteGATTCharacteristic | null>(null);
 
-  const checkAvailability = useCallback(async (): Promise<boolean> => {
-    const available = await resolveAvailability();
-    setBleIsAvailable(available);
-    return available;
-  }, [resolveAvailability]);
+  // ── Availability check ───────────────────────────────────────
 
   useEffect(() => {
     let cancelled = false;
-    resolveAvailability().then((available) => {
+
+    async function resolve() {
+      let available = false;
+      if (IS_WEB_BLUETOOTH) {
+        available = true; // picker will surface unavailability at connect time
+      } else {
+        try {
+          await BleClient.initialize();
+          available = await BleClient.isEnabled();
+        } catch {
+          available = false;
+        }
+      }
       if (!cancelled) setBleIsAvailable(available);
-    });
+    }
+
+    resolve();
     return () => {
       cancelled = true;
     };
-  }, [resolveAvailability]);
-
-  const startListening = useCallback(async (deviceId: string) => {
-    await BleClient.startNotifications(
-      deviceId,
-      FORCE_PLATE_SERVICE_UUID,
-      FORCE_PLATE_CHARACTERISTIC_UUID,
-      (value: DataView) => {
-        const row = parseNotification(value);
-        bufferRef.current.push(row);
-      }
-    );
   }, []);
 
-  const handleDisconnect = useCallback((deviceId: string) => {
+  // ── Web Bluetooth path ───────────────────────────────────────
+
+  const webConnect = useCallback(async () => {
+    // requestDevice() opens the browser device picker — must be called from a user gesture
+    const device = await navigator.bluetooth.requestDevice({
+      filters: [{ services: [FORCE_PLATE_SERVICE_UUID] }],
+    });
+
+    webDeviceRef.current = device;
+
+    // React to unexpected disconnects (out of range, etc.)
+    device.addEventListener("gattserverdisconnected", () => {
+      setBleIsConnected(false);
+    });
+
+    const server = await device.gatt!.connect();
+    const service = await server.getPrimaryService(FORCE_PLATE_SERVICE_UUID);
+    const characteristic = await service.getCharacteristic(
+      FORCE_PLATE_CHARACTERISTIC_UUID
+    );
+
+    webCharRef.current = characteristic;
+
+    await characteristic.startNotifications();
+
+    characteristic.addEventListener("characteristicvaluechanged", (event) => {
+      const char = event.target as BluetoothRemoteGATTCharacteristic;
+      if (char.value) {
+        bufferRef.current.push(parseNotification(char.value));
+      }
+    });
+
+    // Only mark connected once notifications are live
+    setBleIsConnected(true);
+  }, []);
+
+  const webDisconnect = useCallback(async () => {
+    if (webCharRef.current) {
+      try {
+        await webCharRef.current.stopNotifications();
+      } catch {
+        // may already be stopped
+      }
+      webCharRef.current = null;
+    }
+    if (webDeviceRef.current?.gatt?.connected) {
+      webDeviceRef.current.gatt.disconnect();
+    }
+    webDeviceRef.current = null;
+    setBleIsConnected(false);
+  }, []);
+
+  // ── Native (Capacitor) path ──────────────────────────────────
+
+  const handleNativeDisconnect = useCallback((deviceId: string) => {
     if (deviceIdRef.current === deviceId) {
       setBleIsConnected(false);
     }
   }, []);
 
-  const bleConnect = useCallback(async () => {
-    const available = await checkAvailability();
-    if (!available) {
+  const nativeConnect = useCallback(async () => {
+    try {
+      await BleClient.initialize();
+      const enabled = await BleClient.isEnabled();
+      if (!enabled) throw new Error("Bluetooth is not enabled");
+    } catch {
       throw new Error("BLE is not available");
     }
 
@@ -88,20 +142,27 @@ export function useBle() {
       deviceIdRef.current = device.deviceId;
 
       await BleClient.connect(device.deviceId, () =>
-        handleDisconnect(device.deviceId)
+        handleNativeDisconnect(device.deviceId)
       );
 
-      await startListening(device.deviceId);
+      await BleClient.startNotifications(
+        device.deviceId,
+        FORCE_PLATE_SERVICE_UUID,
+        FORCE_PLATE_CHARACTERISTIC_UUID,
+        (value: DataView) => {
+          bufferRef.current.push(parseNotification(value));
+        }
+      );
 
-      // Only mark connected after notifications are confirmed active
+      // Only mark connected once notifications are live
       setBleIsConnected(true);
     } catch (error) {
       setBleIsScanning(false);
       throw error;
     }
-  }, [checkAvailability, handleDisconnect, startListening]);
+  }, [handleNativeDisconnect]);
 
-  const bleDisconnect = useCallback(async () => {
+  const nativeDisconnect = useCallback(async () => {
     const deviceId = deviceIdRef.current;
     if (!deviceId) return;
 
@@ -124,6 +185,18 @@ export function useBle() {
     setBleIsConnected(false);
     deviceIdRef.current = null;
   }, []);
+
+  // ── Public API (routes to correct path) ─────────────────────
+
+  const bleConnect = useCallback(async () => {
+    if (IS_WEB_BLUETOOTH) return webConnect();
+    return nativeConnect();
+  }, [webConnect, nativeConnect]);
+
+  const bleDisconnect = useCallback(async () => {
+    if (IS_WEB_BLUETOOTH) return webDisconnect();
+    return nativeDisconnect();
+  }, [webDisconnect, nativeDisconnect]);
 
   const bleDataBuffer = useCallback((): BleForceRow[] => {
     return [...bufferRef.current];
