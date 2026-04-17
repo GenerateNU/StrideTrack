@@ -1,4 +1,6 @@
 import { useAverageReactionTime } from "@/hooks/useAverageReactionTime.hooks";
+import { QueryError } from "@/components/ui/QueryError";
+import { QueryLoading } from "@/components/ui/QueryLoading";
 import axios from "axios";
 import { Timer } from "lucide-react";
 
@@ -22,17 +24,26 @@ function getZoneColor(zone: string | undefined): string {
 export const AverageReactionTimeCard = ({
   athleteId,
 }: AverageReactionTimeCardProps) => {
-  const { avgReactionTime, avgReactionTimeIsLoading, avgReactionTimeError } =
-    useAverageReactionTime(athleteId);
+  const {
+    avgReactionTime,
+    avgReactionTimeIsLoading,
+    avgReactionTimeError,
+    avgReactionTimeRefetch,
+  } = useAverageReactionTime(athleteId);
 
-  if (avgReactionTimeIsLoading) return null;
+  if (avgReactionTimeIsLoading) return <QueryLoading />;
 
   if (avgReactionTimeError) {
     const is404 =
       axios.isAxiosError(avgReactionTimeError) &&
       avgReactionTimeError.response?.status === 404;
     if (is404) return null;
-    return null;
+    return (
+      <QueryError
+        error={avgReactionTimeError}
+        refetch={() => void avgReactionTimeRefetch()}
+      />
+    );
   }
 
   if (!avgReactionTime) return null;
@@ -51,6 +62,10 @@ export const AverageReactionTimeCard = ({
         </span>
       </div>
       <div className="text-xs text-muted-foreground">Avg Reaction Time</div>
+      <div className="text-xs text-muted-foreground mt-1">
+        {avgReactionTime.zone_description} · {avgReactionTime.run_count} run
+        {avgReactionTime.run_count !== 1 ? "s" : ""}
+      </div>
     </div>
   );
 };

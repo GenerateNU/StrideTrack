@@ -200,7 +200,7 @@ export default function AthleteProfilePage() {
 
       {tab === "summary" && (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
               <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
                 <Activity className="h-4 w-4 text-foreground" />
@@ -221,9 +221,7 @@ export default function AthleteProfilePage() {
               </div>
               <div className="text-xs text-muted-foreground">Event Types</div>
             </div>
-            <div className="col-span-2 sm:col-span-1">
-              <AverageReactionTimeCard athleteId={athleteId!} />
-            </div>
+            <AverageReactionTimeCard athleteId={athleteId!} />
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
