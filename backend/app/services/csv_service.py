@@ -2,6 +2,7 @@ import logging
 from uuid import UUID
 
 import pandas as pd
+from opentelemetry.trace import StatusCode
 
 from app.core.observability import get_tracer
 from app.repositories.csv_repository import CSVRepository
@@ -31,30 +32,35 @@ class CSVService:
 
         tracer = get_tracer()
         with tracer.start_as_current_span("csv.ingest") as span:
-            span.set_attribute("csv.rows_in", len(raw_df))
+            try:
+                span.set_attribute("csv.rows_in", len(raw_df))
 
-            if elapsed_ms is None and "Time" in raw_df.columns and len(raw_df) > 0:
-                elapsed_ms = int(raw_df["Time"].max() - raw_df["Time"].min())
+                if elapsed_ms is None and "Time" in raw_df.columns and len(raw_df) > 0:
+                    elapsed_ms = int(raw_df["Time"].max() - raw_df["Time"].min())
 
-            transformed_df = transform_feet_to_stride_cycles(raw_df)
-            span.set_attribute("csv.rows_transformed", len(transformed_df))
+                transformed_df = transform_feet_to_stride_cycles(raw_df)
+                span.set_attribute("csv.rows_transformed", len(transformed_df))
 
-            result = await self.repository.insert_complete_run(
-                df=transformed_df,
-                athlete_id=athlete_id,
-                event_type=event_type,
-                name=name,
-                elapsed_ms=elapsed_ms,
-            )
-            span.set_attribute("csv.run_id", result.run_id)
-            span.set_attribute("csv.rows_inserted", result.rows_inserted)
+                result = await self.repository.insert_complete_run(
+                    df=transformed_df,
+                    athlete_id=athlete_id,
+                    event_type=event_type,
+                    name=name,
+                    elapsed_ms=elapsed_ms,
+                )
+                span.set_attribute("csv.run_id", result.run_id)
+                span.set_attribute("csv.rows_inserted", result.rows_inserted)
 
-            logger.info(
-                f"Service: ingest_stride_csv rows_in={len(raw_df)} rows_out={len(transformed_df)} run_id={result.run_id}"
-            )
+                logger.info(
+                    f"Service: ingest_stride_csv rows_in={len(raw_df)} rows_out={len(transformed_df)} run_id={result.run_id}"
+                )
 
-            return CSVUploadResponse(
-                message=f"CSV uploaded successfully. Run ID: {result.run_id}, Rows inserted: {result.rows_inserted}",
-                run_id=str(result.run_id),
-                rows_inserted=result.rows_inserted,
-            )
+                return CSVUploadResponse(
+                    message=f"CSV uploaded successfully. Run ID: {result.run_id}, Rows inserted: {result.rows_inserted}",
+                    run_id=str(result.run_id),
+                    rows_inserted=result.rows_inserted,
+                )
+            except Exception as e:
+                span.set_status(StatusCode.ERROR, str(e))
+                span.record_exception(e)
+                raise

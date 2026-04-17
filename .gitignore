@@ -237,9 +237,6 @@ lerna-debug.log*
 # Mise
 mise.toml
 
-# Compiled test binaries
-data/test_peripheral
-
 # Claude Code (personal/local only)
 .mcp.json
 .claude/settings.local.json
