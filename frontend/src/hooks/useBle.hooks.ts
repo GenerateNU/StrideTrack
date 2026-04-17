@@ -1,5 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { BleClient } from "@capacitor-community/bluetooth-le";
+import type { BleForceRow } from "@/types/ble.types";
+
+export type { BleForceRow };
 
 const FORCE_PLATE_SERVICE_UUID = "0000180d-0000-1000-8000-00805f9b34fb";
 const FORCE_PLATE_CHARACTERISTIC_UUID = "00002a37-0000-1000-8000-00805f9b34fb";
@@ -8,12 +11,6 @@ const FORCE_PLATE_CHARACTERISTIC_UUID = "00002a37-0000-1000-8000-00805f9b34fb";
 // On native Capacitor (iOS/Android), WKWebView/WebView don't expose navigator.bluetooth,
 // so this is false and we fall through to the BleClient (Capacitor) path.
 const IS_WEB_BLUETOOTH = "bluetooth" in navigator;
-
-export interface BleForceRow {
-  time: number;
-  force_foot1: number;
-  force_foot2: number;
-}
 
 function parseNotification(value: DataView): BleForceRow {
   const time = value.getFloat32(0, true);
@@ -36,6 +33,8 @@ export function useBle() {
   // ── Web Bluetooth refs ───────────────────────────────────────
   const webDeviceRef = useRef<BluetoothDevice | null>(null);
   const webCharRef = useRef<BluetoothRemoteGATTCharacteristic | null>(null);
+  const webDisconnectListenerRef = useRef<(() => void) | null>(null);
+  const webValueListenerRef = useRef<((event: Event) => void) | null>(null);
 
   // ── Availability check ───────────────────────────────────────
 
@@ -74,10 +73,12 @@ export function useBle() {
 
     webDeviceRef.current = device;
 
-    device.addEventListener("gattserverdisconnected", () => {
+    const onDisconnect = () => {
       console.log("[BLE-web] GATT server disconnected");
       setBleIsConnected(false);
-    });
+    };
+    webDisconnectListenerRef.current = onDisconnect;
+    device.addEventListener("gattserverdisconnected", onDisconnect);
 
     console.log("[BLE-web] connecting to GATT server...");
     const server = await device.gatt!.connect();
@@ -100,12 +101,14 @@ export function useBle() {
 
     webCharRef.current = characteristic;
 
-    characteristic.addEventListener("characteristicvaluechanged", (event) => {
+    const onValue = (event: Event) => {
       const char = event.target as BluetoothRemoteGATTCharacteristic;
       if (char.value) {
         bufferRef.current.push(parseNotification(char.value));
       }
-    });
+    };
+    webValueListenerRef.current = onValue;
+    characteristic.addEventListener("characteristicvaluechanged", onValue);
 
     console.log("[BLE-web] startNotifications...");
     await characteristic.startNotifications();
@@ -116,6 +119,13 @@ export function useBle() {
 
   const webDisconnect = useCallback(async () => {
     if (webCharRef.current) {
+      if (webValueListenerRef.current) {
+        webCharRef.current.removeEventListener(
+          "characteristicvaluechanged",
+          webValueListenerRef.current
+        );
+        webValueListenerRef.current = null;
+      }
       try {
         await webCharRef.current.stopNotifications();
       } catch {
@@ -123,8 +133,17 @@ export function useBle() {
       }
       webCharRef.current = null;
     }
-    if (webDeviceRef.current?.gatt?.connected) {
-      webDeviceRef.current.gatt.disconnect();
+    if (webDeviceRef.current) {
+      if (webDisconnectListenerRef.current) {
+        webDeviceRef.current.removeEventListener(
+          "gattserverdisconnected",
+          webDisconnectListenerRef.current
+        );
+        webDisconnectListenerRef.current = null;
+      }
+      if (webDeviceRef.current.gatt?.connected) {
+        webDeviceRef.current.gatt.disconnect();
+      }
     }
     webDeviceRef.current = null;
     setBleIsConnected(false);

@@ -141,12 +141,14 @@ export default function RecordRunPage() {
       const file = new File([blob], "run_data.csv", { type: "text/csv" });
 
       const formData = new FormData();
-      formData.append("athlete_id", athleteId);
       formData.append("event_type", eventType);
       formData.append("elapsed_ms", String(elapsedMs));
       formData.append("file", file);
 
-      const response = await api.post("/csv/upload-run", formData);
+      const response = await api.post(
+        `/athletes/${athleteId}/csv/upload-run`,
+        formData
+      );
 
       await queryClient.invalidateQueries({ queryKey: ["runs"] });
       bleClearBuffer();
@@ -266,8 +268,6 @@ export default function RecordRunPage() {
   }
 
   // ── Recording Screen ──
-  const saving = isSaving;
-
   return (
     <div className="flex flex-col items-center pt-10">
       {/* Header */}
@@ -415,21 +415,21 @@ export default function RecordRunPage() {
         <div className="mt-10 flex gap-4">
           <button
             onClick={handleDelete}
-            disabled={saving}
+            disabled={isSaving}
             className="px-10 py-4 rounded-2xl font-semibold text-lg cursor-pointer transition-colors border border-border text-foreground bg-card disabled:opacity-50"
           >
             Delete
           </button>
           <button
             onClick={handleSave}
-            disabled={saving}
+            disabled={isSaving}
             className="px-10 py-4 rounded-2xl font-semibold text-lg cursor-pointer transition-colors disabled:opacity-50"
             style={{
               backgroundColor: "hsl(var(--primary))",
               color: "hsl(var(--primary-foreground))",
             }}
           >
-            {saving ? "Saving..." : "Save"}
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       )}

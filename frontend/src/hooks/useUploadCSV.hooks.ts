@@ -13,12 +13,7 @@ export function useUploadCSV() {
 
       const response = await api.post(
         `/athletes/${athleteId}/csv/upload-run`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
 
       return response.data;
