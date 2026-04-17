@@ -16,13 +16,17 @@ const getLabel = (value: number): string => {
   return "Significant";
 };
 
-export const GctIncreaseChart = ({ runId }: ChartProps) => {
+export const GctIncreaseChart = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     gctIncrease,
     gctIncreaseIsLoading,
     gctIncreaseError,
     gctIncreaseRefetch,
-  } = useGctIncrease(runId);
+  } = useGctIncrease(runId, hurdlesCompleted ?? null, targetEvent ?? null);
 
   if (gctIncreaseIsLoading)
     return (

@@ -89,6 +89,7 @@ class RunRepository:
         }
         if run_create.target_event is not None:
             data["target_event"] = run_create.target_event
+            data["hurdles_completed"] = run_create.hurdles_completed
 
         response = await self.supabase.table("run").insert(data).execute()
         if not response.data:
@@ -102,7 +103,7 @@ class RunRepository:
         response = (
             await self.supabase.table("run")
             .select(
-                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at, name, athletes!inner(coach_id)"
+                "run_id, athlete_id, event_type, target_event, hurdles_completed, elapsed_ms, created_at, name, athletes!inner(coach_id)"
             )
             .eq("athletes.coach_id", str(coach_id))
             .order("created_at", desc=True)
@@ -119,7 +120,7 @@ class RunRepository:
         response = (
             await self.supabase.table("run")
             .select(
-                "run_id, athlete_id, event_type, target_event, elapsed_ms, created_at, name"
+                "run_id, athlete_id, event_type, target_event, hurdles_completed, elapsed_ms, created_at, name"
             )
             .eq("athlete_id", str(athlete_id))
             .order("created_at", desc=True)

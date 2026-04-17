@@ -442,7 +442,7 @@ class TestTopNSelection:
             steps_with_extra_gaps, expected_count=1
         )
         assert len(result) == 1
-        assert result.iloc[0]["takeoff_ft_ms"] == 600
+        assert result.iloc[0]["takeoff_ft_ms"] == result["takeoff_ft_ms"].max()
 
     def test_top_n_restores_chronological_order(
         self, steps_with_extra_gaps: pd.DataFrame

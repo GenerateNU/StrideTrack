@@ -100,3 +100,8 @@ class HurdleMarker(BaseModel):
 class HurdleTimelineResponse(BaseModel):
     points: list[HurdleTimelinePoint]
     hurdle_markers: list[HurdleMarker]
+
+
+class HurdleRunParams(BaseModel):
+    hurdles_completed: int | None = None
+    target_event: str | None = None

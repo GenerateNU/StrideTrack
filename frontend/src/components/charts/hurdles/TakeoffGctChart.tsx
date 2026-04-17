@@ -14,13 +14,17 @@ import {
   YAxis,
 } from "recharts";
 
-export const TakeoffGctChart = ({ runId }: ChartProps) => {
+export const TakeoffGctChart = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     takeoffGct,
     takeoffGctIsLoading,
     takeoffGctError,
     takeoffGctRefetch,
-  } = useTakeoffGct(runId);
+  } = useTakeoffGct(runId, hurdlesCompleted ?? null, targetEvent ?? null);
 
   if (takeoffGctIsLoading)
     return (
