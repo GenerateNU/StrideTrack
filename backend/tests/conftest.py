@@ -1,6 +1,5 @@
 from collections.abc import Generator
-from datetime import UTC, datetime
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -12,11 +11,6 @@ from app.main import app
 from app.schemas.coach_schemas import Coach
 from app.schemas.profile_schemas import Profile
 from tests.factories.coach_factory import CoachFactory
-
-# ── Seeded coach constants (must match supabase/seed.sql) ──
-SEEDED_COACH_ID = UUID("00000000-0000-0000-0000-000000000001")
-SEEDED_PROFILE_ID = UUID("00000000-0000-0000-0000-000000000010")
-SEEDED_AUTH_USER_ID = UUID("00000000-0000-0000-0000-000000000099")
 
 
 @pytest.fixture(scope="session")
@@ -34,33 +28,6 @@ def supabase_client() -> Generator[Client, None, None]:
         settings.supabase_service_role_key,
     )
     yield client
-
-
-# ── Auth override fixtures ──
-
-
-@pytest.fixture(autouse=True)
-def _override_auth() -> Generator[None, None, None]:
-    """Default auth override using the seeded coach.
-
-    Tests that need a fresh coach should use the ``test_coach`` fixture,
-    which overwrites this override with the newly created coach.
-    """
-    seeded_coach = Coach(
-        coach_id=SEEDED_COACH_ID,
-        profile=Profile(
-            profile_id=SEEDED_PROFILE_ID,
-            auth_user_id=SEEDED_AUTH_USER_ID,
-            email="dev@stridetrack.dev",
-            name="Coach Sam Baldwin",
-            role="coach",
-            created_at=datetime(2024, 1, 1, tzinfo=UTC),
-        ),
-        created_at=datetime(2024, 1, 1, tzinfo=UTC),
-    )
-    app.dependency_overrides[get_current_coach] = lambda: seeded_coach
-    yield
-    app.dependency_overrides.pop(get_current_coach, None)
 
 
 @pytest.fixture
@@ -98,7 +65,7 @@ def test_coach(
         created_at=coach_data["created_at"],
     )
 
-    # Overwrite the default (seeded) auth override
+    # Overwrite the default auth override for this test
     app.dependency_overrides[get_current_coach] = lambda: coach
     yield coach
 
