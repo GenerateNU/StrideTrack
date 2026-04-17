@@ -152,7 +152,20 @@ export default function RunAnalysisPage() {
 
   const [preloadRest, setPreloadRest] = useState(false);
   useEffect(() => {
-    const id = setTimeout(() => setPreloadRest(true), 0);
+    const w = window as Window & {
+      requestIdleCallback?: (
+        cb: () => void,
+        opts?: { timeout: number }
+      ) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (typeof w.requestIdleCallback === "function") {
+      const id = w.requestIdleCallback(() => setPreloadRest(true), {
+        timeout: 2000,
+      });
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = setTimeout(() => setPreloadRest(true), 1500);
     return () => clearTimeout(id);
   }, []);
 
