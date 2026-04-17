@@ -1,0 +1,96 @@
+import api from "@/lib/api";
+import type {
+  PhaseRatioData,
+  StepSeriesPoint,
+  TjContactEfficiencyData,
+  TripleJumpMetricRow,
+} from "@/types/jumpMetrics.types";
+import {
+  phaseRatioDataSchema,
+  stepSeriesPointSchema,
+  tjContactEfficiencySchema,
+  tripleJumpMetricRowSchema,
+} from "@/types/jumpMetrics.types";
+import { validateResponse } from "@/utils/validation";
+import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
+
+export function useTripleJumpMetrics(runId: string | null) {
+  const query = useQuery({
+    queryKey: ["triple-jump-metrics", runId],
+    queryFn: async () => {
+      if (!runId) return null;
+      const response = await api.get<TripleJumpMetricRow>(
+        `/run/athletes/${runId}/metrics/triple-jump`
+      );
+      return validateResponse(response.data, tripleJumpMetricRowSchema);
+    },
+    enabled: !!runId,
+  });
+  return {
+    tjMetrics: query.data ?? null,
+    tjMetricsIsLoading: query.isLoading,
+    tjMetricsError: query.error,
+    tjMetricsRefetch: query.refetch,
+  };
+}
+
+export function useTjPhaseRatio(runId: string | null) {
+  const query = useQuery({
+    queryKey: ["triple-jump-phase-ratio", runId],
+    queryFn: async () => {
+      if (!runId) return null;
+      const response = await api.get<PhaseRatioData[]>(
+        `/run/athletes/${runId}/metrics/triple-jump/phase-ratio`
+      );
+      return validateResponse(response.data, z.array(phaseRatioDataSchema));
+    },
+    enabled: !!runId,
+  });
+  return {
+    phaseRatioData: query.data ?? null,
+    phaseRatioDataIsLoading: query.isLoading,
+    phaseRatioDataError: query.error,
+    phaseRatioDataRefetch: query.refetch,
+  };
+}
+
+export function useTjContactEfficiency(runId: string | null) {
+  const query = useQuery({
+    queryKey: ["triple-jump-contact-efficiency", runId],
+    queryFn: async () => {
+      if (!runId) return null;
+      const response = await api.get<TjContactEfficiencyData>(
+        `/run/athletes/${runId}/metrics/triple-jump/contact-efficiency`
+      );
+      return validateResponse(response.data, tjContactEfficiencySchema);
+    },
+    enabled: !!runId,
+  });
+  return {
+    efficiencyData: query.data ?? null,
+    efficiencyDataIsLoading: query.isLoading,
+    efficiencyDataError: query.error,
+    efficiencyDataRefetch: query.refetch,
+  };
+}
+
+export function useTjStepSeries(runId: string | null) {
+  const query = useQuery({
+    queryKey: ["triple-jump-step-series", runId],
+    queryFn: async () => {
+      if (!runId) return null;
+      const response = await api.get<StepSeriesPoint[]>(
+        `/run/athletes/${runId}/metrics/triple-jump/universal/steps`
+      );
+      return validateResponse(response.data, z.array(stepSeriesPointSchema));
+    },
+    enabled: !!runId,
+  });
+  return {
+    tjStepSeries: query.data ?? null,
+    tjStepSeriesIsLoading: query.isLoading,
+    tjStepSeriesError: query.error,
+    tjStepSeriesRefetch: query.refetch,
+  };
+}
