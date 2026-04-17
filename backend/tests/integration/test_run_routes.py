@@ -501,6 +501,7 @@ class TestDeleteRun:
         run_resp = test_client.post(BASE, json=run_data)
         assert run_resp.status_code == 201
         run_id = run_resp.json()["run_id"]
+        created_ids["run_ids"].append(run_id)
 
         response = test_client.delete(f"{BASE}/{run_id}")
 
