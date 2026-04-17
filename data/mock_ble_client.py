@@ -235,42 +235,74 @@ class PeripheralDelegate(NSObject):
 # ── Notification streaming (runs on a background thread) ────────
 
 
-def _stream_notifications(delegate):
-    """Stream CSV rows continuously as BLE notifications at ~100Hz.
+def _stream_notifications(delegate: PeripheralDelegate) -> None:
+    """Stream CSV rows as BLE notifications, buffering data during disconnects.
 
-    Loops back to the start of the CSV when all rows have been sent,
-    so the stream runs until the central disconnects.
+    Simulates on-device storage: when the central disconnects, data continues
+    to be collected into a backlog at ~100Hz. On reconnection the backlog is
+    flushed first, then live streaming resumes — so no gap in the data.
     """
     rows = delegate._rows
-    manager = delegate._manager
-    characteristic = delegate._characteristic
 
     row_index = 0
     notifications_sent = 0
+    backlog: list[tuple[float, float, float]] = []
 
-    while delegate._subscribed.is_set():
-        time_val, foot1, foot2 = rows[row_index]
-        payload = pack_notification(time_val, foot1, foot2)
-        ns_data = NSData.dataWithBytes_length_(payload, len(payload))
+    while True:
+        delegate._subscribed.wait()
+        manager = delegate._manager
+        characteristic = delegate._characteristic
 
-        did_send = manager.updateValue_forCharacteristic_onSubscribedCentrals_(
-            ns_data, characteristic, None
-        )
-        if not did_send:
+        if backlog:
+            logger.info("Flushing %d backlogged rows...", len(backlog))
+            for bl_time, bl_foot1, bl_foot2 in backlog:
+                if not delegate._subscribed.is_set():
+                    break
+                payload = pack_notification(bl_time, bl_foot1, bl_foot2)
+                ns_data = NSData.dataWithBytes_length_(payload, len(payload))
+                while not manager.updateValue_forCharacteristic_onSubscribedCentrals_(
+                    ns_data, characteristic, None
+                ):
+                    time.sleep(0.001)
+                notifications_sent += 1
+            backlog.clear()
+            logger.info("Backlog flushed, resuming live stream")
+
+        while delegate._subscribed.is_set():
+            time_val, foot1, foot2 = rows[row_index]
+            payload = pack_notification(time_val, foot1, foot2)
+            ns_data = NSData.dataWithBytes_length_(payload, len(payload))
+
+            did_send = manager.updateValue_forCharacteristic_onSubscribedCentrals_(
+                ns_data, characteristic, None
+            )
+            if not did_send:
+                time.sleep(NOTIFICATION_INTERVAL_S)
+                continue
+
+            row_index = (row_index + 1) % len(rows)
+            notifications_sent += 1
+
+            if notifications_sent % 100 == 0:
+                logger.info(
+                    "Sent %d notifications (row %d/%d)",
+                    notifications_sent,
+                    row_index,
+                    len(rows),
+                )
+
             time.sleep(NOTIFICATION_INTERVAL_S)
-            continue
 
-        row_index = (row_index + 1) % len(rows)
-        notifications_sent += 1
+        logger.info("Central disconnected — buffering data for reconnection...")
+        while not delegate._subscribed.is_set():
+            time_val, foot1, foot2 = rows[row_index]
+            backlog.append((time_val, foot1, foot2))
+            row_index = (row_index + 1) % len(rows)
 
-        if notifications_sent % 100 == 0:
-            logger.info("Sent %d notifications (row %d/%d)", notifications_sent, row_index, len(rows))
+            if len(backlog) % 100 == 0:
+                logger.info("Backlog: %d rows buffered", len(backlog))
 
-        time.sleep(NOTIFICATION_INTERVAL_S)
-
-    logger.info(
-        "Central unsubscribed — stopped after %d notifications", notifications_sent
-    )
+            time.sleep(NOTIFICATION_INTERVAL_S)
 
 
 # ── Main entry point ────────────────────────────────────────────
@@ -293,13 +325,9 @@ def run_peripheral(csv_path: str) -> None:
     manager = CBPeripheralManager.alloc().initWithDelegate_queue_(delegate, None)
     delegate._manager = manager
 
-    # Background thread waits for subscription, then streams data.
-    def _wait_and_stream():
-        delegate._subscribed.wait()
-        logger.info("Starting notification stream...")
-        _stream_notifications(delegate)
-
-    threading.Thread(target=_wait_and_stream, daemon=True).start()
+    threading.Thread(
+        target=_stream_notifications, args=(delegate,), daemon=True
+    ).start()
 
     # The main run loop processes all CoreBluetooth callbacks.
     # Setup is driven by the delegate: poweredOn → addService → advertise.
