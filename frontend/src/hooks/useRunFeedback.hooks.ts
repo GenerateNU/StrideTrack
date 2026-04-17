@@ -1,11 +1,7 @@
 import api from "@/lib/api";
+import { feedbackResponseSchema } from "@/types/feedback.types";
 import { validateResponse } from "@/utils/validation";
 import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
-
-const feedbackResponseSchema = z.object({
-  feedback: z.string(),
-});
 
 export function useGetRunFeedback(runId: string | null) {
   const query = useQuery({
