@@ -36,6 +36,18 @@ import { JumpHeightChart } from "@/components/charts/bosco/JumpHeightChart";
 import { RsiChart } from "@/components/charts/bosco/RsiChart";
 import { ReactionTimeCard } from "@/components/charts/reaction-time/ReactionTimeCard";
 
+// Long jump charts
+import { ApproachProfileChart } from "@/components/charts/long_jump/ApproachProfileChart";
+import { JumpFlightTimeCard } from "@/components/charts/long_jump/JumpFlightTimeCard";
+import { LastStepGctCard } from "@/components/charts/long_jump/LastStepGctCard";
+import { LjFlightTimeChart } from "@/components/charts/long_jump/LjFlightTimeChart";
+import { LjGctChart } from "@/components/charts/long_jump/LjGctChart";
+
+// Triple jump charts
+import { ContactTimeEfficiencyCard } from "@/components/charts/triple_jump/ContactTimeEfficiencyCard";
+import { PhaseRatioChart } from "@/components/charts/triple_jump/PhaseRatioChart";
+import { TjPhaseTimelineChart } from "@/components/charts/triple_jump/TjPhaseTimelineChart";
+
 export type VisualizationConfig = ComponentType<ChartProps>;
 
 export type ChartSection = {
@@ -113,6 +125,34 @@ const sectionsByEventType: Record<string, ChartSection[]> = {
       label: "Projected Performance",
       charts: [ProjectedFinishKPI, ProjectedSplitChart],
     },
+  ],
+  long_jump: [
+    {
+      label: "Long Jump",
+      charts: [
+        LastStepGctCard,
+        JumpFlightTimeCard,
+        ApproachProfileChart,
+        LjGctChart,
+        LjFlightTimeChart,
+      ],
+      defaultExpanded: true,
+    },
+    CORE_TEMPORAL,
+    ASYMMETRY,
+  ],
+  triple_jump: [
+    {
+      label: "Triple Jump",
+      charts: [
+        ContactTimeEfficiencyCard,
+        PhaseRatioChart,
+        TjPhaseTimelineChart,
+      ],
+      defaultExpanded: true,
+    },
+    CORE_TEMPORAL,
+    ASYMMETRY,
   ],
   bosco: [
     {

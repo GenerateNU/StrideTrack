@@ -1,3 +1,4 @@
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import {
@@ -17,6 +18,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+
+const TITLE = "Flight Time (FT) — Left vs Right Foot";
+const DESCRIPTION =
+  "Per-foot flight time across the approach with emphasis on the takeoff step. A sharp spike in flight time at the final step confirms a powerful, well-timed board contact. Left/right comparison helps detect any asymmetry in propulsive output.";
 
 interface StepRow {
   label: number;
@@ -69,10 +74,20 @@ export const LjFlightTimeChart = ({ runId }: ChartProps) => {
   } = useLjStepSeries(runId);
   const { ljMetrics, ljMetricsIsLoading } = useLongJumpMetrics(runId);
 
-  if (ljStepSeriesIsLoading || ljMetricsIsLoading) return <QueryLoading />;
+  if (ljStepSeriesIsLoading || ljMetricsIsLoading)
+    return (
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryLoading />
+      </ChartCard>
+    );
   if (ljStepSeriesError)
     return (
-      <QueryError error={ljStepSeriesError} refetch={ljStepSeriesRefetch} />
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryError
+          error={ljStepSeriesError}
+          refetch={() => void ljStepSeriesRefetch()}
+        />
+      </ChartCard>
     );
   if (!ljStepSeries) return null;
 
@@ -89,7 +104,7 @@ export const LjFlightTimeChart = ({ runId }: ChartProps) => {
   const takeoffRow = rows[rows.length - 1];
 
   return (
-    <div className="w-full">
+    <ChartCard title={TITLE} description={DESCRIPTION}>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart
           data={rows}
@@ -103,8 +118,11 @@ export const LjFlightTimeChart = ({ runId }: ChartProps) => {
               value: "Step Number",
               position: "insideBottom",
               offset: -5,
-              fontSize: 11,
-              fill: chartColors.mutedForeground,
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
             }}
           />
           <YAxis
@@ -115,16 +133,21 @@ export const LjFlightTimeChart = ({ runId }: ChartProps) => {
               angle: -90,
               position: "insideLeft",
               offset: -4,
-              fontSize: 11,
-              fill: chartColors.mutedForeground,
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
             }}
           />
           <Tooltip
             contentStyle={{
-              background: chartColors.card,
-              border: `1px solid ${chartColors.border}`,
-              borderRadius: 6,
-              fontSize: 12,
+              borderRadius: 12,
+              border: "none",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              fontSize: 13,
+              backgroundColor: chartColors.card,
+              color: chartColors.foreground,
             }}
             formatter={
               ((value: unknown, name: unknown) => [
@@ -175,6 +198,6 @@ export const LjFlightTimeChart = ({ runId }: ChartProps) => {
           />
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   );
 };

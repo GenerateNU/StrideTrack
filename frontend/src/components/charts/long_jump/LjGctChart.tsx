@@ -1,3 +1,4 @@
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useLjApproachProfile } from "@/hooks/useLongJumpMetrics.hooks";
@@ -15,6 +16,10 @@ import {
   YAxis,
 } from "recharts";
 
+const TITLE = "Ground Contact Time (GCT) — Left vs Right Foot";
+const DESCRIPTION =
+  "Per-foot GCT across every approach step, with the final 3 steps highlighted. GCT should decrease sharply into takeoff. Allows coaches to identify foot asymmetry in the critical final steps and assess how quickly the athlete transitions from approach to board contact.";
+
 interface StepRow {
   label: number;
   left: number | null;
@@ -31,10 +36,20 @@ export const LjGctChart = ({ runId }: ChartProps) => {
     approachDataRefetch,
   } = useLjApproachProfile(runId);
 
-  if (approachDataIsLoading) return <QueryLoading />;
+  if (approachDataIsLoading)
+    return (
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryLoading />
+      </ChartCard>
+    );
   if (approachDataError)
     return (
-      <QueryError error={approachDataError} refetch={approachDataRefetch} />
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryError
+          error={approachDataError}
+          refetch={() => void approachDataRefetch()}
+        />
+      </ChartCard>
     );
   if (!approachData) return null;
 
@@ -50,7 +65,7 @@ export const LjGctChart = ({ runId }: ChartProps) => {
   const finalStepLabel = rows.length >= 3 ? rows[rows.length - 3].label : null;
 
   return (
-    <div className="w-full">
+    <ChartCard title={TITLE} description={DESCRIPTION}>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart
           data={rows}
@@ -64,8 +79,11 @@ export const LjGctChart = ({ runId }: ChartProps) => {
               value: "Step Number",
               position: "insideBottom",
               offset: -5,
-              fontSize: 11,
-              fill: chartColors.mutedForeground,
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
             }}
           />
           <YAxis
@@ -75,17 +93,22 @@ export const LjGctChart = ({ runId }: ChartProps) => {
               value: "GCT (ms)",
               angle: -90,
               position: "insideLeft",
-              offset: -4,
-              fontSize: 11,
-              fill: chartColors.mutedForeground,
+              offset: 0,
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
             }}
           />
           <Tooltip
             contentStyle={{
-              background: chartColors.card,
-              border: `1px solid ${chartColors.border}`,
-              borderRadius: 6,
-              fontSize: 12,
+              borderRadius: 12,
+              border: "none",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              fontSize: 13,
+              backgroundColor: chartColors.card,
+              color: chartColors.foreground,
             }}
             formatter={
               ((value: unknown, name: unknown) => [
@@ -137,6 +160,6 @@ export const LjGctChart = ({ runId }: ChartProps) => {
           />
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   );
 };

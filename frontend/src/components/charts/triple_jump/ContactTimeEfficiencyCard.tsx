@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardHeader,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
-import { GraphInfoCard } from "@/components/charts/shared/GraphInfoCard";
+import { BaseKPI } from "@/components/charts/shared/BaseKPI";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useTripleJumpMetrics } from "@/hooks/useTripleJumpMetrics.hooks";
@@ -22,16 +16,13 @@ export const ContactTimeEfficiencyCard = ({ runId }: ChartProps) => {
   const value = tjMetrics.contact_time_efficiency;
 
   return (
-    <Card className="relative flex-1 min-w-[160px]">
-      <GraphInfoCard description="Ratio of total flight time to total ground contact time across all three phases. Higher values indicate better energy transfer through the hop, step, and jump sequence." />
-      <CardHeader className="pb-2 text-center">
-        <CardDescription className="text-xs uppercase tracking-wide">
-          Contact Time Efficiency
-        </CardDescription>
-        <CardTitle className="text-3xl font-bold tabular-nums">
-          {value != null ? value.toFixed(1) : "—"}
-        </CardTitle>
-      </CardHeader>
-    </Card>
+    <BaseKPI description="Ratio of total flight time to total ground contact time across all three phases. Higher values indicate better energy transfer through the hop, step, and jump sequence.">
+      <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+        Contact Time Efficiency
+      </span>
+      <span className="text-3xl font-bold tabular-nums text-foreground">
+        {value != null ? value.toFixed(2) : "—"}
+      </span>
+    </BaseKPI>
   );
 };

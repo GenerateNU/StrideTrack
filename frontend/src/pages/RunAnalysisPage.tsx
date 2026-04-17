@@ -14,19 +14,17 @@ function AccordionSection({
 }) {
   const [expanded, setExpanded] = useState(section.defaultExpanded ?? false);
   const [contentHeight, setContentHeight] = useState<number>(0);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (expanded && contentRef.current) {
-      const updateHeight = () => {
-        setContentHeight(contentRef.current?.scrollHeight ?? 0);
-      };
-      updateHeight();
-      const observer = new ResizeObserver(updateHeight);
-      observer.observe(contentRef.current);
-      return () => observer.disconnect();
-    }
-  }, [expanded]);
+    if (!innerRef.current) return;
+    const el = innerRef.current;
+    const update = () => setContentHeight(el.offsetHeight);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
@@ -42,14 +40,13 @@ function AccordionSection({
         />
       </button>
       <div
-        ref={contentRef}
         className="transition-all duration-300 ease-in-out overflow-hidden"
         style={{
           maxHeight: expanded ? `${contentHeight}px` : "0px",
           opacity: expanded ? 1 : 0,
         }}
       >
-        <div className="flex flex-col gap-6 px-4 pb-4">
+        <div ref={innerRef} className="flex flex-col gap-6 px-4 pb-4">
           {section.charts.map((ChartComponent, i) => (
             <ChartComponent key={i} runId={runId} />
           ))}

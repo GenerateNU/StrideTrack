@@ -92,6 +92,7 @@ class StepSeriesPoint(BaseModel):
     stride_num: int
     foot: Literal["left", "right"]
     ic_time: int = Field(..., ge=0)
+    to_time: int | None = Field(default=None, ge=0)
     gct_ms: int = Field(..., ge=0)
     flight_ms: int | None = Field(default=None, ge=0)
     step_time_ms: int | None = Field(default=None, ge=0)

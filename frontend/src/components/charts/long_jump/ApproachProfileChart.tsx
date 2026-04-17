@@ -1,3 +1,4 @@
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useLjApproachProfile } from "@/hooks/useLongJumpMetrics.hooks";
@@ -14,6 +15,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+
+const TITLE = "Approach Profile";
+const DESCRIPTION =
+  "Line chart of GCT across all approach steps, with the final 3 steps shaded. An effective approach shows progressively decreasing GCT into takeoff, reflecting acceleration and increasing reactivity as the athlete attacks the board. Dot colors indicate phase: yellow = antepenultimate, red = penultimate, green = takeoff.";
 
 const PHASE_COLORS: Record<string, string> = {
   approach: chartColors.phaseApproach,
@@ -68,10 +73,20 @@ export const ApproachProfileChart = ({ runId }: ChartProps) => {
     approachDataRefetch,
   } = useLjApproachProfile(runId);
 
-  if (approachDataIsLoading) return <QueryLoading />;
+  if (approachDataIsLoading)
+    return (
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryLoading />
+      </ChartCard>
+    );
   if (approachDataError)
     return (
-      <QueryError error={approachDataError} refetch={approachDataRefetch} />
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryError
+          error={approachDataError}
+          refetch={() => void approachDataRefetch()}
+        />
+      </ChartCard>
     );
   if (!approachData) return null;
 
@@ -87,7 +102,7 @@ export const ApproachProfileChart = ({ runId }: ChartProps) => {
   const finalStepLabel = rows.length >= 3 ? rows[rows.length - 3].label : null;
 
   return (
-    <div className="w-full">
+    <ChartCard title={TITLE} description={DESCRIPTION}>
       <div className="flex flex-wrap gap-4 mb-4 text-sm">
         {Object.entries(PHASE_LABELS).map(([key, label]) => (
           <div key={key} className="flex items-center gap-1.5">
@@ -112,7 +127,11 @@ export const ApproachProfileChart = ({ runId }: ChartProps) => {
               value: "Step Number",
               position: "insideBottom",
               offset: -5,
-              style: { fill: chartColors.mutedForeground, fontSize: 10 },
+              style: {
+                fill: chartColors.mutedForeground,
+                fontSize: 10,
+                textAnchor: "middle",
+              },
             }}
           />
           <YAxis
@@ -132,10 +151,12 @@ export const ApproachProfileChart = ({ runId }: ChartProps) => {
           />
           <Tooltip
             contentStyle={{
-              background: chartColors.card,
-              border: `1px solid ${chartColors.border}`,
-              borderRadius: 6,
-              fontSize: 12,
+              borderRadius: 12,
+              border: "none",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              fontSize: 13,
+              backgroundColor: chartColors.card,
+              color: chartColors.foreground,
             }}
             formatter={
               ((value: unknown, name: unknown) => [
@@ -185,6 +206,6 @@ export const ApproachProfileChart = ({ runId }: ChartProps) => {
           />
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   );
 };

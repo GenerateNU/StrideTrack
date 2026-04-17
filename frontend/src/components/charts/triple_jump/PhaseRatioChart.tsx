@@ -1,3 +1,4 @@
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useTjPhaseRatio } from "@/hooks/useTripleJumpMetrics.hooks";
@@ -12,6 +13,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+
+const TITLE = "Phase Ratio — Hop : Step : Jump";
+const DESCRIPTION =
+  "Stacked bar showing how total flight time is distributed across the three phases. The ideal ratio is approximately 35:30:35 (Hop:Step:Jump). A dominant hop phase often means energy is wasted early; a weak jump phase suggests technical breakdown in the final takeoff.";
 
 const PHASE_COLORS = {
   hop: chartColors.phaseHop,
@@ -28,10 +33,20 @@ export const PhaseRatioChart = ({ runId }: ChartProps) => {
     phaseRatioDataRefetch,
   } = useTjPhaseRatio(runId);
 
-  if (phaseRatioDataIsLoading) return <QueryLoading />;
+  if (phaseRatioDataIsLoading)
+    return (
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryLoading />
+      </ChartCard>
+    );
   if (phaseRatioDataError)
     return (
-      <QueryError error={phaseRatioDataError} refetch={phaseRatioDataRefetch} />
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryError
+          error={phaseRatioDataError}
+          refetch={() => void phaseRatioDataRefetch()}
+        />
+      </ChartCard>
     );
   if (!phaseRatioData) return null;
 
@@ -55,115 +70,131 @@ export const PhaseRatioChart = ({ runId }: ChartProps) => {
   const jump = phaseRatioData.find((d) => d.phase === "jump");
 
   return (
-    <div className="w-full space-y-4">
-      <ResponsiveContainer width="100%" height={160}>
-        <BarChart
-          data={chartData}
-          layout="vertical"
-          margin={{ top: 4, right: 40, left: 8, bottom: 4 }}
-        >
-          <XAxis
-            type="number"
-            domain={[0, 100]}
-            unit="%"
-            tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
-          />
-          <YAxis
-            type="category"
-            dataKey="name"
-            tick={{ fontSize: 12, fill: chartColors.mutedForeground }}
-            width={48}
-          />
-          <Tooltip
-            contentStyle={{
-              background: chartColors.card,
-              border: `1px solid ${chartColors.border}`,
-              borderRadius: 6,
-              fontSize: 12,
-            }}
-            formatter={
-              ((value: unknown, name: unknown) => [
-                value != null ? `${Number(value).toFixed(1)}%` : "N/A",
-                String(name).charAt(0).toUpperCase() + String(name).slice(1),
-              ]) as never
-            }
-          />
-          <Bar dataKey="hop" stackId="a" fill={PHASE_COLORS.hop} name="Hop">
-            <LabelList
-              dataKey="hop"
-              position="center"
-              formatter={(v: unknown) => `${Number(v).toFixed(0)}%`}
-              style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
-            />
-          </Bar>
-          <Bar dataKey="step" stackId="a" fill={PHASE_COLORS.step} name="Step">
-            <LabelList
-              dataKey="step"
-              position="center"
-              formatter={(v: unknown) => `${Number(v).toFixed(0)}%`}
-              style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
-            />
-          </Bar>
-          <Bar dataKey="jump" stackId="a" fill={PHASE_COLORS.jump} name="Jump">
-            <LabelList
-              dataKey="jump"
-              position="center"
-              formatter={(v: unknown) => `${Number(v).toFixed(0)}%`}
-              style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
-            />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-
-      <div className="flex justify-center gap-4 text-xs mt-1">
-        {[
-          { label: "Hop", color: PHASE_COLORS.hop },
-          { label: "Step", color: PHASE_COLORS.step },
-          { label: "Jump", color: PHASE_COLORS.jump },
-        ].map(({ label, color }) => (
-          <div key={label} className="flex items-center gap-1.5">
-            <span
-              className="inline-block w-3 h-3 rounded-sm"
-              style={{ backgroundColor: color }}
-            />
-            <span style={{ color: chartColors.mutedForeground }}>{label}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { phase: "Hop", data: hop, color: PHASE_COLORS.hop },
-          { phase: "Step", data: step, color: PHASE_COLORS.step },
-          { phase: "Jump", data: jump, color: PHASE_COLORS.jump },
-        ].map(({ phase, data, color }) => (
-          <div
-            key={phase}
-            className="rounded-lg border border-border bg-card p-3 text-center"
+    <ChartCard title={TITLE} description={DESCRIPTION}>
+      <div className="space-y-4">
+        <ResponsiveContainer width="100%" height={160}>
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            margin={{ top: 4, right: 40, left: 8, bottom: 4 }}
           >
-            <div
-              className="text-xs font-semibold uppercase tracking-wide mb-1"
-              style={{ color }}
+            <XAxis
+              type="number"
+              domain={[0, 100]}
+              unit="%"
+              tick={{ fontSize: 11, fill: chartColors.mutedForeground }}
+            />
+            <YAxis
+              type="category"
+              dataKey="name"
+              tick={{ fontSize: 12, fill: chartColors.mutedForeground }}
+              width={48}
+            />
+            <Tooltip
+              contentStyle={{
+                borderRadius: 12,
+                border: "none",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                fontSize: 13,
+                backgroundColor: chartColors.card,
+                color: chartColors.foreground,
+              }}
+              formatter={
+                ((value: unknown, name: unknown) => [
+                  value != null ? `${Number(value).toFixed(1)}%` : "N/A",
+                  String(name).charAt(0).toUpperCase() + String(name).slice(1),
+                ]) as never
+              }
+            />
+            <Bar dataKey="hop" stackId="a" fill={PHASE_COLORS.hop} name="Hop">
+              <LabelList
+                dataKey="hop"
+                position="center"
+                formatter={(v: unknown) => `${Number(v).toFixed(0)}%`}
+                style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
+              />
+            </Bar>
+            <Bar
+              dataKey="step"
+              stackId="a"
+              fill={PHASE_COLORS.step}
+              name="Step"
             >
-              {phase}
-            </div>
-            <div className="text-xl font-bold text-foreground">
-              {data?.ft_ms ?? "—"}
-              <span className="text-xs font-normal text-muted-foreground ml-1">
-                ms
+              <LabelList
+                dataKey="step"
+                position="center"
+                formatter={(v: unknown) => `${Number(v).toFixed(0)}%`}
+                style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
+              />
+            </Bar>
+            <Bar
+              dataKey="jump"
+              stackId="a"
+              fill={PHASE_COLORS.jump}
+              name="Jump"
+            >
+              <LabelList
+                dataKey="jump"
+                position="center"
+                formatter={(v: unknown) => `${Number(v).toFixed(0)}%`}
+                style={{ fontSize: 11, fill: "#fff", fontWeight: 600 }}
+              />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+
+        <div className="flex justify-center gap-4 text-xs mt-1">
+          {[
+            { label: "Hop", color: PHASE_COLORS.hop },
+            { label: "Step", color: PHASE_COLORS.step },
+            { label: "Jump", color: PHASE_COLORS.jump },
+          ].map(({ label, color }) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <span
+                className="inline-block w-3 h-3 rounded-sm"
+                style={{ backgroundColor: color }}
+              />
+              <span style={{ color: chartColors.mutedForeground }}>
+                {label}
               </span>
             </div>
-            <div className="text-xs text-muted-foreground">
-              {data?.ratio_pct != null
-                ? `${data.ratio_pct.toFixed(1)}% of total`
-                : "—"}
+          ))}
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { phase: "Hop", data: hop, color: PHASE_COLORS.hop },
+            { phase: "Step", data: step, color: PHASE_COLORS.step },
+            { phase: "Jump", data: jump, color: PHASE_COLORS.jump },
+          ].map(({ phase, data, color }) => (
+            <div
+              key={phase}
+              className="rounded-lg border border-border bg-card p-3 text-center"
+            >
+              <div
+                className="text-xs font-semibold uppercase tracking-wide mb-1"
+                style={{ color }}
+              >
+                {phase}
+              </div>
+              <div className="text-xl font-bold text-foreground">
+                {data?.ft_ms ?? "—"}
+                <span className="text-xs font-normal text-muted-foreground ml-1">
+                  ms
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {data?.ratio_pct != null
+                  ? `${data.ratio_pct.toFixed(1)}% of total`
+                  : "—"}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground text-center">
+          Ideal ratio: 35% Hop · 30% Step · 35% Jump
+        </p>
       </div>
-      <p className="text-xs text-muted-foreground text-center">
-        Ideal ratio: 35% Hop · 30% Step · 35% Jump
-      </p>
-    </div>
+    </ChartCard>
   );
 };

@@ -1,10 +1,4 @@
-import {
-  Card,
-  CardHeader,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
-import { GraphInfoCard } from "@/components/charts/shared/GraphInfoCard";
+import { BaseKPI } from "@/components/charts/shared/BaseKPI";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useLongJumpMetrics } from "@/hooks/useLongJumpMetrics.hooks";
@@ -22,19 +16,16 @@ export const LastStepGctCard = ({ runId }: ChartProps) => {
   const value = ljMetrics.penultimate_gct_ms;
 
   return (
-    <Card className="relative flex-1 min-w-[160px]">
-      <GraphInfoCard description="Ground contact time of the penultimate (second-to-last) step. Critical for converting horizontal speed into vertical lift. Should be short and reactive." />
-      <CardHeader className="pb-2 text-center">
-        <CardDescription className="text-xs uppercase tracking-wide">
-          Last Step GCT
-        </CardDescription>
-        <CardTitle className="text-3xl font-bold tabular-nums">
-          {value != null ? value.toFixed(1) : "—"}
-          <span className="text-sm font-normal text-muted-foreground ml-1">
-            ms
-          </span>
-        </CardTitle>
-      </CardHeader>
-    </Card>
+    <BaseKPI description="Ground contact time of the penultimate (second-to-last) step. Critical for converting horizontal speed into vertical lift. Should be short and reactive.">
+      <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+        Last Step GCT
+      </span>
+      <span className="text-3xl font-bold tabular-nums text-foreground">
+        {value != null ? value.toFixed(1) : "—"}
+        <span className="text-sm font-normal text-muted-foreground ml-1">
+          ms
+        </span>
+      </span>
+    </BaseKPI>
   );
 };

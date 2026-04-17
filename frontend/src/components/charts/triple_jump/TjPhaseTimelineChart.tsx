@@ -1,3 +1,4 @@
+import { ChartCard } from "@/components/charts/shared/ChartCard";
 import { QueryError } from "@/components/ui/QueryError";
 import { QueryLoading } from "@/components/ui/QueryLoading";
 import {
@@ -18,6 +19,10 @@ import {
   YAxis,
 } from "recharts";
 
+const TITLE = "GCT & Flight Time Timeline — Phase Labels";
+const DESCRIPTION =
+  "Dual timeline showing GCT and flight time per step across the full approach and all three jump phases, annotated with phase labels (Hop, Step, Jump). Helps coaches see how contact and flight mechanics evolve from the approach into each phase and whether the athlete maintains consistent rhythm across all three.";
+
 interface StepRow {
   label: number;
   gct_left: number | null;
@@ -37,13 +42,30 @@ export const TjPhaseTimelineChart = ({ runId }: ChartProps) => {
   const { tjMetrics, tjMetricsIsLoading, tjMetricsError, tjMetricsRefetch } =
     useTripleJumpMetrics(runId);
 
-  if (tjStepSeriesIsLoading || tjMetricsIsLoading) return <QueryLoading />;
+  if (tjStepSeriesIsLoading || tjMetricsIsLoading)
+    return (
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryLoading />
+      </ChartCard>
+    );
   if (tjStepSeriesError)
     return (
-      <QueryError error={tjStepSeriesError} refetch={tjStepSeriesRefetch} />
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryError
+          error={tjStepSeriesError}
+          refetch={() => void tjStepSeriesRefetch()}
+        />
+      </ChartCard>
     );
   if (tjMetricsError)
-    return <QueryError error={tjMetricsError} refetch={tjMetricsRefetch} />;
+    return (
+      <ChartCard title={TITLE} description={DESCRIPTION}>
+        <QueryError
+          error={tjMetricsError}
+          refetch={() => void tjMetricsRefetch()}
+        />
+      </ChartCard>
+    );
   if (!tjStepSeries || !tjMetrics) return null;
 
   const sorted = [...tjStepSeries].sort((a, b) => a.ic_time - b.ic_time);
@@ -93,8 +115,11 @@ export const TjPhaseTimelineChart = ({ runId }: ChartProps) => {
             value: "Step Number",
             position: "insideBottom",
             offset: -5,
-            fontSize: 11,
-            fill: chartColors.mutedForeground,
+            style: {
+              fill: chartColors.mutedForeground,
+              fontSize: 10,
+              textAnchor: "middle",
+            },
           }}
         />
         <YAxis
@@ -105,16 +130,21 @@ export const TjPhaseTimelineChart = ({ runId }: ChartProps) => {
             angle: -90,
             position: "insideLeft",
             offset: -4,
-            fontSize: 11,
-            fill: chartColors.mutedForeground,
+            style: {
+              fill: chartColors.mutedForeground,
+              fontSize: 10,
+              textAnchor: "middle",
+            },
           }}
         />
         <Tooltip
           contentStyle={{
-            background: chartColors.card,
-            border: `1px solid ${chartColors.border}`,
-            borderRadius: 6,
-            fontSize: 12,
+            borderRadius: 12,
+            border: "none",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            fontSize: 13,
+            backgroundColor: chartColors.card,
+            color: chartColors.foreground,
           }}
           formatter={
             ((value: unknown, name: unknown) => [
@@ -170,29 +200,31 @@ export const TjPhaseTimelineChart = ({ runId }: ChartProps) => {
   );
 
   return (
-    <div className="w-full space-y-6">
-      <div>
-        <h4 className="text-sm font-semibold text-foreground mb-2">
-          Ground Contact Time — Approach with Phase Labels
-        </h4>
-        {sharedChart(
-          { left: "gct_left", right: "gct_right" },
-          "Left GCT",
-          "Right GCT",
-          "GCT (ms)"
-        )}
+    <ChartCard title={TITLE} description={DESCRIPTION}>
+      <div className="space-y-6">
+        <div>
+          <h4 className="text-sm font-semibold text-foreground mb-2">
+            Ground Contact Time — Approach with Phase Labels
+          </h4>
+          {sharedChart(
+            { left: "gct_left", right: "gct_right" },
+            "Left GCT",
+            "Right GCT",
+            "GCT (ms)"
+          )}
+        </div>
+        <div>
+          <h4 className="text-sm font-semibold text-foreground mb-2">
+            Flight Time — Approach with Phase Labels
+          </h4>
+          {sharedChart(
+            { left: "ft_left", right: "ft_right" },
+            "Left FT",
+            "Right FT",
+            "Flight Time (ms)"
+          )}
+        </div>
       </div>
-      <div>
-        <h4 className="text-sm font-semibold text-foreground mb-2">
-          Flight Time — Approach with Phase Labels
-        </h4>
-        {sharedChart(
-          { left: "ft_left", right: "ft_right" },
-          "Left FT",
-          "Right FT",
-          "Flight Time (ms)"
-        )}
-      </div>
-    </div>
+    </ChartCard>
   );
 };
