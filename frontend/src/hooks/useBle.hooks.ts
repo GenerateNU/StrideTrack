@@ -66,27 +66,39 @@ export function useBle() {
   // ── Web Bluetooth path ───────────────────────────────────────
 
   const webConnect = useCallback(async () => {
-    // requestDevice() opens the browser device picker — must be called from a user gesture
+    console.log("[BLE-web] requestDevice...");
     const device = await navigator.bluetooth.requestDevice({
       filters: [{ services: [FORCE_PLATE_SERVICE_UUID] }],
     });
+    console.log("[BLE-web] device selected:", device.name, device.id);
 
     webDeviceRef.current = device;
 
-    // React to unexpected disconnects (out of range, etc.)
     device.addEventListener("gattserverdisconnected", () => {
+      console.log("[BLE-web] GATT server disconnected");
       setBleIsConnected(false);
     });
 
+    console.log("[BLE-web] connecting to GATT server...");
     const server = await device.gatt!.connect();
+    console.log("[BLE-web] GATT connected:", server.connected);
+
+    console.log("[BLE-web] getPrimaryService...");
     const service = await server.getPrimaryService(FORCE_PLATE_SERVICE_UUID);
+    console.log("[BLE-web] service found");
+
+    console.log("[BLE-web] getCharacteristic...");
     const characteristic = await service.getCharacteristic(
       FORCE_PLATE_CHARACTERISTIC_UUID
     );
+    console.log("[BLE-web] characteristic properties:", {
+      notify: characteristic.properties.notify,
+      read: characteristic.properties.read,
+      indicate: characteristic.properties.indicate,
+      write: characteristic.properties.write,
+    });
 
     webCharRef.current = characteristic;
-
-    await characteristic.startNotifications();
 
     characteristic.addEventListener("characteristicvaluechanged", (event) => {
       const char = event.target as BluetoothRemoteGATTCharacteristic;
@@ -95,7 +107,10 @@ export function useBle() {
       }
     });
 
-    // Only mark connected once notifications are live
+    console.log("[BLE-web] startNotifications...");
+    await characteristic.startNotifications();
+    console.log("[BLE-web] notifications started OK");
+
     setBleIsConnected(true);
   }, []);
 
@@ -124,27 +139,40 @@ export function useBle() {
   }, []);
 
   const nativeConnect = useCallback(async () => {
+    console.log("[BLE-native] initializing...");
     try {
       await BleClient.initialize();
       const enabled = await BleClient.isEnabled();
+      console.log("[BLE-native] enabled:", enabled);
       if (!enabled) throw new Error("Bluetooth is not enabled");
-    } catch {
+    } catch (e) {
+      console.error("[BLE-native] init failed:", e);
       throw new Error("BLE is not available");
     }
 
     setBleIsScanning(true);
     try {
+      console.log("[BLE-native] requestDevice...");
       const device = await BleClient.requestDevice({
         services: [FORCE_PLATE_SERVICE_UUID],
       });
+      console.log(
+        "[BLE-native] device selected:",
+        device.deviceId,
+        device.name
+      );
 
       setBleIsScanning(false);
       deviceIdRef.current = device.deviceId;
 
-      await BleClient.connect(device.deviceId, () =>
-        handleNativeDisconnect(device.deviceId)
-      );
+      console.log("[BLE-native] connecting...");
+      await BleClient.connect(device.deviceId, () => {
+        console.log("[BLE-native] disconnected callback fired");
+        handleNativeDisconnect(device.deviceId);
+      });
+      console.log("[BLE-native] connected");
 
+      console.log("[BLE-native] startNotifications...");
       await BleClient.startNotifications(
         device.deviceId,
         FORCE_PLATE_SERVICE_UUID,
@@ -153,10 +181,11 @@ export function useBle() {
           bufferRef.current.push(parseNotification(value));
         }
       );
+      console.log("[BLE-native] notifications started OK");
 
-      // Only mark connected once notifications are live
       setBleIsConnected(true);
     } catch (error) {
+      console.error("[BLE-native] connect failed:", error);
       setBleIsScanning(false);
       throw error;
     }

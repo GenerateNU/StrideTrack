@@ -2,8 +2,8 @@
 """Mock BLE peripheral that simulates a StrideTrack insole sensor.
 
 Uses CoreBluetooth via pyobjc directly (instead of bless) for reliable
-advertising on macOS. Runs on the CFRunLoop, which CBPeripheralManager
-requires on macOS.
+advertising on macOS. All setup is callback-driven on the main run loop
+so delegate methods fire reliably.
 
 Reads a CSV file and streams rows continuously as BLE notifications at
 ~100Hz. Loops back to the start of the CSV when all rows have been sent,
@@ -28,14 +28,16 @@ import objc
 from CoreBluetooth import (
     CBAdvertisementDataLocalNameKey,
     CBAdvertisementDataServiceUUIDsKey,
+    CBATTErrorAttributeNotFound,
+    CBATTErrorSuccess,
     CBAttributePermissionsReadable,
     CBCharacteristicPropertyNotify,
+    CBCharacteristicPropertyRead,
     CBMutableCharacteristic,
     CBMutableService,
     CBPeripheralManager,
 )
 from Foundation import CBUUID, NSData, NSObject
-from dispatch import dispatch_queue_create, DISPATCH_QUEUE_SERIAL
 from PyObjCTools import AppHelper
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
@@ -47,7 +49,7 @@ CHARACTERISTIC_UUID = "00002a37-0000-1000-8000-00805f9b34fb"
 NOTIFICATION_INTERVAL_S = 0.01  # 100 Hz
 
 
-# ── CSV loading (unchanged) ─────────────────────────────────────
+# ── CSV loading ────────────────────────────────────────────────
 
 
 def load_csv(path: str) -> list[tuple[float, float, float]]:
@@ -126,39 +128,62 @@ def pack_notification(time_val: float, foot1: float, foot2: float) -> bytes:
 
 
 class PeripheralDelegate(NSObject):
-    """CBPeripheralManagerDelegate that manages the GATT service lifecycle."""
+    """CBPeripheralManagerDelegate — fully callback-driven on the main queue."""
 
     def init(self):
         self = objc.super(PeripheralDelegate, self).init()
         if self is None:
             return None
-        self._powered_on = threading.Event()
         self._subscribed = threading.Event()
-        self._service_added = threading.Event()
         self._characteristic = None
         self._manager = None
         self._rows = []
         return self
 
-    # -- State changes --
+    # -- State changes → build service --
 
     def peripheralManagerDidUpdateState_(self, peripheral):
         state = peripheral.state()
-        # CBManagerStatePoweredOn == 5
-        if state == 5:
-            logger.info("Bluetooth powered on")
-            self._powered_on.set()
+        if state == 5:  # CBManagerStatePoweredOn
+            logger.info("Bluetooth powered on — adding service...")
+            self._build_and_add_service(peripheral)
         else:
             logger.warning("Bluetooth state changed: %d (need 5/poweredOn)", state)
 
-    # -- Service added --
+    @objc.python_method
+    def _build_and_add_service(self, peripheral):
+        char_uuid = CBUUID.UUIDWithString_(CHARACTERISTIC_UUID)
+        characteristic = (
+            CBMutableCharacteristic.alloc()
+            .initWithType_properties_value_permissions_(
+                char_uuid,
+                CBCharacteristicPropertyNotify | CBCharacteristicPropertyRead,
+                None,
+                CBAttributePermissionsReadable,
+            )
+        )
+        self._characteristic = characteristic
+
+        service_uuid = CBUUID.UUIDWithString_(SERVICE_UUID)
+        service = CBMutableService.alloc().initWithType_primary_(service_uuid, True)
+        service.setCharacteristics_([characteristic])
+
+        peripheral.addService_(service)
+
+    # -- Service added → start advertising --
 
     def peripheralManager_didAddService_error_(self, peripheral, service, error):
         if error:
             logger.error("Failed to add service: %s", error)
             return
-        logger.info("Service added successfully")
-        self._service_added.set()
+        logger.info("Service added — starting advertising...")
+        service_uuid = CBUUID.UUIDWithString_(SERVICE_UUID)
+        peripheral.startAdvertising_(
+            {
+                CBAdvertisementDataLocalNameKey: "StrideTrack Sensor",
+                CBAdvertisementDataServiceUUIDsKey: [service_uuid],
+            }
+        )
 
     # -- Advertising started --
 
@@ -184,6 +209,28 @@ class PeripheralDelegate(NSObject):
         logger.info("Central unsubscribed: %s", central.identifier())
         self._subscribed.clear()
 
+    # -- Read requests --
+
+    def peripheralManager_didReceiveReadRequest_(self, peripheral, request):
+        logger.info("Read request for %s", request.characteristic().UUID())
+        char_uuid = CBUUID.UUIDWithString_(CHARACTERISTIC_UUID)
+        if request.characteristic().UUID().isEqual_(char_uuid):
+            request.setValue_(NSData.data())
+            peripheral.respondToRequest_withResult_(request, CBATTErrorSuccess)
+        else:
+            peripheral.respondToRequest_withResult_(request, CBATTErrorAttributeNotFound)
+
+    # -- Write requests --
+
+    def peripheralManager_didReceiveWriteRequests_(self, peripheral, requests):
+        logger.info("Received %d write request(s)", requests.count())
+        for i in range(requests.count()):
+            req = requests.objectAtIndex_(i)
+            logger.info("  Write to %s: %s", req.characteristic().UUID(), req.value())
+        peripheral.respondToRequest_withResult_(
+            requests.objectAtIndex_(0), CBATTErrorSuccess
+        )
+
 
 # ── Notification streaming (runs on a background thread) ────────
 
@@ -206,12 +253,10 @@ def _stream_notifications(delegate):
         payload = pack_notification(time_val, foot1, foot2)
         ns_data = NSData.dataWithBytes_length_(payload, len(payload))
 
-        # Send notification — returns False when the transmit queue is full
         did_send = manager.updateValue_forCharacteristic_onSubscribedCentrals_(
             ns_data, characteristic, None
         )
         if not did_send:
-            # Back off briefly and retry the same row
             time.sleep(NOTIFICATION_INTERVAL_S)
             continue
 
@@ -232,7 +277,7 @@ def _stream_notifications(delegate):
 
 
 def run_peripheral(csv_path: str) -> None:
-    """Run the mock BLE peripheral on the CFRunLoop."""
+    """Run the mock BLE peripheral on the main run loop."""
     rows = load_csv(csv_path)
     if not rows:
         logger.error("CSV file is empty or has no valid rows")
@@ -243,54 +288,21 @@ def run_peripheral(csv_path: str) -> None:
     delegate = PeripheralDelegate.alloc().init()
     delegate._rows = rows
 
-    # Use a serial dispatch queue so CoreBluetooth callbacks are
-    # delivered off the main thread but in order.
-    queue = dispatch_queue_create(b"com.stridetrack.ble", DISPATCH_QUEUE_SERIAL)
-    manager = CBPeripheralManager.alloc().initWithDelegate_queue_(delegate, queue)
+    # Use None (main queue) — callbacks fire on the main run loop,
+    # so no GIL contention with a separate dispatch queue thread.
+    manager = CBPeripheralManager.alloc().initWithDelegate_queue_(delegate, None)
     delegate._manager = manager
 
-    # Wait for Bluetooth to power on
-    logger.info("Waiting for Bluetooth to power on...")
-    delegate._powered_on.wait()
-
-    # Build the characteristic
-    char_uuid = CBUUID.UUIDWithString_(CHARACTERISTIC_UUID)
-    characteristic = (
-        CBMutableCharacteristic.alloc()
-        .initWithType_properties_value_permissions_(
-            char_uuid,
-            CBCharacteristicPropertyNotify,
-            None,
-            CBAttributePermissionsReadable,
-        )
-    )
-    delegate._characteristic = characteristic
-
-    # Build the service
-    service_uuid = CBUUID.UUIDWithString_(SERVICE_UUID)
-    service = CBMutableService.alloc().initWithType_primary_(service_uuid, True)
-    service.setCharacteristics_([characteristic])
-
-    manager.addService_(service)
-    delegate._service_added.wait()
-
-    # Start advertising
-    manager.startAdvertising_(
-        {
-            CBAdvertisementDataLocalNameKey: "StrideTrack Sensor",
-            CBAdvertisementDataServiceUUIDsKey: [service_uuid],
-        }
-    )
-
-    # Wait for a central to subscribe, then stream from a background thread
+    # Background thread waits for subscription, then streams data.
     def _wait_and_stream():
         delegate._subscribed.wait()
-        logger.info("Central subscribed — starting notifications")
+        logger.info("Starting notification stream...")
         _stream_notifications(delegate)
 
     threading.Thread(target=_wait_and_stream, daemon=True).start()
 
-    # Run the CFRunLoop on the main thread (required by CoreBluetooth)
+    # The main run loop processes all CoreBluetooth callbacks.
+    # Setup is driven by the delegate: poweredOn → addService → advertise.
     AppHelper.runConsoleEventLoop()
 
 
