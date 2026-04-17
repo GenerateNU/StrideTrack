@@ -4,6 +4,7 @@ import { QueryLoading } from "@/components/ui/QueryLoading";
 import { QueryError } from "@/components/ui/QueryError";
 import type { ChartProps } from "@/types/chart.types";
 import { ChartCard } from "@/components/charts/shared/ChartCard";
+import { chartColors } from "@/lib/chartColors";
 import {
   PieChart,
   Pie,
@@ -108,7 +109,7 @@ export const GCTRangePieChart = ({ runId }: ChartProps) => {
             <Legend
               iconType="circle"
               iconSize={8}
-              wrapperStyle={{ fontSize: 12 }}
+              wrapperStyle={{ fontSize: 12, color: chartColors.foreground }}
             />
           </PieChart>
         </ResponsiveContainer>

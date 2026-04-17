@@ -153,7 +153,12 @@ export const LROverlayLineChart = ({
           <Legend
             verticalAlign="bottom"
             align="center"
-            wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 60 }}
+            wrapperStyle={{
+              paddingTop: 40,
+              fontSize: 11,
+              paddingLeft: 60,
+              color: chartColors.foreground,
+            }}
             iconType="circle"
             iconSize={8}
           />
@@ -177,7 +182,7 @@ export const LROverlayLineChart = ({
           <Line
             type="monotone"
             dataKey="right"
-            stroke={chartColors.foreground}
+            stroke={chartColors.rightFoot}
             strokeWidth={2}
             name="Right Foot"
             dot={false}

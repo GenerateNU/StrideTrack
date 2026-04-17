@@ -12,7 +12,7 @@ export const chartColors = {
   foreground: "hsl(var(--foreground))",
   primaryLight: "hsl(var(--primary) / 0.2)",
   leftFoot: "#f97316",
-  rightFoot: "#000000",
+  rightFoot: "hsl(var(--foreground))",
   phaseApproach: "#000000",
   phaseAntepenultimate: "#facc15",
   phasePenultimate: "#ef4444",

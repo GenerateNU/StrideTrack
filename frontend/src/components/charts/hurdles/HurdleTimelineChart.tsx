@@ -17,11 +17,7 @@ import {
 } from "recharts";
 import { useState } from "react";
 
-const COLORS = {
-  left: "#f97316",
-  right: "#000000",
-  hurdles: "#ef4444",
-} as const;
+const HURDLE_COLOR = "#ef4444";
 
 const TOGGLE_STYLE = (active: boolean) =>
   `px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
@@ -149,13 +145,13 @@ export const HurdleTimelineChart = ({
           "Left Foot",
           showLeft,
           () => setShowLeft((v) => !v),
-          COLORS.left
+          chartColors.leftFoot
         )}
         {toggleBtn(
           "Right Foot",
           showRight,
           () => setShowRight((v) => !v),
-          COLORS.right
+          chartColors.rightFoot
         )}
       </div>
 
@@ -211,12 +207,12 @@ export const HurdleTimelineChart = ({
                 <ReferenceLine
                   key={m.hurdle_num}
                   x={m.time_s}
-                  stroke={COLORS.hurdles}
+                  stroke={HURDLE_COLOR}
                   strokeDasharray="4 3"
                   label={{
                     value: `H${m.hurdle_num}`,
                     position: "top",
-                    fill: COLORS.hurdles,
+                    fill: HURDLE_COLOR,
                     fontSize: 10,
                   }}
                 />
@@ -226,9 +222,9 @@ export const HurdleTimelineChart = ({
                 <Line
                   type="basis"
                   dataKey="left"
-                  stroke={COLORS.left}
+                  stroke={chartColors.leftFoot}
                   strokeWidth={2}
-                  dot={makeFootDot(COLORS.left)}
+                  dot={makeFootDot(chartColors.leftFoot)}
                   connectNulls={false}
                   name="Left"
                 />
@@ -237,9 +233,9 @@ export const HurdleTimelineChart = ({
                 <Line
                   type="basis"
                   dataKey="right"
-                  stroke={COLORS.right}
+                  stroke={chartColors.rightFoot}
                   strokeWidth={2}
-                  dot={makeFootDot(COLORS.right)}
+                  dot={makeFootDot(chartColors.rightFoot)}
                   connectNulls={false}
                   name="Right"
                 />

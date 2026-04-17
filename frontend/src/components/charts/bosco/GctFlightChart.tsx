@@ -92,7 +92,12 @@ export const GctFlightChart = ({ runId }: ChartProps) => {
           <Legend
             verticalAlign="bottom"
             align="center"
-            wrapperStyle={{ paddingTop: 40, fontSize: 11, paddingLeft: 60 }}
+            wrapperStyle={{
+              paddingTop: 40,
+              fontSize: 11,
+              paddingLeft: 60,
+              color: chartColors.foreground,
+            }}
             iconType="circle"
             iconSize={8}
           />
