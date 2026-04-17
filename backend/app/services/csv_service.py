@@ -37,15 +37,6 @@ class CSVService:
         if not athlete_check.data:
             raise HTTPException(status_code=404, detail="Athlete not found")
 
-        # Transform
-        try:
-            transformed_df = transform_feet_to_stride_cycles(raw_df)
-        except Exception as e:
-            logger.exception("Service: Run data transform failed")
-            raise HTTPException(
-                status_code=500, detail=f"Run data transform failed: {str(e)}"
-            ) from e
-
         tracer = get_tracer()
         with tracer.start_as_current_span("csv.ingest") as span:
             span.set_attribute("csv.rows_in", len(raw_df))

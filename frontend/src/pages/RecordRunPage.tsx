@@ -27,6 +27,7 @@ export default function RecordRunPage() {
   const [isStopped, setIsStopped] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Refs persist across re-renders without causing re-renders
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -111,22 +112,23 @@ export default function RecordRunPage() {
     }, 10);
   }, [bleMarkStart]);
 
-  // Stop the timer — clears interval, takes final measurement
-  const stopTimer = useCallback(() => {
+  // Stop the timer — clears interval, takes final measurement, disconnects BLE
+  const stopTimer = useCallback(async () => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     stopTimeRef.current = Date.now();
     setElapsedMs(stopTimeRef.current - startTimeRef.current);
     setIsRunning(false);
     setIsStopped(true);
-  }, []);
+    await bleDisconnect();
+  }, [bleDisconnect]);
 
   // Save the run to the database, then navigate to the run page
   const handleSave = async () => {
     if (!athleteId || !eventType) return;
 
     setIsSaving(true);
+    setSaveError(null);
     try {
-      // Only rows from after Start was pressed
       const rows = bleRunBuffer();
 
       const csvLines = ["Time,Force_Foot1,Force_Foot2"];
@@ -144,18 +146,21 @@ export default function RecordRunPage() {
       formData.append("elapsed_ms", String(elapsedMs));
       formData.append("file", file);
 
-      const response = await api.post("/csv/upload-run", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const response = await api.post("/csv/upload-run", formData);
 
       await queryClient.invalidateQueries({ queryKey: ["runs"] });
-      await bleDisconnect();
       bleClearBuffer();
 
       const runId = response.data.run_id;
+      if (!runId) {
+        throw new Error("Server did not return a run ID");
+      }
       navigate(`/athletes/${athleteId}/runs/${runId}`);
     } catch (error) {
       console.error("Failed to save run:", error);
+      setSaveError(
+        error instanceof Error ? error.message : "Failed to save run"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -427,6 +432,16 @@ export default function RecordRunPage() {
             {saving ? "Saving..." : "Save"}
           </button>
         </div>
+      )}
+
+      {/* Save error feedback */}
+      {saveError && (
+        <p
+          className="mt-4 text-sm font-medium"
+          style={{ color: "hsl(var(--destructive))" }}
+        >
+          {saveError}
+        </p>
       )}
 
       {/* Change selection link — only before starting */}
