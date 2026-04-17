@@ -208,6 +208,7 @@ class TestDeleteAthlete:
         create_resp = test_client.post(BASE, json=athlete_data)
         assert create_resp.status_code == 201
         athlete_id = create_resp.json()["athlete_id"]
+        created_ids["athlete_ids"].append(athlete_id)
 
         response = test_client.delete(f"{BASE}/{athlete_id}")
 

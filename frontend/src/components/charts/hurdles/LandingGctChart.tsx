@@ -14,13 +14,17 @@ import {
   YAxis,
 } from "recharts";
 
-export const LandingGctChart = ({ runId }: ChartProps) => {
+export const LandingGctChart = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     landingGct,
     landingGctIsLoading,
     landingGctError,
     landingGctRefetch,
-  } = useLandingGct(runId);
+  } = useLandingGct(runId, hurdlesCompleted ?? null, targetEvent ?? null);
 
   if (landingGctIsLoading)
     return (
