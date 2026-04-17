@@ -51,7 +51,7 @@ export const AverageReactionTimeCard = ({
   const colorClass = getZoneColor(avgReactionTime.zone);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
+    <div className="h-full rounded-2xl border border-border bg-card p-4 shadow-sm shadow-foreground/[0.02]">
       <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-lg bg-secondary">
         <Timer className="h-4 w-4 text-foreground" />
       </div>
@@ -62,10 +62,6 @@ export const AverageReactionTimeCard = ({
         </span>
       </div>
       <div className="text-xs text-muted-foreground">Avg Reaction Time</div>
-      <div className="text-xs text-muted-foreground mt-1">
-        {avgReactionTime.zone_description} · {avgReactionTime.run_count} run
-        {avgReactionTime.run_count !== 1 ? "s" : ""}
-      </div>
     </div>
   );
 };
