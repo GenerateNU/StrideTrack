@@ -61,7 +61,7 @@ export type ChartSection = {
 const CORE_TEMPORAL: ChartSection = {
   label: "Core Temporal",
   charts: [GroundContactTimeChart, FlightTimeChart, StepTimeChart],
-  defaultExpanded: true,
+  defaultExpanded: false,
 };
 
 const ASYMMETRY: ChartSection = {
@@ -78,18 +78,16 @@ const PERFORMANCE: ChartSection = {
 
 const sectionsByEventType: Record<string, ChartSection[]> = {
   sprint: [
-    CORE_TEMPORAL,
-    ASYMMETRY,
-    PERFORMANCE,
     {
       label: "Sprint-Specific",
       charts: [SprintDriftKPIs, StepFrequencyChart, SplitScoreChart],
+      defaultExpanded: true,
     },
+    CORE_TEMPORAL,
+    ASYMMETRY,
+    PERFORMANCE,
   ],
   hurdles: [
-    CORE_TEMPORAL,
-    ASYMMETRY,
-    PERFORMANCE,
     {
       label: "Hurdle-Specific",
       charts: [
@@ -102,29 +100,34 @@ const sectionsByEventType: Record<string, ChartSection[]> = {
         SplitScoreChart,
         HurdleTimelineChart,
       ],
+      defaultExpanded: true,
     },
+    CORE_TEMPORAL,
+    ASYMMETRY,
+    PERFORMANCE,
   ],
   hurdles_partial: [
-    CORE_TEMPORAL,
-    ASYMMETRY,
-    PERFORMANCE,
-    {
-      label: "Hurdle-Specific",
-      charts: [
-        HurdleSplitChart,
-        StepsBetweenHurdlesChart,
-        TakeoffGctChart,
-        LandingGctChart,
-        TakeoffFtChart,
-        GctIncreaseChart,
-        SplitScoreChart,
-        HurdleTimelineChart,
-      ],
-    },
     {
       label: "Projected Performance",
       charts: [ProjectedFinishKPI, ProjectedSplitChart],
+      defaultExpanded: true,
     },
+    {
+      label: "Hurdle-Specific",
+      charts: [
+        HurdleSplitChart,
+        StepsBetweenHurdlesChart,
+        TakeoffGctChart,
+        LandingGctChart,
+        TakeoffFtChart,
+        GctIncreaseChart,
+        SplitScoreChart,
+        HurdleTimelineChart,
+      ],
+    },
+    CORE_TEMPORAL,
+    ASYMMETRY,
+    PERFORMANCE,
   ],
   long_jump: [
     {

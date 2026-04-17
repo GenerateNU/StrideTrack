@@ -26,13 +26,17 @@ const TITLE = "Projected Splits";
 const DESCRIPTION =
   "Completed splits shown solid, projected splits shown hatched. Reference line marks average of completed splits.";
 
-export const ProjectedSplitChart = ({ runId }: ChartProps) => {
+export const ProjectedSplitChart = ({
+  runId,
+  hurdlesCompleted,
+  targetEvent,
+}: ChartProps) => {
   const {
     hurdleProjection,
     hurdleProjectionIsLoading,
     hurdleProjectionError,
     hurdleProjectionRefetch,
-  } = useHurdleProjection(runId);
+  } = useHurdleProjection(runId, hurdlesCompleted ?? null, targetEvent ?? null);
 
   if (hurdleProjectionIsLoading)
     return (

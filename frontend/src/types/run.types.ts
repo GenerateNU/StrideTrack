@@ -47,6 +47,8 @@ export const runMetaSchema = z.object({
   created_at: z.string(),
   name: z.string().nullable(),
   elapsed_ms: z.number(),
+  hurdles_completed: z.number().nullable(),
+  target_event: z.string().nullable(),
 });
 
 export type RunMeta = z.infer<typeof runMetaSchema>;

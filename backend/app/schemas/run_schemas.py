@@ -20,6 +20,7 @@ class RunUpdate(BaseModel):
     event_type: EventType | None = None
     name: str | None = Field(None, min_length=1, max_length=100)
     target_event: str | None = None
+    hurdles_completed: int | None = Field(default=None, ge=1, le=10)
 
 
 class LROverlayData(BaseModel):
@@ -66,6 +67,7 @@ class RunCreate(BaseModel):
     event_type: EventType
     elapsed_ms: int = Field(..., gt=0)
     target_event: str | None = None
+    hurdles_completed: int | None = Field(default=None, ge=1, le=10)
 
 
 class RunCreateResponse(BaseModel):
@@ -73,6 +75,7 @@ class RunCreateResponse(BaseModel):
     athlete_id: UUID
     event_type: EventType
     target_event: str | None = None
+    hurdles_completed: int | None = Field(default=None, ge=1, le=10)
     elapsed_ms: int
     created_at: str
     name: str | None = None
@@ -85,6 +88,8 @@ class RunMeta(BaseModel):
     created_at: datetime
     name: str | None = None
     elapsed_ms: int
+    hurdles_completed: int | None = None
+    target_event: str | None = None
     elapsed_ms: int | None = None
 
 
