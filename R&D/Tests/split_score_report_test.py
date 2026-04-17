@@ -76,7 +76,7 @@ class RaceAnalyzer:
 
         Args:
             races: list of {"time": float, "intervals": list[float]} for 400mH
-                   or {"time": float, "splits": list[float]} for 400m.
+            or {"time": float, "splits": list[float]} for 400m.
             event_type: "400mH" or "400m".
         """
         key = "intervals" if event_type == "400mH" else "splits"

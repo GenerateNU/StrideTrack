@@ -12,7 +12,7 @@ from app.services.event_history_service import EventHistoryService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/event-history", tags=["Event History"])
+router = APIRouter(prefix="/athletes", tags=["Event History"])
 
 
 async def get_event_history_service(
@@ -22,9 +22,9 @@ async def get_event_history_service(
     return EventHistoryService(repository)
 
 
-@router.get("/metrics", response_model=EventHistoryResponse)
+@router.get("/{athlete_id}/event-history", response_model=EventHistoryResponse)
 async def get_event_history_metrics(
-    athlete_id: UUID = Query(...),
+    athlete_id: UUID,
     event_type: EventType = Query(...),
     limit: int | None = Query(default=10),
     date_from: date | None = Query(default=None),
@@ -32,7 +32,7 @@ async def get_event_history_metrics(
     service: EventHistoryService = Depends(get_event_history_service),
 ) -> EventHistoryResponse:
     """Get time history for a specific event type and athlete."""
-    logger.info(f"Route: GET /event-history/metrics for athlete {athlete_id}")
+    logger.info(f"Route: GET /athletes/{athlete_id}/event-history")
     return await service.get_event_history(
         athlete_id=athlete_id,
         event_type=event_type,

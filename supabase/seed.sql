@@ -37,22 +37,24 @@ VALUES (
 );
 
 -- Seed athletes
-INSERT INTO athletes (athlete_id, coach_id, name, height_in, weight_lbs)
+INSERT INTO athletes (athlete_id, coach_id, name, height_in, weight_lbs, gender)
 VALUES (
     '00000000-0000-0000-0000-000000000002',
     '00000000-0000-0000-0000-000000000001',
     'Ben Marler',
     76,
-    185
+    185,
+    'male'
 );
 
-INSERT INTO athletes (athlete_id, coach_id, name, height_in, weight_lbs)
+INSERT INTO athletes (athlete_id, coach_id, name, height_in, weight_lbs, gender)
 VALUES (
     '00000000-0000-0000-0000-000000000003',
     '00000000-0000-0000-0000-000000000001',
     'Michael Maaseide',
     70,
-    160
+    160,
+    'male'
 );
 
 -- Insert RUN records
@@ -344,13 +346,14 @@ INSERT INTO RUN_METRICS (run_id, stride_num, foot, ic_time, to_time, next_ic_tim
 
 
 -- Seed athlete: Rishi Kamtam
-INSERT INTO athletes (athlete_id, coach_id, name, height_in, weight_lbs)
+INSERT INTO athletes (athlete_id, coach_id, name, height_in, weight_lbs, gender)
 VALUES (
     '00000000-0000-0000-0000-000000000004',
     '00000000-0000-0000-0000-000000000001',
     'Rishi Kamtam',
     65,
-    132
+    132,
+    'male'
 );
 
 -- Insert long jump RUN records

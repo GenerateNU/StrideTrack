@@ -19,6 +19,7 @@ class AthleteFactory:
 
     coach_id: str  # required — must reference an existing coaches row
     name: str = field(default_factory=fake.name)
+    gender: str = field(default="male")
     height_in: float | None = field(
         default_factory=lambda: round(fake.pyfloat(min_value=60.0, max_value=84.0), 1)
     )
@@ -31,6 +32,7 @@ class AthleteFactory:
         return {
             "coach_id": self.coach_id,
             "name": self.name,
+            "gender": self.gender,
             "height_in": self.height_in,
             "weight_lbs": self.weight_lbs,
         }
@@ -40,6 +42,7 @@ class AthleteFactory:
         return {
             "coach_id": self.coach_id,
             "name": self.name,
+            "gender": self.gender,
         }
 
     @classmethod

@@ -4,7 +4,6 @@ import { QueryLoading } from "@/components/ui/QueryLoading";
 import { useSplitScore } from "@/hooks/useSplitScore.hooks";
 import { chartColors } from "@/lib/chartColors";
 import type { ChartProps } from "@/types/chart.types";
-import axios from "axios";
 import {
   Area,
   CartesianGrid,
@@ -21,18 +20,15 @@ interface ChartDataPoint {
   label: string;
   athlete: number;
   ideal: number;
-  stdBand025: [number, number];
-  stdBand050: [number, number];
-  stdBand100: [number, number];
-  std: number;
+  band1090: [number, number];
+  band2575: [number, number];
   diff_s: number;
   diff_pct: number;
 }
 
-function getDeviationColor(athletePct: number, idealPct: number, std: number) {
-  const deviation = athletePct - idealPct;
-  if (Math.abs(deviation) <= std) return chartColors.primary;
-  return deviation > 0 ? "#ef4444" : "#22c55e";
+function getDeviationColor(athletePct: number, p25: number, p75: number) {
+  if (athletePct >= p25 && athletePct <= p75) return chartColors.primary;
+  return athletePct > p75 ? "#ef4444" : "#22c55e";
 }
 
 function CustomTooltip(props: {
@@ -45,10 +41,10 @@ function CustomTooltip(props: {
   const data = payload[0]?.payload as ChartDataPoint | undefined;
   if (!data) return null;
 
-  const { athlete, ideal, std, diff_s, label } = data;
-  const deviation = athlete - ideal;
-  const isOnPace = Math.abs(deviation) <= std;
-  const color = getDeviationColor(athlete, ideal, std);
+  const { athlete, band2575, diff_s, label } = data;
+  const [p25, p75] = band2575;
+  const isOnPace = athlete >= p25 && athlete <= p75;
+  const color = getDeviationColor(athlete, p25, p75);
 
   let text: string;
   if (isOnPace) {
@@ -93,31 +89,17 @@ export const SplitScoreChart = ({
     return (
       <ChartCard
         title="Split Score Analysis"
-        description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range."
+        description="Compares split distribution to population average. Shaded bands = 25th–75th and 10th–90th percentile of elite athletes."
       >
         <QueryLoading />
       </ChartCard>
     );
+
   if (splitScoreError) {
-    const isUnsupported =
-      axios.isAxiosError(splitScoreError) &&
-      splitScoreError.response?.status === 422;
-    if (isUnsupported) {
-      return (
-        <ChartCard
-          title="Split Score Analysis"
-          description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range."
-        >
-          <p className="text-sm text-muted-foreground py-6 text-center">
-            Split score analysis is only available for 400m events.
-          </p>
-        </ChartCard>
-      );
-    }
     return (
       <ChartCard
         title="Split Score Analysis"
-        description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range."
+        description="Compares split distribution to population average. Shaded bands = 25th–75th and 10th–90th percentile of elite athletes."
       >
         <QueryError
           error={new Error(String(splitScoreError))}
@@ -126,15 +108,17 @@ export const SplitScoreChart = ({
       </ChartCard>
     );
   }
+
   if (!splitScore) return null;
 
-  const { segments, population_mean_pcts, population_std_pcts } = splitScore;
+  const { segments, population_mean_pcts, population_percentiles } = splitScore;
+  const { p10, p25, p75, p90 } = population_percentiles;
 
   const allPcts = [
     ...segments.map((s) => s.pct_of_total),
     ...population_mean_pcts,
-    ...population_mean_pcts.map((m, i) => m + population_std_pcts[i]),
-    ...population_mean_pcts.map((m, i) => m - population_std_pcts[i]),
+    ...p10,
+    ...p90,
   ];
   const pctMin = Math.min(...allPcts);
   const pctMax = Math.max(...allPcts);
@@ -144,35 +128,20 @@ export const SplitScoreChart = ({
     pctMax + pctRange * 0.1,
   ];
 
-  const chartData: ChartDataPoint[] = segments.map((seg, i) => {
-    const mean = population_mean_pcts[i];
-    const std = population_std_pcts[i];
-    return {
-      label: seg.label,
-      athlete: parseFloat(seg.pct_of_total.toFixed(2)),
-      ideal: parseFloat(mean.toFixed(2)),
-      stdBand025: [
-        parseFloat((mean - std * 0.25).toFixed(2)),
-        parseFloat((mean + std * 0.25).toFixed(2)),
-      ],
-      stdBand050: [
-        parseFloat((mean - std * 0.5).toFixed(2)),
-        parseFloat((mean + std * 0.5).toFixed(2)),
-      ],
-      stdBand100: [
-        parseFloat((mean - std).toFixed(2)),
-        parseFloat((mean + std).toFixed(2)),
-      ],
-      std,
-      diff_s: seg.diff_s,
-      diff_pct: seg.diff_pct,
-    };
-  });
+  const chartData: ChartDataPoint[] = segments.map((seg, i) => ({
+    label: seg.label,
+    athlete: parseFloat(seg.pct_of_total.toFixed(2)),
+    ideal: parseFloat(population_mean_pcts[i].toFixed(2)),
+    band1090: [parseFloat(p10[i].toFixed(2)), parseFloat(p90[i].toFixed(2))],
+    band2575: [parseFloat(p25[i].toFixed(2)), parseFloat(p75[i].toFixed(2))],
+    diff_s: seg.diff_s,
+    diff_pct: seg.diff_pct,
+  }));
 
   return (
     <ChartCard
       title="Split Score Analysis"
-      description="Compares split distribution to population average. Shaded band = normal range (±1 std dev). Red/green dots = segments outside expected range."
+      description="Compares split distribution to population average. Shaded bands = 25th–75th and 10th–90th percentile of elite athletes."
     >
       <ResponsiveContainer width="100%" height={300}>
         <ComposedChart
@@ -208,6 +177,7 @@ export const SplitScoreChart = ({
             }}
             tick={{ fill: chartColors.mutedForeground, fontSize: 10 }}
             domain={yDomain}
+            tickFormatter={(value: number) => `${value.toFixed(1)}`}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend
@@ -217,35 +187,27 @@ export const SplitScoreChart = ({
             wrapperStyle={{ fontSize: 11 }}
           />
 
-          {/* +/-1 std dev -- outermost, very light */}
+          {/* 10th–90th percentile band — outer, light */}
           <Area
             type="monotone"
-            dataKey="stdBand100"
+            dataKey="band1090"
             fill={chartColors.mutedForeground}
             fillOpacity={0.05}
             stroke="none"
             legendType="none"
           />
-          {/* +/-0.5 std dev -- middle band */}
+
+          {/* 25th–75th percentile band — inner, darker */}
           <Area
             type="monotone"
-            dataKey="stdBand050"
-            fill={chartColors.mutedForeground}
-            fillOpacity={0.1}
-            stroke="none"
-            legendType="none"
-          />
-          {/* +/-0.25 std dev -- innermost, darkest */}
-          <Area
-            type="monotone"
-            dataKey="stdBand025"
+            dataKey="band2575"
             fill={chartColors.mutedForeground}
             fillOpacity={0.15}
             stroke="none"
             legendType="none"
           />
 
-          {/* Ideal pace -- population mean curve */}
+          {/* Population mean */}
           <Line
             type="monotone"
             dataKey="ideal"
@@ -266,8 +228,8 @@ export const SplitScoreChart = ({
               const { cx, cy, payload } = props;
               const fill = getDeviationColor(
                 payload.athlete,
-                payload.ideal,
-                payload.std
+                payload.band2575[0],
+                payload.band2575[1]
               );
               return (
                 <circle
@@ -280,7 +242,24 @@ export const SplitScoreChart = ({
                 />
               );
             }}
-            activeDot={{ r: 6 }}
+            activeDot={(props) => {
+              const { cx, cy, payload } = props;
+              const fill = getDeviationColor(
+                payload.athlete,
+                payload.band2575[0],
+                payload.band2575[1]
+              );
+              return (
+                <circle
+                  key={payload.label}
+                  cx={cx}
+                  cy={cy}
+                  r={6}
+                  fill={fill}
+                  stroke="none"
+                />
+              );
+            }}
             name="Athlete"
           />
         </ComposedChart>

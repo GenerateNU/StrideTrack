@@ -11,7 +11,7 @@ from tests.factories.athlete_factory import AthleteFactory
 from tests.factories.csv_factory import CSVFactory
 
 BASE = "/api/runs"
-CSV_UPLOAD = "/api/csv/upload-run"
+CSV_UPLOAD = "/api/athletes/{athlete_id}/csv/upload-run"
 ATHLETE_BASE = "/api/athletes"
 
 # Shared fixtures
@@ -37,9 +37,8 @@ def hurdle_run_id(
         content=csv_content, filename="hurdle_test.csv"
     )
     upload_resp = test_client.post(
-        CSV_UPLOAD,
+        CSV_UPLOAD.format(athlete_id=athlete_id),
         data={
-            "athlete_id": athlete_id,
             "event_type": "hurdles_110m",
             "name": "Test 110mH",
         },
@@ -122,9 +121,8 @@ def sprint_run_id(
         content=csv_content, filename="sprint_test.csv"
     )
     upload_resp = test_client.post(
-        CSV_UPLOAD,
+        CSV_UPLOAD.format(athlete_id=athlete_id),
         data={
-            "athlete_id": athlete_id,
             "event_type": "sprint_100m",
             "name": "Test Sprint",
         },

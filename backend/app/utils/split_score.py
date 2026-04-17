@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.schemas.split_score_schemas import SegmentDiff
 from app.utils.split_score_constants import POPULATION_STATS, SEGMENT_LABELS
 
 
@@ -7,8 +8,11 @@ def compute_diffs(
     segments_ms: list[float],
     total_ms: float,
     event_type: str,
-) -> list[dict]:
-    stats = POPULATION_STATS[event_type]
+    gender: str = "male",
+) -> list[SegmentDiff]:
+    """Compute per-segment time differences vs. population mean percentages."""
+    gender_key = gender if gender in ("male", "female") else "male"
+    stats = POPULATION_STATS[gender_key][event_type]
     means = stats["mean"]
 
     if len(segments_ms) != len(means):
@@ -16,25 +20,26 @@ def compute_diffs(
             f"Expected {len(means)} segments for {event_type}, got {len(segments_ms)}."
         )
 
-    diffs: list[dict] = []
+    diffs: list[SegmentDiff] = []
     for i, raw_ms in enumerate(segments_ms):
         athlete_pct = (raw_ms / total_ms) * 100.0
         diff_pct = athlete_pct - means[i]
         diff_s = (diff_pct / 100.0) * total_ms / 1000.0
         diffs.append(
-            {
-                "diff_s": round(diff_s, 2),
-                "diff_pct": round(diff_pct, 2),
-            }
+            SegmentDiff(
+                diff_s=round(diff_s, 2),
+                diff_pct=round(diff_pct, 2),
+            )
         )
     return diffs
 
 
 def generate_coaching_notes(
-    diffs: list[dict],
+    diffs: list[SegmentDiff],
     event_type: str,
     on_pace_threshold_s: float = 0.1,
 ) -> list[str]:
+    """Generate human-readable coaching notes for each segment diff."""
     labels = SEGMENT_LABELS[event_type]
     notes: list[str] = []
     for diff, label in zip(diffs, labels, strict=True):

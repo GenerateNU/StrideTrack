@@ -32,12 +32,14 @@ logger = logging.getLogger(__name__)
 
 
 class LongJumpService:
-    def __init__(self, repository: LongJumpRepository) -> None:
+    def __init__(self, repository: LongJumpRepository, coach_id: UUID) -> None:
         self.repository = repository
+        self.coach_id = coach_id
 
     async def _fetch_and_transform(
         self, run_id: UUID
     ) -> tuple[pd.DataFrame, LongJumpMetricRow, list[StepSeriesPoint]]:
+        await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
         raw_steps = await self.repository.get_long_jump_metrics(run_id)
         df = pd.DataFrame([s.model_dump() for s in raw_steps])
         lj_df = transform_stride_cycles_to_long_jump_metrics(df)

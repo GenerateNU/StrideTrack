@@ -161,3 +161,30 @@ class RunRepository:
             logger.warning(f"Repository: Run not found for deletion {run_id}")
             raise NotFoundException("Run", str(run_id))
         logger.info(f"Repository: Deleted run {run_id}")
+
+    async def get_feedback(self, run_id: UUID) -> str | None:
+        """Get stored feedback for a run, returns None if not yet generated."""
+        logger.info(f"Repository: Fetching feedback for run {run_id}")
+        response = (
+            await self.supabase.table("run")
+            .select("feedback")
+            .eq("run_id", str(run_id))
+            .execute()
+        )
+        if not response.data:
+            raise NotFoundException("Run", str(run_id))
+        logger.info(f"Repository: Found feedback for run {run_id}")
+        return response.data[0].get("feedback")
+
+    async def save_feedback(self, run_id: UUID, feedback: str | None) -> None:
+        """Save generated feedback to the run row."""
+        logger.info(f"Repository: Saving feedback for run {run_id}")
+        response = (
+            await self.supabase.table("run")
+            .update({"feedback": feedback})
+            .eq("run_id", str(run_id))
+            .execute()
+        )
+        if not response.data:
+            raise NotFoundException("Run", str(run_id))
+        logger.info(f"Repository: Saved feedback for run {run_id}")

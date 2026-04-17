@@ -32,12 +32,14 @@ logger = logging.getLogger(__name__)
 
 
 class TripleJumpService:
-    def __init__(self, repository: TripleJumpRepository) -> None:
+    def __init__(self, repository: TripleJumpRepository, coach_id: UUID) -> None:
         self.repository = repository
+        self.coach_id = coach_id
 
     async def _fetch_and_transform(
         self, run_id: UUID
     ) -> tuple[pd.DataFrame, TripleJumpMetricRow]:
+        await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
         raw_steps = await self.repository.get_triple_jump_metrics(run_id)
         df = pd.DataFrame([s.model_dump() for s in raw_steps])
         tj_df = transform_stride_cycles_to_triple_jump_metrics(df)
