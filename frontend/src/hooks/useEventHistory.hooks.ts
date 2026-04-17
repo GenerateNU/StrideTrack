@@ -15,7 +15,6 @@ export function useEventHistory(
       if (!filters || !filters.eventType) return null;
 
       const params: Record<string, string> = {
-        athlete_id: filters.athleteId,
         event_type: filters.eventType,
       };
 
@@ -27,7 +26,7 @@ export function useEventHistory(
       }
 
       const response = await api.get<EventHistoryResponse>(
-        `/event-history/metrics`,
+        `/athletes/${filters.athleteId}/event-history`,
         { params }
       );
       return validateResponse(response.data, eventHistoryResponseSchema);

@@ -148,7 +148,6 @@ const sectionsByEventType: Record<string, ChartSection[]> = {
       ],
       defaultExpanded: true,
     },
-    CORE_TEMPORAL,
     ASYMMETRY,
   ],
   triple_jump: [
@@ -161,7 +160,6 @@ const sectionsByEventType: Record<string, ChartSection[]> = {
       ],
       defaultExpanded: true,
     },
-    CORE_TEMPORAL,
     ASYMMETRY,
   ],
   bosco: [

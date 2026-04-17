@@ -33,7 +33,7 @@ async def health_check(
         return HealthResponse(status="unhealthy", database="disconnected", error=str(e))
 
 
-# Run CRUD + all per-run metrics (shared /runs prefix, distinct tags)
+# Per-run metrics (shared /runs prefix, distinct tags)
 api_router.include_router(run_router)
 api_router.include_router(feedback_router)
 api_router.include_router(universal_metric_router)
@@ -42,12 +42,14 @@ api_router.include_router(hurdle_router)
 api_router.include_router(bosco_router)
 api_router.include_router(split_score_router)
 api_router.include_router(reaction_time_router)
-
-# Standalone
-api_router.include_router(event_history_router)
-api_router.include_router(athlete_router)
-api_router.include_router(auth_router)
-api_router.include_router(csv_router)
-api_router.include_router(example_router)
 api_router.include_router(long_jump_router)
 api_router.include_router(triple_jump_router)
+
+# Athlete-scoped routes (/athletes prefix)
+api_router.include_router(athlete_router)
+api_router.include_router(event_history_router)
+api_router.include_router(csv_router)
+
+# Standalone
+api_router.include_router(auth_router)
+api_router.include_router(example_router)
