@@ -1,11 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-
-interface UploadCSVPayload {
-  athleteId: string;
-  eventType: string;
-  file: File;
-}
+import type { UploadCSVPayload } from "@/types/csv.types";
 
 export function useUploadCSV() {
   const queryClient = useQueryClient();
