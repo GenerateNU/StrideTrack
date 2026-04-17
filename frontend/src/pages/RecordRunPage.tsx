@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { AthleteSelector } from "@/components/athletes/AthleteSelector";
 import EventSelector from "@/components/events/EventSelector";
 import { useGetAllAthletes } from "@/hooks/useAthletes.hooks";
@@ -50,9 +51,14 @@ export default function RecordRunPage() {
   // Tooltip visibility
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // Connect BLE as soon as we enter the recording screen
+  // On native the OS can show the BLE picker programmatically.
+  // On web the browser requires a direct user gesture, so we skip auto-connect.
+  const isNative = Capacitor.isNativePlatform();
+
+  // Auto-connect BLE when entering the recording screen (native only)
   useEffect(() => {
     if (screen !== "recording") return;
+    if (!isNative) return;
     let cancelled = false;
 
     async function connect() {
@@ -73,6 +79,18 @@ export default function RecordRunPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]);
+
+  // Manual connect triggered by a button click (web only — satisfies browser gesture requirement)
+  const handleManualConnect = useCallback(async () => {
+    setIsConnecting(true);
+    try {
+      await bleConnect();
+    } catch (error) {
+      console.error("BLE connection failed:", error);
+    } finally {
+      setIsConnecting(false);
+    }
+  }, [bleConnect]);
 
   // Both selections required to proceed
   const canProceed = athleteId !== null && eventType !== null;
@@ -254,7 +272,7 @@ export default function RecordRunPage() {
       </p>
 
       {/* BLE status indicator — visible in all recording states */}
-      <div className="relative mb-4">
+      <div className="relative mb-4 flex items-center gap-2">
         <button
           type="button"
           onClick={() => setShowTooltip((v) => !v)}
@@ -321,6 +339,21 @@ export default function RecordRunPage() {
             reconnect when the runner comes back within range. Data is buffered
             locally.
           </div>
+        )}
+
+        {/* Web-only manual connect button — browser requires a click gesture */}
+        {!isNative && !bleIsConnected && !isConnecting && (
+          <button
+            type="button"
+            onClick={handleManualConnect}
+            className="px-3 py-1.5 rounded-full text-xs font-semibold"
+            style={{
+              backgroundColor: "hsl(var(--primary))",
+              color: "hsl(var(--primary-foreground))",
+            }}
+          >
+            Connect Sensor
+          </button>
         )}
       </div>
 

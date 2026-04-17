@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Capacitor } from "@capacitor/core";
 import { BleClient } from "@capacitor-community/bluetooth-le";
 
 const FORCE_PLATE_SERVICE_UUID = "0000180d-0000-1000-8000-00805f9b34fb";
@@ -27,40 +26,33 @@ export function useBle() {
   const startIndexRef = useRef<number | null>(null);
   const deviceIdRef = useRef<string | null>(null);
 
-  const checkAvailability = useCallback(async (): Promise<boolean> => {
-    if (!Capacitor.isNativePlatform()) {
-      setBleIsAvailable(false);
-      return false;
-    }
+  // On web, BleClient.isEnabled() is not supported and throws.
+  // Fall back to checking navigator.bluetooth (Web Bluetooth API) instead.
+  const resolveAvailability = useCallback(async (): Promise<boolean> => {
     try {
       await BleClient.initialize();
       const enabled = await BleClient.isEnabled();
-      setBleIsAvailable(enabled);
       return enabled;
     } catch {
-      setBleIsAvailable(false);
-      return false;
+      return "bluetooth" in navigator;
     }
   }, []);
 
+  const checkAvailability = useCallback(async (): Promise<boolean> => {
+    const available = await resolveAvailability();
+    setBleIsAvailable(available);
+    return available;
+  }, [resolveAvailability]);
+
   useEffect(() => {
     let cancelled = false;
-    async function init() {
-      const isNative = Capacitor.isNativePlatform();
-      if (!isNative) return;
-      try {
-        await BleClient.initialize();
-        const enabled = await BleClient.isEnabled();
-        if (!cancelled) setBleIsAvailable(enabled);
-      } catch {
-        if (!cancelled) setBleIsAvailable(false);
-      }
-    }
-    init();
+    resolveAvailability().then((available) => {
+      if (!cancelled) setBleIsAvailable(available);
+    });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [resolveAvailability]);
 
   const startListening = useCallback(async (deviceId: string) => {
     await BleClient.startNotifications(
