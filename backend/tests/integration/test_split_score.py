@@ -10,7 +10,7 @@ from tests.factories.athlete_factory import AthleteFactory
 from tests.factories.csv_factory import CSVFactory
 
 ATHLETE_BASE = "/api/athletes"
-CSV_UPLOAD = "/api/csv/upload-run"
+CSV_UPLOAD = "/api/athletes/{athlete_id}/csv/upload-run"
 
 
 def _url(run_id: str) -> str:
@@ -40,9 +40,8 @@ def hurdle_400m_run_id(
         content=csv_content, filename="hurdle_400m_test.csv"
     )
     upload_resp = test_client.post(
-        CSV_UPLOAD,
+        CSV_UPLOAD.format(athlete_id=athlete_id),
         data={
-            "athlete_id": athlete_id,
             "event_type": "hurdles_400m",
             "name": "Test 400mH",
         },

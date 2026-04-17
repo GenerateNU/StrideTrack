@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from typing import TypedDict
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -18,6 +21,11 @@ class RunMetric(BaseModel):
     foot: str
 
 
+class SegmentDiff(TypedDict):
+    diff_s: float
+    diff_pct: float
+
+
 class SegmentScore(BaseModel):
     label: str
     raw_ms: float
@@ -28,9 +36,10 @@ class SegmentScore(BaseModel):
 
 class SplitScoreResponse(BaseModel):
     run_id: str
-    event_type: str
+    event_type: EventType
     total_ms: float
     segments: list[SegmentScore]
     coaching_notes: list[str]
     population_mean_pcts: list[float]
     population_std_pcts: list[float]
+    population_percentiles: dict[str, list[float]]

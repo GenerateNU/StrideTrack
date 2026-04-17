@@ -1,31 +1,19 @@
-// TODO: Scope to authenticated coach — currently returns all athletes regardless of user.
-// Future ticket: pass coach_id as query param or use auth-scoped backend endpoint.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import api from "@/lib/api";
-
-const athleteResponseSchema = z.object({
-  athlete_id: z.string(),
-  coach_id: z.string(),
-  name: z.string(),
-  height_in: z.number().nullable(),
-  weight_lbs: z.number().nullable(),
-  created_at: z.string(),
-});
-
-type Athlete = z.infer<typeof athleteResponseSchema>;
+import {
+  athleteResponseSchema,
+  type Athlete,
+  type CreateAthletePayload,
+} from "@/types/athlete.types";
+import { validateResponse } from "@/utils/validation";
+import { z } from "zod";
 
 export function useGetAllAthletes() {
   const query = useQuery({
     queryKey: ["athletes"],
     queryFn: async () => {
       const response = await api.get<Athlete[]>("/athletes");
-
-      const parsed = z.array(athleteResponseSchema).safeParse(response.data);
-      if (!parsed.success) {
-        throw new Error("Invalid response format");
-      }
-      return parsed.data;
+      return validateResponse(response.data, z.array(athleteResponseSchema));
     },
   });
 
@@ -35,12 +23,6 @@ export function useGetAllAthletes() {
     athletesError: query.error,
     athletesRefetch: query.refetch,
   };
-}
-
-interface CreateAthletePayload {
-  name: string;
-  height_in: number | null;
-  weight_lbs: number | null;
 }
 
 export function useCreateAthlete() {

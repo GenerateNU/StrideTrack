@@ -74,6 +74,19 @@ const PERFORMANCE: ChartSection = {
   charts: [RSIChart, GCTRangePieChart, TotalStepsKPI, ReactionTimeCard],
 };
 
+const HURDLE_SPECIFIC: ChartSection = {
+  label: "Hurdle-Specific",
+  charts: [
+    HurdleSplitChart,
+    StepsBetweenHurdlesChart,
+    TakeoffGctChart,
+    LandingGctChart,
+    TakeoffFtChart,
+    GctIncreaseChart,
+    HurdleTimelineChart,
+  ],
+};
+
 // Event-type sections
 
 const sectionsByEventType: Record<string, ChartSection[]> = {
@@ -106,25 +119,19 @@ const sectionsByEventType: Record<string, ChartSection[]> = {
     ASYMMETRY,
     PERFORMANCE,
   ],
+  hurdles_60m: [
+    { ...HURDLE_SPECIFIC, defaultExpanded: true },
+    CORE_TEMPORAL,
+    ASYMMETRY,
+    PERFORMANCE,
+  ],
   hurdles_partial: [
     {
       label: "Projected Performance",
       charts: [ProjectedFinishKPI, ProjectedSplitChart],
       defaultExpanded: true,
     },
-    {
-      label: "Hurdle-Specific",
-      charts: [
-        HurdleSplitChart,
-        StepsBetweenHurdlesChart,
-        TakeoffGctChart,
-        LandingGctChart,
-        TakeoffFtChart,
-        GctIncreaseChart,
-        SplitScoreChart,
-        HurdleTimelineChart,
-      ],
-    },
+    HURDLE_SPECIFIC,
     CORE_TEMPORAL,
     ASYMMETRY,
     PERFORMANCE,
@@ -141,7 +148,6 @@ const sectionsByEventType: Record<string, ChartSection[]> = {
       ],
       defaultExpanded: true,
     },
-    CORE_TEMPORAL,
     ASYMMETRY,
   ],
   triple_jump: [
@@ -154,7 +160,6 @@ const sectionsByEventType: Record<string, ChartSection[]> = {
       ],
       defaultExpanded: true,
     },
-    CORE_TEMPORAL,
     ASYMMETRY,
   ],
   bosco: [

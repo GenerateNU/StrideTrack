@@ -9,3 +9,13 @@ export const reactionTimeMetricsSchema = z.object({
 });
 
 export type ReactionTimeMetrics = z.infer<typeof reactionTimeMetricsSchema>;
+
+export const averageReactionTimeSchema = z.object({
+  athlete_id: z.string(),
+  average_reaction_time_ms: z.number(),
+  run_count: z.number(),
+  zone: z.enum(["green", "yellow", "red"]),
+  zone_description: z.string(),
+});
+
+export type AverageReactionTime = z.infer<typeof averageReactionTimeSchema>;

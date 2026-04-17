@@ -13,9 +13,21 @@ class TripleJumpRepository:
     def __init__(self, supabase: AsyncClient) -> None:
         self.supabase = supabase
 
-    async def get_triple_jump_metrics(self, run_id: UUID) -> list[StepSeriesPoint]:
-        logger.info(f"Repository: Fetching triple jump metrics for run: {run_id}")
+    async def verify_run_belongs_to_coach(self, run_id: UUID, coach_id: UUID) -> None:
+        """Verify a run belongs to one of the coach's athletes."""
+        result = (
+            await self.supabase.table("run")
+            .select("run_id, athletes!inner(coach_id)")
+            .eq("run_id", str(run_id))
+            .eq("athletes.coach_id", str(coach_id))
+            .execute()
+        )
+        if not result.data:
+            raise NotFoundException("Run", str(run_id))
 
+    async def get_triple_jump_metrics(self, run_id: UUID) -> list[StepSeriesPoint]:
+        """Fetch all stride metrics for a triple jump run."""
+        logger.info(f"Repository: Fetching triple jump metrics for run: {run_id}")
         response = (
             await self.supabase.table("run_metrics")
             .select(
@@ -25,12 +37,10 @@ class TripleJumpRepository:
             .order("ic_time")
             .execute()
         )
-
         if not response.data:
             logger.warning(
                 f"Repository: Triple jump metrics not found for run_id {run_id}"
             )
             raise NotFoundException("Triple jump metrics", str(run_id))
-
         logger.info(f"Repository: Found {len(response.data)} rows for run {run_id}")
         return [StepSeriesPoint(**row) for row in response.data]

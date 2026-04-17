@@ -9,7 +9,7 @@ from tests.factories.csv_factory import CSVFactory
 
 BASE = "/api/runs"
 ATHLETE_BASE = "/api/athletes"
-CSV_UPLOAD = "/api/csv/upload-run"
+CSV_UPLOAD = "/api/athletes/{athlete_id}/csv/upload-run"
 
 
 # ── Shared fixture ──
@@ -39,9 +39,8 @@ def sprint_run_with_metrics(
         content=csv_content, filename="sprint_metrics_test.csv"
     )
     upload_resp = test_client.post(
-        CSV_UPLOAD,
+        CSV_UPLOAD.format(athlete_id=athlete_id),
         data={
-            "athlete_id": athlete_id,
             "event_type": "sprint_100m",
             "name": "Test Sprint",
         },
@@ -88,7 +87,7 @@ class TestListRuns:
 
 @pytest.mark.integration
 class TestListRunsByAthlete:
-    """GET /api/runs/athlete/{athlete_id}"""
+    """GET /api/athletes/{athlete_id}/runs"""
 
     def test_list_by_athlete_returns_200(
         self,
@@ -98,7 +97,7 @@ class TestListRunsByAthlete:
         """Listing runs for a known athlete should return 200 with their runs."""
         athlete_id = sprint_run_with_metrics["athlete_id"]
 
-        response = test_client.get(f"{BASE}/athlete/{athlete_id}")
+        response = test_client.get(f"/api/athletes/{athlete_id}/runs")
 
         assert response.status_code == 200
         data = response.json()
@@ -109,7 +108,7 @@ class TestListRunsByAthlete:
         """Listing runs for a non-existent athlete should return 404."""
         fake_id = str(uuid4())
 
-        response = test_client.get(f"{BASE}/athlete/{fake_id}")
+        response = test_client.get(f"/api/athletes/{fake_id}/runs")
 
         assert response.status_code == 404
 

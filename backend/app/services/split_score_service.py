@@ -20,19 +20,14 @@ from app.utils.split_score_constants import (
 logger = logging.getLogger(__name__)
 
 
-HURDLE_COUNT: dict[EventType, int] = {
-    EventType.hurdles_400m: 10,
-    EventType.hurdles_110m: 10,
-    EventType.hurdles_100m: 10,
-    EventType.hurdles_60m: 5,
-}
-
-
 class SplitScoreService:
-    def __init__(self, repository: SplitScoreRepository) -> None:
+    def __init__(self, repository: SplitScoreRepository, coach_id: UUID) -> None:
         self.repository = repository
+        self.coach_id = coach_id
 
     async def get_split_score(self, run_id: UUID) -> SplitScoreResponse:
+        """Compute split score percentiles for a run against population data."""
+        await self.repository.verify_run_belongs_to_coach(run_id, self.coach_id)
         logger.info(f"Service: Computing split score for run {run_id}")
 
         run_meta = await self.repository.get_run_meta(run_id)
@@ -42,9 +37,13 @@ class SplitScoreService:
         if event_type not in SUPPORTED_EVENTS:
             raise UnsupportedEventError(event_type)
 
+        gender = await self.repository.get_athlete_gender(run_id)
+        gender_key = gender if gender in ("male", "female") else "male"
+        stats = POPULATION_STATS[gender_key][event_type]
+
         raw_metrics = await self.repository.get_run_metrics(run_id)
         segments_ms = self._compute_segments(raw_metrics, elapsed_ms, event_type)
-        diffs = compute_diffs(segments_ms, elapsed_ms, event_type)
+        diffs = compute_diffs(segments_ms, elapsed_ms, event_type, gender_key)
         notes = generate_coaching_notes(diffs, event_type)
 
         segment_scores = [
@@ -67,8 +66,9 @@ class SplitScoreService:
             total_ms=elapsed_ms,
             segments=segment_scores,
             coaching_notes=notes,
-            population_mean_pcts=POPULATION_STATS[event_type]["mean"],
-            population_std_pcts=POPULATION_STATS[event_type]["std"],
+            population_mean_pcts=stats["mean"],
+            population_std_pcts=stats["std"],
+            population_percentiles=stats["percentiles"],
         )
 
     def _compute_segments(
@@ -77,24 +77,32 @@ class SplitScoreService:
         elapsed_ms: float,
         event_type: str,
     ) -> list[float]:
+        """Dispatch to the correct segment computation method for the event type."""
         if event_type == EventType.hurdles_400m:
-            return self._compute_hurdle_segments(raw_metrics, elapsed_ms, event_type)
+            return self._compute_hurdle_segments(raw_metrics, elapsed_ms, n_hurdles=10)
+        if event_type == EventType.hurdles_110m:
+            return self._compute_hurdle_segments(raw_metrics, elapsed_ms, n_hurdles=10)
+        if event_type == EventType.hurdles_100m:
+            return self._compute_hurdle_segments(raw_metrics, elapsed_ms, n_hurdles=10)
         if event_type == EventType.sprint_400m:
-            return self._compute_sprint_segments(raw_metrics, elapsed_ms)
+            return self._compute_sprint_segments(raw_metrics, elapsed_ms, n_splits=4)
+        if event_type == EventType.sprint_100m:
+            return self._compute_sprint_segments(raw_metrics, elapsed_ms, n_splits=3)
+        if event_type == EventType.sprint_200m:
+            return self._compute_sprint_segments(raw_metrics, elapsed_ms, n_splits=2)
         raise UnsupportedEventError(event_type)
 
     def _compute_hurdle_segments(
-        self, raw_metrics: list[RunMetric], elapsed_ms: float, event_type: str
+        self, raw_metrics: list[RunMetric], elapsed_ms: float, n_hurdles: int
     ) -> list[float]:
-        expected_count = HURDLE_COUNT.get(EventType(event_type))
+        """Extract hurdle-to-hurdle splits from raw stride metrics."""
         df = pd.DataFrame([m.model_dump() for m in raw_metrics])
         hurdle_df = transform_stride_cycles_to_hurdle_metrics(
-            df, expected_count=expected_count
+            df, expected_count=n_hurdles
         )
-        n_expected = expected_count or 10
-        if len(hurdle_df) < n_expected:
+        if len(hurdle_df) < n_hurdles:
             raise ValueError(
-                f"Expected {n_expected} hurdles for {event_type}, detected {len(hurdle_df)}. "
+                f"Expected {n_hurdles} hurdles, detected {len(hurdle_df)}. "
                 "Check that the run contains a full race."
             )
         start_to_h1 = float(hurdle_df.iloc[0]["clearance_start_ms"])
@@ -105,19 +113,20 @@ class SplitScoreService:
         return [start_to_h1, *middle_splits, h_last_to_fin]
 
     def _compute_sprint_segments(
-        self, raw_metrics: list[RunMetric], elapsed_ms: float
+        self, raw_metrics: list[RunMetric], elapsed_ms: float, n_splits: int
     ) -> list[float]:
+        """Divide strides into equal quantiles as a proxy for distance-based segments."""
         df = (
             pd.DataFrame([m.model_dump() for m in raw_metrics])
             .sort_values("ic_time")
             .reset_index(drop=True)
         )
         n = len(df)
-        q = n // 4
+        q = n // n_splits
         splits: list[float] = []
-        for i in range(4):
+        for i in range(n_splits):
             start_idx = i * q
-            end_idx = (i + 1) * q if i < 3 else n - 1
+            end_idx = (i + 1) * q if i < n_splits - 1 else n - 1
             seg_ms = float(df.iloc[end_idx]["ic_time"] - df.iloc[start_idx]["ic_time"])
             splits.append(seg_ms)
         return splits
