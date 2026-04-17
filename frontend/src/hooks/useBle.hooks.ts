@@ -19,13 +19,21 @@ function parseNotification(value: DataView): BleForceRow {
   return { time, force_foot1, force_foot2 };
 }
 
+const RECONNECT_INTERVAL_MS = 1000;
+const RECONNECT_MAX_ATTEMPTS = 30;
+
 export function useBle() {
   const [bleIsAvailable, setBleIsAvailable] = useState(false);
   const [bleIsConnected, setBleIsConnected] = useState(false);
   const [bleIsScanning, setBleIsScanning] = useState(false);
+  const [bleIsReconnecting, setBleIsReconnecting] = useState(false);
 
   const bufferRef = useRef<BleForceRow[]>([]);
   const startIndexRef = useRef<number | null>(null);
+
+  // When true, disconnect was intentional — skip auto-reconnect.
+  const intentionalDisconnectRef = useRef(false);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Native (Capacitor) refs ──────────────────────────────────
   const deviceIdRef = useRef<string | null>(null);
@@ -62,6 +70,112 @@ export function useBle() {
     };
   }, []);
 
+  // ── Reconnect helpers ─────────────────────────────────────────
+
+  const cancelReconnect = useCallback(() => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+    setBleIsReconnecting(false);
+  }, []);
+
+  const webSubscribeToNotifications = useCallback(
+    async (device: BluetoothDevice) => {
+      const server = await device.gatt!.connect();
+      console.log("[BLE-web] GATT reconnected:", server.connected);
+
+      const service = await server.getPrimaryService(FORCE_PLATE_SERVICE_UUID);
+      const characteristic = await service.getCharacteristic(
+        FORCE_PLATE_CHARACTERISTIC_UUID
+      );
+      webCharRef.current = characteristic;
+
+      const onValue = (event: Event) => {
+        const char = event.target as BluetoothRemoteGATTCharacteristic;
+        if (char.value) {
+          bufferRef.current.push(parseNotification(char.value));
+        }
+      };
+      webValueListenerRef.current = onValue;
+      characteristic.addEventListener("characteristicvaluechanged", onValue);
+
+      await characteristic.startNotifications();
+      console.log("[BLE-web] notifications re-started OK");
+    },
+    []
+  );
+
+  const attemptWebReconnect = useCallback(
+    (device: BluetoothDevice, attempt: number) => {
+      if (intentionalDisconnectRef.current) return;
+      if (attempt > RECONNECT_MAX_ATTEMPTS) {
+        console.log("[BLE-web] max reconnect attempts reached");
+        setBleIsReconnecting(false);
+        return;
+      }
+
+      setBleIsReconnecting(true);
+      console.log(
+        `[BLE-web] reconnect attempt ${attempt}/${RECONNECT_MAX_ATTEMPTS}`
+      );
+
+      reconnectTimerRef.current = setTimeout(async () => {
+        try {
+          await webSubscribeToNotifications(device);
+          setBleIsConnected(true);
+          setBleIsReconnecting(false);
+          console.log("[BLE-web] reconnected successfully");
+        } catch {
+          attemptWebReconnect(device, attempt + 1);
+        }
+      }, RECONNECT_INTERVAL_MS);
+    },
+    [webSubscribeToNotifications]
+  );
+
+  const attemptNativeReconnect = useCallback(
+    (deviceId: string, attempt: number) => {
+      if (intentionalDisconnectRef.current) return;
+      if (attempt > RECONNECT_MAX_ATTEMPTS) {
+        console.log("[BLE-native] max reconnect attempts reached");
+        setBleIsReconnecting(false);
+        return;
+      }
+
+      setBleIsReconnecting(true);
+      console.log(
+        `[BLE-native] reconnect attempt ${attempt}/${RECONNECT_MAX_ATTEMPTS}`
+      );
+
+      reconnectTimerRef.current = setTimeout(async () => {
+        try {
+          await BleClient.connect(deviceId, () => {
+            console.log("[BLE-native] disconnected during reconnect session");
+            setBleIsConnected(false);
+            if (!intentionalDisconnectRef.current) {
+              attemptNativeReconnect(deviceId, 1);
+            }
+          });
+          await BleClient.startNotifications(
+            deviceId,
+            FORCE_PLATE_SERVICE_UUID,
+            FORCE_PLATE_CHARACTERISTIC_UUID,
+            (value: DataView) => {
+              bufferRef.current.push(parseNotification(value));
+            }
+          );
+          setBleIsConnected(true);
+          setBleIsReconnecting(false);
+          console.log("[BLE-native] reconnected successfully");
+        } catch {
+          attemptNativeReconnect(deviceId, attempt + 1);
+        }
+      }, RECONNECT_INTERVAL_MS);
+    },
+    []
+  );
+
   // ── Web Bluetooth path ───────────────────────────────────────
 
   const webConnect = useCallback(async () => {
@@ -72,52 +186,28 @@ export function useBle() {
     console.log("[BLE-web] device selected:", device.name, device.id);
 
     webDeviceRef.current = device;
+    intentionalDisconnectRef.current = false;
 
     const onDisconnect = () => {
       console.log("[BLE-web] GATT server disconnected");
       setBleIsConnected(false);
+      if (!intentionalDisconnectRef.current && webDeviceRef.current) {
+        attemptWebReconnect(webDeviceRef.current, 1);
+      }
     };
     webDisconnectListenerRef.current = onDisconnect;
     device.addEventListener("gattserverdisconnected", onDisconnect);
 
     console.log("[BLE-web] connecting to GATT server...");
-    const server = await device.gatt!.connect();
-    console.log("[BLE-web] GATT connected:", server.connected);
-
-    console.log("[BLE-web] getPrimaryService...");
-    const service = await server.getPrimaryService(FORCE_PLATE_SERVICE_UUID);
-    console.log("[BLE-web] service found");
-
-    console.log("[BLE-web] getCharacteristic...");
-    const characteristic = await service.getCharacteristic(
-      FORCE_PLATE_CHARACTERISTIC_UUID
-    );
-    console.log("[BLE-web] characteristic properties:", {
-      notify: characteristic.properties.notify,
-      read: characteristic.properties.read,
-      indicate: characteristic.properties.indicate,
-      write: characteristic.properties.write,
-    });
-
-    webCharRef.current = characteristic;
-
-    const onValue = (event: Event) => {
-      const char = event.target as BluetoothRemoteGATTCharacteristic;
-      if (char.value) {
-        bufferRef.current.push(parseNotification(char.value));
-      }
-    };
-    webValueListenerRef.current = onValue;
-    characteristic.addEventListener("characteristicvaluechanged", onValue);
-
-    console.log("[BLE-web] startNotifications...");
-    await characteristic.startNotifications();
-    console.log("[BLE-web] notifications started OK");
+    await webSubscribeToNotifications(device);
+    console.log("[BLE-web] connected and subscribed");
 
     setBleIsConnected(true);
-  }, []);
+  }, [attemptWebReconnect, webSubscribeToNotifications]);
 
   const webDisconnect = useCallback(async () => {
+    intentionalDisconnectRef.current = true;
+    cancelReconnect();
     if (webCharRef.current) {
       if (webValueListenerRef.current) {
         webCharRef.current.removeEventListener(
@@ -147,18 +237,13 @@ export function useBle() {
     }
     webDeviceRef.current = null;
     setBleIsConnected(false);
-  }, []);
+  }, [cancelReconnect]);
 
   // ── Native (Capacitor) path ──────────────────────────────────
 
-  const handleNativeDisconnect = useCallback((deviceId: string) => {
-    if (deviceIdRef.current === deviceId) {
-      setBleIsConnected(false);
-    }
-  }, []);
-
   const nativeConnect = useCallback(async () => {
     console.log("[BLE-native] initializing...");
+    intentionalDisconnectRef.current = false;
     try {
       await BleClient.initialize();
       const enabled = await BleClient.isEnabled();
@@ -187,7 +272,13 @@ export function useBle() {
       console.log("[BLE-native] connecting...");
       await BleClient.connect(device.deviceId, () => {
         console.log("[BLE-native] disconnected callback fired");
-        handleNativeDisconnect(device.deviceId);
+        setBleIsConnected(false);
+        if (
+          !intentionalDisconnectRef.current &&
+          deviceIdRef.current === device.deviceId
+        ) {
+          attemptNativeReconnect(device.deviceId, 1);
+        }
       });
       console.log("[BLE-native] connected");
 
@@ -208,9 +299,11 @@ export function useBle() {
       setBleIsScanning(false);
       throw error;
     }
-  }, [handleNativeDisconnect]);
+  }, [attemptNativeReconnect]);
 
   const nativeDisconnect = useCallback(async () => {
+    intentionalDisconnectRef.current = true;
+    cancelReconnect();
     const deviceId = deviceIdRef.current;
     if (!deviceId) return;
 
@@ -232,7 +325,7 @@ export function useBle() {
 
     setBleIsConnected(false);
     deviceIdRef.current = null;
-  }, []);
+  }, [cancelReconnect]);
 
   // ── Public API (routes to correct path) ─────────────────────
 
@@ -268,6 +361,7 @@ export function useBle() {
     bleIsAvailable,
     bleIsConnected,
     bleIsScanning,
+    bleIsReconnecting,
     bleConnect,
     bleDisconnect,
     bleDataBuffer,

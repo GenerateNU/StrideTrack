@@ -42,6 +42,7 @@ export default function RecordRunPage() {
     bleIsAvailable,
     bleIsConnected,
     bleIsScanning,
+    bleIsReconnecting,
     bleConnect,
     bleDisconnect,
     bleMarkStart,
@@ -284,13 +285,13 @@ export default function RecordRunPage() {
           className="flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium"
           style={{
             backgroundColor:
-              isConnecting || bleIsScanning
+              isConnecting || bleIsScanning || bleIsReconnecting
                 ? "hsl(var(--muted))"
                 : bleIsConnected
                   ? "hsl(var(--primary) / 0.1)"
                   : "hsl(var(--destructive) / 0.1)",
             color:
-              isConnecting || bleIsScanning
+              isConnecting || bleIsScanning || bleIsReconnecting
                 ? "hsl(var(--muted-foreground))"
                 : bleIsConnected
                   ? "hsl(var(--primary))"
@@ -298,10 +299,10 @@ export default function RecordRunPage() {
           }}
         >
           <span
-            className={`w-2 h-2 rounded-full ${isConnecting || bleIsScanning ? "animate-pulse" : ""}`}
+            className={`w-2 h-2 rounded-full ${isConnecting || bleIsScanning || bleIsReconnecting ? "animate-pulse" : ""}`}
             style={{
               backgroundColor:
-                isConnecting || bleIsScanning
+                isConnecting || bleIsScanning || bleIsReconnecting
                   ? "hsl(var(--muted-foreground))"
                   : bleIsConnected
                     ? "hsl(var(--primary))"
@@ -310,9 +311,11 @@ export default function RecordRunPage() {
           />
           {isConnecting || bleIsScanning
             ? "Connecting..."
-            : bleIsConnected
-              ? "Connected"
-              : "Disconnected"}
+            : bleIsReconnecting
+              ? "Reconnecting..."
+              : bleIsConnected
+                ? "Connected"
+                : "Disconnected"}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="14"
@@ -341,8 +344,8 @@ export default function RecordRunPage() {
             }}
           >
             Losing connection mid-run is expected. The sensor will automatically
-            reconnect when the runner comes back within range. Data is buffered
-            locally.
+            reconnect when the runner comes back within range. The sensor stores
+            data on-device, so missed readings are recovered on reconnection.
           </div>
         )}
       </div>
