@@ -13,7 +13,7 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
   const [name, setName] = useState("");
   const [heightIn, setHeightIn] = useState("");
   const [weightLbs, setWeightLbs] = useState("");
-  const [gender, setGender] = useState<"male" | "female" | "">("");
+  const [gender, setGender] = useState<"male" | "female" | "other" | "">("");
 
   const resetAndClose = () => {
     setName("");
@@ -78,7 +78,7 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
             <select
               value={gender}
               onChange={(e) =>
-                setGender(e.target.value as "male" | "female" | "")
+                setGender(e.target.value as "male" | "female" | "other" | "")
               }
               className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none"
             >
@@ -87,6 +87,7 @@ export function AddAthleteModal({ open, onClose }: AddAthleteModalProps) {
               </option>
               <option value="male">Male</option>
               <option value="female">Female</option>
+              <option value="other">Other</option>
             </select>
           </div>
 

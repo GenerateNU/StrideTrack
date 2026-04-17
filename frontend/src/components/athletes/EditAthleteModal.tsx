@@ -21,8 +21,8 @@ export function EditAthleteModal({
   const [weightLbs, setWeightLbs] = useState(
     athlete.weight_lbs?.toString() ?? ""
   );
-  const [gender, setGender] = useState<"male" | "female" | "">(
-    athlete.gender ?? ""
+  const [gender, setGender] = useState<"male" | "female" | "other">(
+    athlete.gender
   );
 
   const handleSubmit = async () => {
@@ -34,7 +34,7 @@ export function EditAthleteModal({
           name: name.trim(),
           height_in: heightIn ? parseFloat(heightIn) : null,
           weight_lbs: weightLbs ? parseFloat(weightLbs) : null,
-          gender: gender || null,
+          gender,
         },
       });
       onClose();
@@ -77,18 +77,18 @@ export function EditAthleteModal({
 
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Gender
+              Gender *
             </label>
             <select
               value={gender}
               onChange={(e) =>
-                setGender(e.target.value as "male" | "female" | "")
+                setGender(e.target.value as "male" | "female" | "other")
               }
               className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:outline-none"
             >
-              <option value="">Not set</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
+              <option value="other">Other</option>
             </select>
           </div>
 
