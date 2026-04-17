@@ -31,7 +31,7 @@ export function AppLayout() {
       <Sidebar />
 
       {/* Mobile header only */}
-      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card/95 px-5 py-4 backdrop-blur-sm md:hidden">
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-border bg-card/95 px-5 pb-4 pt-[env(safe-area-inset-top,1rem)] backdrop-blur-sm md:hidden">
         <FlyingFoot className="h-9 w-auto text-foreground" />
         <StrideTrackText className="absolute left-1/2 -translate-x-1/2 h-7 w-auto" />
         <div className="relative" ref={menuRef}>

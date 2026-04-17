@@ -71,21 +71,10 @@ async def upload_data_csv(
                 status_code=400, detail=f"Failed to read CSV file: {str(e)}"
             ) from e
 
-        try:
-            result = await service.ingest_stride_csv(
-                raw_df,
-                athlete_id=str(athlete_id),
-                event_type=event_type,
-                name=name,
-                elapsed_ms=elapsed_ms,
-            )
-            return result
-        except HTTPException:
-            span.set_attribute("error", True)
-            raise
-        except Exception as e:
-            logger.exception("Failed to ingest run data frame")
-            span.set_attribute("error", True)
-            raise HTTPException(
-                status_code=500, detail=f"Failed to ingest run data frame: {str(e)}"
-            ) from e
+        return await service.ingest_stride_csv(
+            raw_df,
+            athlete_id=str(athlete_id),
+            event_type=event_type,
+            name=name,
+            elapsed_ms=elapsed_ms,
+        )
