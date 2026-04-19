@@ -1,0 +1,3 @@
+# Exclude research/ from GitHub Linguist language detection and language stats.
+# Data files, analysis scripts, and client deliverables are not application code.
+research/** linguist-documentation=true
