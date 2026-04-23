@@ -40,6 +40,7 @@ stridetrack/
 │   ├── migrations/       # SQL migrations
 │   ├── seed.sql          # Seed data for local dev
 │   └── config.toml       # Supabase configuration
+├── research/             # R&D artifacts — scripts, data, docs, client deliverables (see research/README.md)
 ├── docker-compose.yml    # Application services
 ├── otel-collector-config.yaml
 ├── Makefile              # Development commands
